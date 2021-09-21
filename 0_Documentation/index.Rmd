@@ -19,13 +19,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 0. Introduction `r emo::ji("book")`
 
-The output of the harmonization procedure is a individual participant data that collects the information of all the studies included in the Zika project. This dataset contains some variables that could be sporadically missing due to a study specific missing process or systematically missing when variable information it was not fully recorded on a particular study.
+The output of the harmonization procedure is a individual participant dataset that includes the information of all studies included in the Zika project. This dataset contains some variables that could be sporadically missing due to a study specific missing process or systematically missing when variable information was not fully recorded on a particular study.
 
-The presence of missing data could lead to biased estimates and errous conclusions of the analysis. Therefore it is necessary to apply a imputation process that help us to minimize the impact of missingness in our analysis before to proceed with the analysis established on the protocol. 
+The presence of missing data could lead to biased estimates and erroneous conclusions of the analysis. Therefore it is necessary to apply an imputation process that helps us to minimize the impact of missingness in our analysis before to proceed with the analysis established in the protocol. 
 
 The imputation process that we propose contains the following steps:
 
-0. Data Preprosessing
+0. Data Preprocessing
 - Data exploration.
 - Data correction.
 - Deductive imputation. 
@@ -39,19 +39,19 @@ The imputation process that we propose contains the following steps:
 - Sensitivity analysis.
 
 
-Below we provide specific details of each step providing simultaneusly the R code and results. 
+Below we provide specific details on each step providing simultaneously the R code and results. 
 
 # 0.0. Folder structure `r emo::ji("folder")`
-All the information of our work is resumed in the following folder tree structure. We used rstudioapi package that will facilitate the load and saving process of certain file across the process. 
+All the information of our work is resumed in the following folder tree structure. We used rstudioapi package that will facilitate the load and saving process of certain files across the process. 
 
 ![](Folder_tree.png)
 
 
 
-In the first folder 0. Documentation are saved this Rmarkdown code along with its html version. 
-Inside the input data can be placed,  data file resulting from the harmonization process in a R.Data format and a xlsx file with the list of relevant variables selected by experts in the field.
-The code folder contains the original R code for the data processing, for imputation process (including the codes to sent to HPC computer and to merge the resulting iterations) and analysis. 
-Relevant output files and graphs of our job are saved on the 3. Output data and 4. Graphs folders. 
+In folder '0. Documentation' this Rmarkdown code is saved along with its html version. 
+Inside the folder '1. input data', the data file resulting from the harmonization process in a R.Data format and a xlsx file with the list of relevant variables selected by experts in the field are saved.
+The code folder contains the original R code for the data processing, for imputation process (including the codes to sent to High Performance Computer (HPC) and to merge the resulting iterations) and analysis. 
+Relevant output files and graphs are saved in 3. Output data and 4. Graphs folders. 
 
 # 1. Data exploration `r emo::ji("magnifying")`
 
@@ -83,38 +83,38 @@ library(plotly)
 library(growthstandards)
 ```
 
-### 1.0.1. Load dataset and other source of information `r emo::ji("desktop")`
+### 1.0.1. Load dataset and other sources of information `r emo::ji("desktop")`
 
-The here package allow as to define the relative paths of each of subfolders. So author do not require to define own paths. Once the file is placed in the right folder, it can be load it automatically.
+The here package allows us to define the relative paths of each of subfolders. So authors do not require to define own paths. Once the file is placed in the right folder, it can be loaded automatically.
 
 ```{r}
 data <- as.data.table(read.csv(here('1_Input_data','ALLDATASET_preliminary.csv')))
 index <- as.data.table(readxl::read_xlsx(here('1_Input_data','Index.xlsx'),sheet="Sheet1")) #CSV file with the outcome, exposure and pregnant women from "20-20-20 key variables - ZIKV IPD-MA_June 7 2021.xlsx", same info but better to manipulate in R. 
-nindex <- as.data.table(readxl::read_xlsx(here('1_Input_data','Index.xlsx'),sheet="Sheet2")) #It is specified the order of list of variables included only in imputation model 
-index <- index[Bkey%in%c(1,2)]  #both Lauren and Annake list
+nindex <- as.data.table(readxl::read_xlsx(here('1_Input_data','Index.xlsx'),sheet="Sheet2")) #Specifies the order of list of variables included only in imputation model 
+index <- index[Bkey%in%c(1,2)]  #both Lauren and Anneke list
 vary <- c("studyname",index[,Variable]) # Select only variables with FINAL KEY VAR==1 (Key)
 data <- as.data.table(data[,..vary])
 ```
 
 ## 1.1. Initial data cleanup
 
-Initially we check the dataset to identify posible typing errors and outliers. We check the tree group of input variables: Outcome, Exposure, Pregnant woman.
+Initially we check the dataset to identify possible typing errors and outliers. We check the tree group of input variables: Outcome, Exposure, Pregnant woman.
 
 ### 1.1.0. Check the format of categorical variables
 ```{r}
-char <- which(sapply(data, is.character)) #which are char
+char <- which(sapply(data, is.character)) #which are characters
 datac <- data[,..char]
 data[, inf_head_circ_age_fu1 := as.numeric(sub(" .*", "",data$inf_head_circ_age_fu1))] # remove years
 data[, zikv_elisa_ga_1 := as.numeric(sub(" .*", "",data$zikv_elisa_ga_1))] #remove observations with weeks written
 data[ zikv_pcr_date_1 %in% c("22027","888",""), zikv_pcr_date_1 := NA] # set as NA values not given in date format
 data[ zikv_elisa_date_1 %in% c(""),zikv_elisa_date_1 := NA] #set blank strings as NA 
 data[ symp_date%in%c(""), symp_date:=NA]
-data[, arb_clindiag := ifelse(arb_clindiag==777,6,arb_clindiag)] # We set the NA value ("777") to a level "6" because we later use it for define CZS variable
+data[, arb_clindiag := ifelse(arb_clindiag==777,6,arb_clindiag)] # We set the NA value ("777") to a level "6" because we later use it to define the CZS variable
 ```
 
 ### 1.1.1. Redefine NA values
 
-We know that harmonization team categorized the NA values to better understand the data, however for practical purpose and application of imputation methods we need to set up all the the 666,777,888,999 values to NA. R does not manage NA values in the same way that SAS does, and specifically mice model only impute NA values.
+We know that the harmonization team categorized the NA values to better understand the data, however for practical purposes and application of imputation methods we need to set up all the 666,777,888,999 values to NA. R does not manage NA values in the same way as SAS does, and specifically mice only handles NA values.
 ```{r}
 data[data == 666] <-  NA
 data[data == 777] <-  NA
@@ -128,13 +128,13 @@ data[data == 9999] <-  NA
 ### 1.1.2. Check outcome variables
 ```{r}
 #unique(data$othabnorm_spec) # 39 categories 
-data[,othabnorm_spec := NULL] # We temporal remove it from dataset as it is messy: 39 categories in total
+data[,othabnorm_spec := NULL] # We temporally remove it from dataset as it is messy: 39 categories in total
 data[inf_weight < 100, inf_weight := inf_weight*100] #Correct 2 measures misplaced period
 data[inf_weight > 10000, inf_weight := inf_weight/10]#Correct 1 measure with extra zero 
-data[,inf_sex := ifelse(inf_sex==3,NA,inf_sex)] # Assing 3 to NA
+data[,inf_sex := ifelse(inf_sex==3,NA,inf_sex)] # Assigning 3 to NA
 data[inf_length == 0,inf_length := NA] #babies with 0 length
 data[inf_head_circ_birth == 0,inf_head_circ_birth := NA] #babies with 0 circumference
-data[,endga := ifelse(!is.na(endga),endga,birth_ga)] #end ga has same values as birth_ga.
+data[,endga := ifelse(!is.na(endga),endga,birth_ga)] #end_ga has same values as birth_ga.
 data[fet_us_micro_tri2 == 1|fet_us_micro_tri3 == 1, microcephaly_bin := 1]
 data[loss_etiology == 4,loss_etiology := NA]
 ```
@@ -142,19 +142,18 @@ data[loss_etiology == 4,loss_etiology := NA]
 
 ### 1.1.3. Check exposures
 
-By checking the inclusion criteria of each study it was found that the followinng studies only included women with detected zika infection (Source: Lauren code)
+By checking the inclusion criteria of each study it was found that the following studies only included women with detected zika infection (Source: Lauren code)
 - Brazil_BahiaPaudaLima_Costa
 - Brazil_SP_RibeiraoPreto_Duarte 
 - TrinidadTobago_Sohan
 
-Therefore the zika prevalence (zikv_prev) can set to 1 for all women belonging to these studies.
-Note: Acording to protocol (Anneke suggestion), probably the following countries have the same inclusion criteria
+Therefore the zika prevalence (zikv_prev) can be set to 1 for all women belonging to these studies.
+Note: According to the metadata, probably the following countries only include women with ZIKA infection:
 - Brazil_RiodeJaneiro_CunhaPrata
 - Spain_Soriano
 - FrenchGuiana_Pomar
 - Colombia_Mulkey
-
-However by inspecting the data we found that on these countries there are a high proportion of women with a negative zikv_preg = 0 (zikv_neg).
+However by inspecting the data we found that in these countries there is a high proportion of women with a negative zikv_preg = 0 (zikv_neg).
 
 ```{r}
 zik_incA<-c("Brazil_RiodeJaneiro_CunhaPrata","Brazil_SP_RibeiraoPreto_Duarte","Brazil_BahiaPaudaLima_Costa","Spain_Soriano","FrenchGuiana_Pomar","TrinidadTobago_Sohan","Colombia_Mulkey")
@@ -168,13 +167,13 @@ data[, .(count = .N,
                 
     
 ```     
-We opted just for apply the inclusion criteria according to Lauren list
+We opted just to apply the inclusion criteria according to Lauren list
 ```{r}
 zik_inc<-c("Brazil_RiodeJaneiro_CunhaPrata","Brazil_SP_RibeiraoPreto_Duarte","TrinidadTobago_Sohan")
 data[studyname%in%zik_inc,zik_preg:=1]
 ```
 
-Negative values of the following variables were assinged to NA
+Negative values of the following variables were assigned to NA
 
 ```{r}
 data[ miscarriage_ga<=0, miscarriage_ga:=NA]# codebook assigned to 666
@@ -229,15 +228,15 @@ check_microcephaly <- as.data.table(table(mic_bin=data$microcephaly_bin,
                                           micro=data$microcephaly,
                                           micro_temp=data$microcephaly_temp,
                                           useNA = "always"))
-check_microcephaly[N>0]  #check this inconsistency.. we priorirized microcephaly variable over 
+check_microcephaly[N>0]  #check this inconsistency.. we prioritized microcephaly variable 
 data[,microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,microcephaly_bin))]
 ```
 
 
-## 2.1. CZN correction
-For facilitate the construction of anormality variables we created the following function
+## 2.1. CZS correction
+To facilitate the construction of abnormality variables we created the following function
 ```{r}
-#Function returns 1 if there is any anomaly detected and 0 if there were no anomaly detected across the recorded variables , NA no recorded variables.
+#Function returns 1 if there is any anomaly detected and 0 if there were no anomaly detected across the recorded variables, NA indicates there were no recorded variables.
 
 checkcon<-function(data,col1){ #
   data$anyT <- rowSums(data[, .SD, .SDcols = col1], na.rm=T)
@@ -249,6 +248,18 @@ checkcon<-function(data,col1){ #
 
 
 ### 2.1.0. Create variable related to neuroimaging abnormalities
+The neuroabnormality variable is 1 if one of the following is 0: 
+- fet_us_abn_spec_tri1
+- fet_us_abn_spec_tri2
+- fet_us_abn_spec_tri3, 
+or if one of the following is 1: 
+- hydrocephaly
+- calcifications
+- ventriculomegaly
+- fet_us_cns_tri2
+- fet_us_cns_tri3. 
+The neuroabnormality variable is 0 if at least one of these is not NA and it is not yet coded 1. 
+The neuroabnormality variable is NA if all of these listed variables are NA.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==0,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==0,1,NA)] 
@@ -258,6 +269,7 @@ data[,neuroabnormality:=checkcon(data=data,col1=col1)]
 ```
 
 ### 2.1.1. Create variable related to congenital contractures
+See explanation at 2.1.0, but change variable names.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==1,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==1,1,NA)] 
@@ -267,6 +279,7 @@ data[,contractures:=checkcon(data=data,col1=col1)]
 ```
 
 ### 2.1.2. Create variable related to cardio abnormalities
+See explanation at 2.1.0, but change variable names.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==2,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==2,1,NA)] 
@@ -276,6 +289,7 @@ data[,cardioabnormality:=checkcon(data=data,col1=col1)]
 ```
 
 ### 2.1.3. Create variable related to gastrointestinal abnormalities
+See explanation at 2.1.0, but change variable names.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==3,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==3,1,NA)] 
@@ -285,6 +299,7 @@ data[,gastroabnormality:=checkcon(data=data,col1=col1)]
 ```
 
 ### 2.1.4. Create variable related to orofacialintestinal abnormalities
+See explanation at 2.1.0, but change variable names.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==4,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==4,1,NA)] 
@@ -294,6 +309,7 @@ data[,oroabnormality:=checkcon(data=data,col1=col1)]
 ```
 
 ### 2.1.5. Create variable related to ocular abnormalities
+See explanation at 2.1.0, but change variable names.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==5,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==5,1,NA)] 
@@ -303,6 +319,7 @@ data[,ocularabnormality:=checkcon(data=data,col1=col1)]
 ```
 
 ### 2.1.6. Create variable related to genitourinaly abnormalities
+See explanation at 2.1.0, but change variable names.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==6,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==6,1,NA)] 
@@ -313,6 +330,7 @@ data[,genurabnormality:=checkcon(data=data,col1=col1)]
 
 
 ### 2.1.7. Create variable any congenital abnormality excluding microcephaly
+See explanation at 2.1.0, but change variable names.
 ```{r}
 col1<-c("neuroabnormality","contractures","cardioabnormality","gastroabnormality","oroabnormality","ocularabnormality","genurabnormality","othabnorm","fet_us_bin_tri1","fet_us_bin_tri2","fet_us_bin_tri3")
 data[,anyabnormality_czs:=checkcon(data=data,col1=col1)]
@@ -322,18 +340,20 @@ col1<-c(col1,"anyabnormality_czs")
 # Notes @Anneke
 - anyabnormality, nonneurologic: I did not calculate it as is the combination of anyabnormality_czs and microcephaly so you can include the anyabnormality in the imputation  
 -  we need to check inclusion of   neuronormality,ocularnormality, contractures and anyabnormalyty  separaterly as all are combined  in anyabnormality_czs
+# @Johanna
+Allright! I think it is best to include all the separate variables in the imputation model and then after imputation compute the anyabnormality_czs and anyabnormality variables. Is that possible?
 
 
 ### 2.1.8 Create a czs variable according to WHO definition
-WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
+WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
 ```{r}
-data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & data$microcephaly==2 & data$anyabnormality_czs==1,1,
+data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2 | data$anyabnormality_czs==1),1,
              ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
 data[,czsn:=ifelse(is.na(czs),czs2,czs)]
 data[,czs2:=NULL]
 
 checktable<-data.table(table(czs=data$czs,czsn=data$czsn,useNA = "always"))
-checktable[N>0] #Combinations where the czv calculated differs from the given one. czsn gave information of around 100 observations 
+checktable[N>0] #Combinations where the czs calculated differs from the given one. czsn gave information of around 100 observations 
 ```
 
 
@@ -343,19 +363,19 @@ checktable[N>0] #Combinations where the czv calculated differs from the given on
 ## 3.0 Bdeath and Bdeath_ga 
 
 The original dataset contains variables that specify whether the pregnancy stage ends with the birth or death of the baby. 
-When the baby dies the event is classified as miscarriage, loss depending on the time at which the pregnancy ends. In addition, related variables such as pregnancy termination, loss etiology or induced abortion are specified. 
+When the baby dies the event is classified as miscarriage or loss, depending on the time at which the pregnancy ends. In addition, related variables such as pregnancy termination, loss etiology or induced abortion are specified. 
 Many of these variables have a high proportion of missing values which can be avoided by combining them into a time variable and an overall event indicator. In other words, instead of having separate indicator variables for death, miscarriage and lost and time variables associated with each of them, one can have an indicator variable, "bdeath", that specifies whether the baby was born (bdeath=0) or died (bdeath=1), with a gestational time variable that indicates when the event occurred (bdeath_ga). 
 
 We start by combining the information of the variables miscarriage, loss, loss_etiology, birth.
 ```{r}
-data[,birth:=ifelse(!is.na(birth_ga),1,NA)] #birth indicator from bithga
+data[,birth:=ifelse(!is.na(birth_ga),1,NA)] #birth indicator from birthga
 data[,birth2:=ifelse(!is.na(inf_term),1,NA)] #birth indicator from inf_term
 data[,bdeath:=ifelse(birth==1|birth2==1,0,NA)]
 data[,bdeath_ga:=ifelse(!is.na(endga),endga,ifelse(!is.na(loss_ga),loss_ga,ifelse(!is.na(miscarriage_ga),miscarriage_ga,NA)))]
 ```
 Then we used the etiology variable to add information on NA observations or ratify information in other pregancy term variables
 
-The following data.table instruction allows us to assign the values on misscarriage, loss, loss_etiology, birth and bdeath in one step given a loss etiology condition.
+The following data.table instruction allows us to assign the values on miscarriage, loss, loss_etiology, birth and bdeath in one step given a loss etiology condition.
 
 #Etiology levels (0=live, 1=miscarriage, 2=loss, 3=imp death)
 ```{r}
@@ -386,7 +406,7 @@ data[!is.na(data$inf_term),c("miscarriage","loss","loss_etiology","birth","bdeat
 data[inducedabort==1&birth==1,c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,1,2,0,1)]
 ```
 
-We combine the information of all the pregnancy term variables and check if there are observations with inconsistente relationships and remove temporal variables not need it in the final dataset. 
+We combine the information of all the pregnancy term variables and check if there are observations with inconsistent relationships and remove temporal variables not needed in the final dataset. 
 ```{r}
 #Coherent with inf_alive_birth 0=alive, induce abort 0=No
 checktable<-data.table(table(miscarriage=data$miscarriage,
@@ -453,7 +473,7 @@ data[,arb_preg_nz:=checkcon(data=data,col1=col1)]
 # 4. Selection of variables in imputation model
 
 ## 4.1. Influx- Outflux plot
-Van Buuren proposed the influx and outflux values as selection criteria of predictor variables. The influx is a measure of how the missing observations of a variable is connected with observed data of other variables. Whereas the outflux value is provide an estimation of how the observed data of a variable is connected with incomplete data of the other variables. The outflux parameter is an indicator of potential power of a variable for imputing other variables. In this case we define that a variable could be a good predictor if it outflux value is equal or superior to 50% .i.e. could help to predict more that the 50% of variables with incomplete data.
+Van Buuren proposed the influx and outflux values as selection criteria of predictor variables. The influx is a measure of how the missing observations of a variable are connected with observed data of other variables. Whereas the outflux values provide an estimation of how the observed data of a variable is connected with incomplete data of the other variables. The outflux parameter is an indicator of potential power of a variable for imputing other variables. In this case we define that a variable could be a good predictor if it's outflux value is equal or superior to 50% .i.e. could help to predict more than 50% of variables with incomplete data.
 ```{r,fig.width=34, fig.height=20}
 fx<-flux(data)
 fluxplot(data,eqscplot=TRUE)
@@ -462,7 +482,7 @@ sort(outlist)
 ```
 
 ## 4.2. Percentage of missingness for each variable across studies
-We calculate the proportion of missingess of each varable on each study and place it in a matrix format that allow us to plotit.
+We calculate the proportion of missingness of each variable on each study and place it in a matrix format that allows us to plot it.
 
 ````{r}
 nindex1 <- nindex[order(order),][!is.na(order)] # order according categories:  pregnancy women, exposure, outcome
@@ -486,7 +506,7 @@ dmatrix2[,miss:=round(value*100,1)]
 dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)] # set the text displayed by place the cursor over especific observation.
 ```
 
-The ploty package allows user to zoom out sections of the plot, by placing the cursor over an observation is diplayed the % missing by study.
+The ploty package allows users to zoom out sections of the plot, by placing the cursor over an observation it displays the % missing by study.
 
 ```{r,fig.width=10, fig.height=8}
 names<-nindex1$names
