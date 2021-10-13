@@ -17,7 +17,7 @@ base.dir <- dirname(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd(base.dir)
 load("3_Output_data/finaldata.RData")
 data<-as.data.table(fdata)
-
+colnames(data)
 infoselec<-as.data.table(read.csv2("5_Internal_support/Infoselection.csv",sep=";", stringsAsFactors=FALSE, fileEncoding="latin1"))
 infoselec<-infoselec[Imputation2>=3,] #only variable selected
 infoselec[Vtype=="C"]$Variable #Continuous
@@ -30,9 +30,10 @@ data[,(nncon):= lapply(.SD, as.factor), .SDcols = nncon] #convert to factors bin
 data[,studyname:=as.integer(studyname)] # Convert cluster variable studyname to integer 
 summary(data)
 ncat<-c("educ","ethnicity","gravidity","maritalstat","microcephaly","parity")#name of categorical variables
-nbin<-nncon[!nncon%in%ncat] #name of binary variables
+nbin<-nncon[!nncon%in%c(ncat,"studyname")] #name of binary variables
 npred<- c("eclampsia","educ","ethnicity","fet_zikv","flavi_alpha_virus","gestdiab","inf_craniofac_abn_bin","maritalstat","tobacco") #name of no predictors
 
+summary(data)
 
 #2. Set methods, prediction and post arguments----
 ini <- mice(data, maxit = 0)
@@ -40,7 +41,7 @@ meth <- ini$meth
 pred <- ini$pred
 post <- ini$post
 
-#head(ini$loggedEvents)
+head(ini$loggedEvents)
 
 summary(data)
 #2.1. Assign imputation method to each variable ----
@@ -53,6 +54,8 @@ meth[c("corticalatrophy","ventriculomegaly","multiplegest","othabnorm","calcific
 meth[ncat] <- "2l.pmm" # predictive mean matching at study level
 meth[c("inf_length","zikv_ga")]<- "2l.ppm"
 
+meth
+
 #2.2. Post-process the values to constrain normal distributed variables in the range of observable values ----
 post["age"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(14, 50))"
 post["bdeath_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
@@ -64,8 +67,8 @@ post["inf_length"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(18, 60))"
 
 #3.3. Set prediction matrix -----
 pred <- quickpred(data, minpuc = 0.3) # assignation based on pairwise correlaition
-pred[,"studyname"] <- -2 # define the cluster for imputation models at study level.
 pred["studyname", "studyname"] <- 0
+pred[,"studyname"] <- -2 # define the cluster for imputation models at study level.
 pred[,npred]<-0 #not assign variables without prediction power into the imputation model
 
 
