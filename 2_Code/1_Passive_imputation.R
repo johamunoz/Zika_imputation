@@ -28,6 +28,7 @@ library(growthstandards)
 base.dir <- dirname(dirname(rstudioapi::getActiveDocumentContext()$path)) # set main base working directory
 setwd(base.dir)
 data<-as.data.table(read.csv('1_Input_data/pilot10_08SEP21_withmetadata.csv', stringsAsFactors=FALSE, fileEncoding="latin1"))
+
 infoexp<-as.data.table(readxl::read_xlsx("1_Input_data/Infoexp.xlsx",sheet="Table")) #Table were are specified the included variables according Expert opinion, also the includes the order in which variables are imputed 
 var_inc<-infoexp[Inclusion==1,Variable] #Variables to work with
 data<-as.data.table(data[,..var_inc]) #Filter dataset
@@ -65,11 +66,9 @@ data[data==888] <-  NA
 data[data==999] <-  NA
 data[data==9999] <-  NA
 
-
+data[,Comb_id:=paste(studyname,mid_original,childid_original,sep="-")] #combinated ID from study mother and child id
 #1.2. Check outcome variables----
-
-data[inf_weight<100,inf_weight:=inf_weight*100] #2 measures misplaced period
-data[inf_weight>10000,inf_weight:=inf_weight/10]#1 measure with extra zero 
+data[,inf_weight:=ifelse(inf_weight>6000|inf_weight<100,NA,inf_weight)]
 data[,inf_sex:=ifelse(inf_sex==3,NA,inf_sex)] #3= NA
 data[inf_length<18,inf_length:=NA] #only babies with length bigger than 18 cm
 data[inf_head_circ_birth==0,inf_head_circ_birth:=NA] #babies with 0 circumference
@@ -365,7 +364,9 @@ infoexp[,Imputation2 := rowSums(.SD, na.rm = TRUE), .SDcols = c("Inclusion", "Ad
 
 write.table(infoexp,file="5_Internal_support/Infoselection.csv",sep=";")
 
-fdata<-data[, .SD, .SDcols = infoexp[Imputation2>=3,]$Variable]
+
+selecvar<-infoexp[order(Order)][Imputation2>=3,]$Variable #Vector with ordered selected variables
+fdata<-data[,..selecvar]
 save(fdata, file = "3_Output_data/finaldata.RData")
 
 
