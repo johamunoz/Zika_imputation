@@ -1,5 +1,5 @@
 
-#Compare new harmonized data provided 09-09-21
+#Passive imputation data provided 09-09-21
 
 rm(list=ls())
 
@@ -229,7 +229,7 @@ col1<-c(col1,"anyabnormality_czs")
 #Create a czs variable according to WHO definition
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
 data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & data$microcephaly==2 & data$anyabnormality_czs==1,1,
-             ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
+                   ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
 data[,czsn:=ifelse(is.na(czs),czs2,czs)]
 data[,czs2:=NULL]
 
@@ -398,7 +398,6 @@ p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
   labs(fill='%missing') 
 
 ggplotly(p, tooltip="text")
-
 
 
 
