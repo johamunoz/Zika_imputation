@@ -1,0 +1,16 @@
+rm(list=ls())
+
+library(rstudioapi)
+library(data.table)
+library(dplyr)
+library(mitml)
+library(mice)
+library(micemd)
+library(miceadds)
+library(Hmisc)
+library(VIM)
+library(lqmm)
+
+base.dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(base.dir)
+load("3_Output_data/finaldata.RData")
