@@ -33,7 +33,7 @@ meth[ncat] <- "2l.pmm" # predictive mean matching at study level
 
 meth[c("inf_weight","inf_head_circ_birth")]<-"norm"    #  # Due to convergence problems imputation based on marginal distribution
 meth[c("inf_length","zikv_ga")]<- "2l.pmm" #zikv_gan does not work as normal
-meth[c("corticalatrophy","ventriculomegaly","multiplegest","othabnorm","calcifications","storch_patho","hydrocephaly","inducedabort")] <- "logreg" # Due to frequent singular fit warning imputation based on marginal distribution
+meth[c("corticalatrophy","ventriculomegaly","multiplegest","othabnorm","calcifications","storch_patho","hydrocephaly","inducedabort","arb_symp")] <- "logreg" # Due to frequent singular fit warning imputation based on marginal distribution
 meth[c("educ")]<- "pmm"
 
 #2.2. Post-process the values to constrain normal distributed variables in the range of observable values ----
