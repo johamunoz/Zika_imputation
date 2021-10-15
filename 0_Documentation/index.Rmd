@@ -131,7 +131,7 @@ data[data == 9999] <-  NA
 data[,othabnorm_spec := NULL] # We temporally remove it from dataset as it is messy: 39 categories in total
 data[inf_weight < 100, inf_weight := inf_weight*100] #Correct 2 measures misplaced period
 data[inf_weight > 10000, inf_weight := inf_weight/10]#Correct 1 measure with extra zero 
-data[,inf_sex := ifelse(inf_sex==3,NA,inf_sex)] # Assigning 3 to NA
+#data[,inf_sex := ifelse(inf_sex==3,NA,inf_sex)] # Assigning 3 to NA
 data[inf_length == 0,inf_length := NA] #babies with 0 length
 data[inf_head_circ_birth == 0,inf_head_circ_birth := NA] #babies with 0 circumference
 data[,endga := ifelse(!is.na(endga),endga,birth_ga)] #end_ga has same values as birth_ga.
@@ -173,12 +173,12 @@ zik_inc<-c("Brazil_RiodeJaneiro_CunhaPrata","Brazil_SP_RibeiraoPreto_Duarte","Tr
 data[studyname%in%zik_inc,zik_preg:=1]
 ```
 
-Negative values of the following variables were assigned to NA
+Negative values of the following variables were assigned to NA @Johanna I commented some of these out as there are no negative values for some in the new data anymore. If you agree, you can delete these lines!
 
 ```{r}
-data[ miscarriage_ga<=0, miscarriage_ga:=NA]# codebook assigned to 666
-data[ loss_ga<=0, loss_ga := NA]# codebook assigned to 666
-data[ birth_ga<=0, birth_ga:=NA]# codebook assigned to 666       
+#data[ miscarriage_ga<=0, miscarriage_ga:=NA]# codebook assigned to 666
+#data[ loss_ga<=0, loss_ga := NA]# codebook assigned to 666
+#data[ birth_ga<=0, birth_ga:=NA]# codebook assigned to 666       
 data[ zikv_pcr_ga_1<=0,zikv_pcr_ga_1:=NA] # codebook assigned to 666
 data[ zikv_elisa_ga_1<=0,zikv_elisa_ga_1:=NA] # codebook assigned to 666
 data[ zikv_ga<=0,zikv_ga:=NA]# codebook assigned to 666
@@ -208,7 +208,7 @@ checktable[N>0] #ask for observations where zik value 0 and other there is 1 aro
 ### 1.1.4.Check Pregnant woman variables
 ```{r}
 data[age<14, age:=NA] #  ask "Spain_Soriano" for this age records, for the moment assigned to NA
-data[tobacco==3,tobacco:=NA] # level no defined
+data[tobacco==3,tobacco:=NA] # level not defined
 ```
 
 # 2. Data correction
