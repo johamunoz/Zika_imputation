@@ -36,10 +36,10 @@ PredIntOE <- function(fit.rma)
 }
 
 setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data")
-load("merged_imp4.RData")
-data <- complete(merged_imp4, "long")
+load("imputation2.RData")
+data <- complete(merged_imp, "long")
 dataset.n<-length(data[data$.imp==1,]$studyname)
-rm(merged_imp4)
+rm(merged_imp)
 m<-max(data$.imp)
 
 #Create dichotomous outcome variables to calculate incidence
