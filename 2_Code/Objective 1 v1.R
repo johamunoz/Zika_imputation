@@ -41,6 +41,10 @@ data <- complete(merged_imp, "long")
 dataset.n<-length(data[data$.imp==1,]$studyname)
 rm(merged_imp)
 m<-max(data$.imp)
+studynames<-c("Brazil_BahiaPaudaLima_Costa","Brazil_RiodeJaneiro_CunhaPrata",
+              "Brazil_RiodeJaneiro_Joao","Brazil_SP_RibeiraoPreto_Duarte","Colombia_Mulkey",
+              "FrenchGuiana_Pomar","Spain_Bardaji","Spain_Soriano","TrinidadTobago_Sohan",
+              "USA_Mulkey")
 
 #Create dichotomous outcome variables to calculate incidence
 #miscarriage (<20 weeks gestation)
@@ -55,11 +59,11 @@ data$loss<-as.factor(data$loss)
 data$efdeath<-0
 data$efdeath[data$bdeath==1 & data$bdeath_ga>=20 & data$bdeath_ga<28]<-1
 data$efdeath<-as.factor(data$efdeath)
-#Late fetal death (???28 weeks gestation)
+#Late fetal death (after 28 weeks gestation)
 data$lfdeath<-0
 data$lfdeath[data$bdeath==1 & data$bdeath_ga>=28]<-1
 data$lfdeath<-as.factor(data$lfdeath)
-#Late fetal death (???28 weeks gestation) with microcephaly
+#Late fetal death (after 28 weeks gestation) with microcephaly
 data$lfdeath_micro<-0
 data$lfdeath_micro[data$lfdeath==1 & data$bdeath_ga>=28]<-1
 data$lfdeath<-as.factor(data$lfdeath)
@@ -80,7 +84,6 @@ for (i in 1:length(unique(data$.imp))) {
   if(i==1) {inc.outcome<-inc}
   if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
 }
-inc.outcome
 #Replace 0's by 0.000001
 inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
 inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
@@ -106,25 +109,13 @@ for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
   pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
 }
 #Recode studyname
-pool.rubin$studyname<-as.character(pool.rubin$studyname)
-pool.rubin$studyname[pool.rubin$studyname=="1"]<-"Brazil_BahiaPaudaLima_Costa"
-pool.rubin$studyname[pool.rubin$studyname=="2"]<-"Brazil_RiodeJaneiro_CunhaPrata"
-pool.rubin$studyname[pool.rubin$studyname=="3"]<-"Brazil_RiodeJaneiro_Joao"
-pool.rubin$studyname[pool.rubin$studyname=="4"]<-"Brazil_SP_RibeiraoPreto_Duarte"
-pool.rubin$studyname[pool.rubin$studyname=="5"]<-"Colombia_Mulkey"
-pool.rubin$studyname[pool.rubin$studyname=="6"]<-"FrenchGuiana_Pomar"
-pool.rubin$studyname[pool.rubin$studyname=="7"]<-"Spain_Bardaji"
-pool.rubin$studyname[pool.rubin$studyname=="8"]<-"Spain_Soriano"
-pool.rubin$studyname[pool.rubin$studyname=="9"]<-"TrinidadTobago_Sohan"
-pool.rubin$studyname[pool.rubin$studyname=="10"]<-"USA_Mulkey"
-
-pool.rubin
+pool.rubin$studyname<-as.factor(pool.rubin$studyname)
+levels(pool.rubin$studyname)<-studynames
 
 abs.outcome<-pool.rubin
 abs.outcome$incidence<-inv.logit(abs.outcome$logit.abs)*100
 abs.outcome$ci.lb<-inv.logit(abs.outcome$logit.ci.lb)*100
 abs.outcome$ci.ub<-inv.logit(abs.outcome$logit.ci.ub)*100
-abs.outcome
 
 #Pool results: two-stage meta-analysis
 fit.rma<-rma(yi = logit.abs, sei = logit.se, method = "REML", test = "knha", 
@@ -139,7 +130,6 @@ pool.outcome$logit.ci.ub<-fit.rma$ci.ub
 pool.outcome$abs.risk<-inv.logit(pool.outcome$logit.abs[[1]])*100
 pool.outcome$ci.lb<-inv.logit(pool.outcome$logit.ci.lb)*100
 pool.outcome$ci.ub<-inv.logit(pool.outcome$logit.ci.ub)*100
-pool.outcome
 #Prediction interval
 PI<-PredInt(fit.rma)
 PI<-cbind(inv.logit(fit.rma$b)[1,1], PI[1], PI[2])*100
@@ -151,11 +141,13 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,13)), cex=1, steps=7, main="Microcephaly",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, 
-        sei = inv.logit.SE(pool.outcome$logit.se,pool.outcome$abs.risk), 
-        rows=-0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
+
+########Relative risk########
+
 
 
 ##################################################################################
@@ -170,7 +162,6 @@ for (i in 1:length(unique(data$.imp))) {
   if(i==1) {inc.outcome<-inc}
   if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
 }
-inc.outcome
 #Replace 0's by 0.000001
 inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
 inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
@@ -196,25 +187,13 @@ for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
   pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
 }
 #Recode studyname
-pool.rubin$studyname<-as.character(pool.rubin$studyname)
-pool.rubin$studyname[pool.rubin$studyname=="1"]<-"Brazil_BahiaPaudaLima_Costa"
-pool.rubin$studyname[pool.rubin$studyname=="2"]<-"Brazil_RiodeJaneiro_CunhaPrata"
-pool.rubin$studyname[pool.rubin$studyname=="3"]<-"Brazil_RiodeJaneiro_Joao"
-pool.rubin$studyname[pool.rubin$studyname=="4"]<-"Brazil_SP_RibeiraoPreto_Duarte"
-pool.rubin$studyname[pool.rubin$studyname=="5"]<-"Colombia_Mulkey"
-pool.rubin$studyname[pool.rubin$studyname=="6"]<-"FrenchGuiana_Pomar"
-pool.rubin$studyname[pool.rubin$studyname=="7"]<-"Spain_Bardaji"
-pool.rubin$studyname[pool.rubin$studyname=="8"]<-"Spain_Soriano"
-pool.rubin$studyname[pool.rubin$studyname=="9"]<-"TrinidadTobago_Sohan"
-pool.rubin$studyname[pool.rubin$studyname=="10"]<-"USA_Mulkey"
-
-pool.rubin
+pool.rubin$studyname<-as.factor(pool.rubin$studyname)
+levels(pool.rubin$studyname)<-studynames
 
 abs.outcome<-pool.rubin
 abs.outcome$incidence<-inv.logit(abs.outcome$logit.abs)*100
 abs.outcome$ci.lb<-inv.logit(abs.outcome$logit.ci.lb)*100
 abs.outcome$ci.ub<-inv.logit(abs.outcome$logit.ci.ub)*100
-abs.outcome
 
 #Pool results: two-stage meta-analysis
 fit.rma<-rma(yi = logit.abs, sei = logit.se, method = "REML", test = "knha", 
@@ -235,15 +214,14 @@ PI<-PredInt(fit.rma)
 PI<-cbind(inv.logit(fit.rma$b)[1,1], PI[1], PI[2])*100
 
 #Forest plot
-#png(file="20210930 Miscarriage.png",width=750,height=500,res=100)
+#png(file="20211025 Miscarriage.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,13)), cex=1, steps=7, main="Miscarriage",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, 
-        sei = inv.logit.SE(pool.outcome$logit.se,pool.outcome$abs.risk), 
-        rows=-0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -259,7 +237,6 @@ for (i in 1:length(unique(data$.imp))) {
   if(i==1) {inc.outcome<-inc}
   if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
 }
-inc.outcome
 #Replace 0's by 0.000001
 inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
 inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
@@ -285,25 +262,13 @@ for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
   pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
 }
 #Recode studyname
-pool.rubin$studyname<-as.character(pool.rubin$studyname)
-pool.rubin$studyname[pool.rubin$studyname=="1"]<-"Brazil_BahiaPaudaLima_Costa"
-pool.rubin$studyname[pool.rubin$studyname=="2"]<-"Brazil_RiodeJaneiro_CunhaPrata"
-pool.rubin$studyname[pool.rubin$studyname=="3"]<-"Brazil_RiodeJaneiro_Joao"
-pool.rubin$studyname[pool.rubin$studyname=="4"]<-"Brazil_SP_RibeiraoPreto_Duarte"
-pool.rubin$studyname[pool.rubin$studyname=="5"]<-"Colombia_Mulkey"
-pool.rubin$studyname[pool.rubin$studyname=="6"]<-"FrenchGuiana_Pomar"
-pool.rubin$studyname[pool.rubin$studyname=="7"]<-"Spain_Bardaji"
-pool.rubin$studyname[pool.rubin$studyname=="8"]<-"Spain_Soriano"
-pool.rubin$studyname[pool.rubin$studyname=="9"]<-"TrinidadTobago_Sohan"
-pool.rubin$studyname[pool.rubin$studyname=="10"]<-"USA_Mulkey"
-
-pool.rubin
+pool.rubin$studyname<-as.factor(pool.rubin$studyname)
+levels(pool.rubin$studyname)<-studynames
 
 abs.outcome<-pool.rubin
 abs.outcome$incidence<-inv.logit(abs.outcome$logit.abs)*100
 abs.outcome$ci.lb<-inv.logit(abs.outcome$logit.ci.lb)*100
 abs.outcome$ci.ub<-inv.logit(abs.outcome$logit.ci.ub)*100
-abs.outcome
 
 #Pool results: two-stage meta-analysis
 fit.rma<-rma(yi = logit.abs, sei = logit.se, method = "REML", test = "knha", 
@@ -318,7 +283,6 @@ pool.outcome$logit.ci.ub<-fit.rma$ci.ub
 pool.outcome$abs.risk<-inv.logit(pool.outcome$logit.abs[[1]])*100
 pool.outcome$ci.lb<-inv.logit(pool.outcome$logit.ci.lb)*100
 pool.outcome$ci.ub<-inv.logit(pool.outcome$logit.ci.ub)*100
-pool.outcome
 #Prediction interval
 PI<-PredInt(fit.rma)
 PI<-cbind(inv.logit(fit.rma$b)[1,1], PI[1], PI[2])*100
@@ -330,9 +294,8 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,13)), cex=1, steps=7, main="Fetal loss",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, 
-        sei = inv.logit.SE(pool.outcome$logit.se,pool.outcome$abs.risk), 
-        rows=-0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -348,7 +311,6 @@ for (i in 1:length(unique(data$.imp))) {
   if(i==1) {inc.outcome<-inc}
   if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
 }
-inc.outcome
 #Replace 0's by 0.000001
 inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
 inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
@@ -374,25 +336,13 @@ for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
   pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
 }
 #Recode studyname
-pool.rubin$studyname<-as.character(pool.rubin$studyname)
-pool.rubin$studyname[pool.rubin$studyname=="1"]<-"Brazil_BahiaPaudaLima_Costa"
-pool.rubin$studyname[pool.rubin$studyname=="2"]<-"Brazil_RiodeJaneiro_CunhaPrata"
-pool.rubin$studyname[pool.rubin$studyname=="3"]<-"Brazil_RiodeJaneiro_Joao"
-pool.rubin$studyname[pool.rubin$studyname=="4"]<-"Brazil_SP_RibeiraoPreto_Duarte"
-pool.rubin$studyname[pool.rubin$studyname=="5"]<-"Colombia_Mulkey"
-pool.rubin$studyname[pool.rubin$studyname=="6"]<-"FrenchGuiana_Pomar"
-pool.rubin$studyname[pool.rubin$studyname=="7"]<-"Spain_Bardaji"
-pool.rubin$studyname[pool.rubin$studyname=="8"]<-"Spain_Soriano"
-pool.rubin$studyname[pool.rubin$studyname=="9"]<-"TrinidadTobago_Sohan"
-pool.rubin$studyname[pool.rubin$studyname=="10"]<-"USA_Mulkey"
-
-pool.rubin
+pool.rubin$studyname<-as.factor(pool.rubin$studyname)
+levels(pool.rubin$studyname)<-studynames
 
 abs.outcome<-pool.rubin
 abs.outcome$incidence<-inv.logit(abs.outcome$logit.abs)*100
 abs.outcome$ci.lb<-inv.logit(abs.outcome$logit.ci.lb)*100
 abs.outcome$ci.ub<-inv.logit(abs.outcome$logit.ci.ub)*100
-abs.outcome
 
 #Pool results: two-stage meta-analysis
 fit.rma<-rma(yi = logit.abs, sei = logit.se, method = "REML", test = "knha", 
@@ -407,7 +357,6 @@ pool.outcome$logit.ci.ub<-fit.rma$ci.ub
 pool.outcome$abs.risk<-inv.logit(pool.outcome$logit.abs[[1]])*100
 pool.outcome$ci.lb<-inv.logit(pool.outcome$logit.ci.lb)*100
 pool.outcome$ci.ub<-inv.logit(pool.outcome$logit.ci.ub)*100
-pool.outcome
 #Prediction interval
 PI<-PredInt(fit.rma)
 PI<-cbind(inv.logit(fit.rma$b)[1,1], PI[1], PI[2])*100
@@ -419,9 +368,8 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,13)), cex=1, steps=7, main="Congenital Zika Syndrome",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, 
-        sei = inv.logit.SE(pool.outcome$logit.se,pool.outcome$abs.risk), 
-        rows=-0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -432,8 +380,7 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,13)), cex=1, steps=8, main="Congenital Zika Syndrome",
                 xlim=(c(-45,55)), alim=(c(0,35)))
-addpoly(x = pool.outcome$abs.risk, 
-        sei = inv.logit.SE(pool.outcome$logit.se,pool.outcome$abs.risk), 
-        rows=-0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
