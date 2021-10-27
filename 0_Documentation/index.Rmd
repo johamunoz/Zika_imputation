@@ -321,8 +321,16 @@ col1<-c("modificated1","modificated2","modificated3","fet_us_gastro_tri2","fet_u
 data[,gastroabnormality:=checkcon(data=data,col1=col1)]
 ```
 
-### 2.1.4. Create variable related to orofacialintestinal abnormalities
-See explanation at 2.1.0, but change variable names.
+### 2.1.4. Create variable related to orofacial abnormalities
+The orofacial abnormalities variable is 1 if one of the following is 4: 
+- fet_us_abn_spec_tri1
+- fet_us_abn_spec_tri2
+- fet_us_abn_spec_tri3, 
+or if one of the following is 1: 
+- fet_us_orofac_tri2
+- fet_us_orofac_tri3 
+The orofacial abnormalities variable is 0 if at least one of these is not NA and it is not yet coded 1. 
+The orofacial abnormalities variable is NA if all of these listed variables are NA.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==4,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==4,1,NA)] 
@@ -331,8 +339,16 @@ col1<-c("modificated1","modificated2","modificated3","fet_us_orofac_tri2","fet_u
 data[,oroabnormality:=checkcon(data=data,col1=col1)]
 ```
 
-### 2.1.5. Create variable related to ocular abnormalities
-See explanation at 2.1.0, but change variable names.
+### 2.1.5. Create variable related to ocular abnormalities, congenital deafness or hearing loss
+The ocular abnormalities variable is 1 if one of the following is 5: 
+- fet_us_abn_spec_tri1
+- fet_us_abn_spec_tri2
+- fet_us_abn_spec_tri3, 
+or if one of the following is 1: 
+- fet_us_eyeear_tri2
+- fet_us_eyeear_tri3 
+The ocular abnormalities variable is 0 if at least one of these is not NA and it is not yet coded 1. 
+The ocular abnormalities variable is NA if all of these listed variables are NA.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==5,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==5,1,NA)] 
@@ -341,8 +357,16 @@ col1<-c("modificated1","modificated2","modificated3","fet_us_eyeear_tri2","fet_u
 data[,ocularabnormality:=checkcon(data=data,col1=col1)]
 ```
 
-### 2.1.6. Create variable related to genitourinaly abnormalities
-See explanation at 2.1.0, but change variable names.
+### 2.1.6. Create variable related to genitourinary abnormalities
+The genitourinary abnormalities variable is 1 if one of the following is 6: 
+- fet_us_abn_spec_tri1
+- fet_us_abn_spec_tri2
+- fet_us_abn_spec_tri3, 
+or if one of the following is 1: 
+- fet_us_genur_tri2
+- fet_us_genur_tri3 
+The genitourinary abnormalities variable is 0 if at least one of these is not NA and it is not yet coded 1. 
+The genitourinary abnormalities variable is NA if all of these listed variables are NA.
 ```{r}
 data[,modificated1:=ifelse(fet_us_abn_spec_tri1==6,1,NA)] 
 data[,modificated2:=ifelse(fet_us_abn_spec_tri2==6,1,NA)] 
