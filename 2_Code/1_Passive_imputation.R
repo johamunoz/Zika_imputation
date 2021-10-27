@@ -28,6 +28,10 @@ library(growthstandards)
 base.dir <- dirname(dirname(rstudioapi::getActiveDocumentContext()$path)) # set main base working directory
 setwd(base.dir)
 data<-as.data.table(read.csv('1_Input_data/pilot10_08SEP21_withmetadata.csv', stringsAsFactors=FALSE, fileEncoding="latin1"))
+unique(data$studyname)
+gato<-data[studyname%in%c("Brazil_BahiaPaudaLima_Costa"),c("czs")]
+
+colnames(data1)
 
 infoexp<-as.data.table(readxl::read_xlsx("1_Input_data/Infoexp.xlsx",sheet="Table")) #Table were are specified the included variables according Expert opinion, also the includes the order in which variables are imputed 
 var_inc<-infoexp[Inclusion==1,Variable] #Variables to work with
