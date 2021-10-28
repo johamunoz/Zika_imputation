@@ -6,6 +6,7 @@ library(mice)
 library(micemd)
 library(metafor)
 library(metamisc)
+library(EpiStats)
 
 #######Functions#######
 logit <- function(x) {
@@ -41,12 +42,15 @@ data <- complete(merged_imp, "long")
 dataset.n<-length(data[data$.imp==1,]$studyname)
 rm(merged_imp)
 m<-max(data$.imp)
-studynames<-c("Brazil_BahiaPaudaLima_Costa","Brazil_RiodeJaneiro_CunhaPrata",
-              "Brazil_RiodeJaneiro_Joao","Brazil_SP_RibeiraoPreto_Duarte","Colombia_Mulkey",
-              "FrenchGuiana_Pomar","Spain_Bardaji","Spain_Soriano","TrinidadTobago_Sohan",
-              "USA_Mulkey")
+studynames<-c("014-BRA","001-BRA","002-BRA","010-BRA","007-COL",
+              "003-GUF","005-ESP","004-ESP","012-TTO","008-USA")
 
 #Create dichotomous outcome variables to calculate incidence
+#Microcephaly_bin
+data$microcephaly_bin<-data$microcephaly
+data$microcephaly_bin[data$microcephaly_bin==2]<-1
+data$microcephaly_bin[data$microcephaly_bin==3]<-1
+levels(data$microcephaly_bin)<-c("0","1","1","1")
 #miscarriage (<20 weeks gestation)
 data$miscarriage<-0
 data$miscarriage[data$bdeath==1 & data$bdeath_ga<20]<-1
@@ -68,6 +72,9 @@ data$lfdeath_micro<-0
 data$lfdeath_micro[data$lfdeath==1 & data$bdeath_ga>=28]<-1
 data$lfdeath<-as.factor(data$lfdeath)
 
+data.zika<-data[data$zikv_preg==1,]
+data.nozika<-data[data$zikv_preg==0,]
+
 ########################Analyses#############
 #Change directory to save plots
 setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten")
@@ -77,8 +84,8 @@ setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten")
 ##################################################################################
 
 #Calculate incidence of outcome per study
-for (i in 1:length(unique(data$.imp))) {
-  d<-data[data$.imp==i,]
+for (i in 1:length(unique(data.zika$.imp))) {
+  d<-data.zika[data.zika$.imp==i,]
   inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=f.incidence(microcephaly,dataset.n)[1],ci.l<-f.incidence(microcephaly,dataset.n)[2],ci.u<-f.incidence(microcephaly,dataset.n)[3]))
   colnames(inc)<-c("studyname","incidence","ci.l","ci.u")
   if(i==1) {inc.outcome<-inc}
@@ -94,7 +101,7 @@ inc.outcome$logit.ci.l<-logit(inc.outcome$ci.l)
 inc.outcome$logit.ci.u<-logit(inc.outcome$ci.u)
 inc.outcome$logit.se<-(inc.outcome$logit.ci.u-inc.outcome$logit.ci.l)/(2*1.96)
 
-pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data$studyname)), ncol = 8))
+pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
 colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
                                     "logit.se","logit.ci.lb","logit.ci.ub")
 for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
@@ -149,14 +156,59 @@ addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction in
 ########Relative risk########
 
 
+for (i in 1:length(unique(data$.imp))) {
+  d<-data[data$.imp==i,]
+  
+  for (j in 1:length(unique(d$studyname))) {
+    d2<-d[d$studyname==j]
+    table(d2$zikv_preg,d2$microcephaly)
+    cbind()
+  }
+  
+  
+  inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=CS(x=d,cases="microcephaly_bin",exposure="zikv_preg")$df2$`Point estimate`[2],ci.l<-CS(x=d,cases="microcephaly_bin",exposure="zikv_preg")$df2$`95%CI ll`[2],ci.u<-CS(x=d,cases="microcephaly_bin",exposure="zikv_preg")$df2$`95%CI ul`[2]))
+  colnames(inc)<-c("studyname","RR","ci.l","ci.u")
+  if(i==1) {rr.outcome<-inc}
+  if(i>1) {rr.outcome<-rbind(rr.outcome,inc)}
+}
+rr.outcome
+CS(x=data,cases="microcephaly_bin",exposure="zikv_preg")
+temp$df2$`Point estimate`
+
+
+rr.table<-table(data$zikv_preg,data$microcephaly_bin)
+rr<-(rr.table[2,2]/sum(rr.table[2,]))/(rr.table[1,2]/sum(rr.table[1,]))
+rr.lb<-rr-1.96*
+
+
+#Pool with Rubins rules
+inc.outcome$log.incidence<-log(inc.outcome$incidence)
+inc.outcome$log.ci.l<-log(inc.outcome$ci.l)
+inc.outcome$log.ci.u<-log(inc.outcome$ci.u)
+inc.outcome$log.se<-(inc.outcome$log.ci.u-inc.outcome$log.ci.l)/(2*1.96)
+
+pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
+colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
+                        "logit.se","logit.ci.lb","logit.ci.ub")
+for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
+  a<-inc.outcome[inc.outcome$studyname==i,]
+  pool.rubin$studyname[i]<-i
+  pool.rubin$logit.abs[i] <- mean(a$logit.incidence)
+  pool.rubin$within[i] <- mean(a$logit.se^2)
+  pool.rubin$between[i] <- (1 + (1/m)) * var(a$logit.incidence)
+  pool.rubin$logit.var[i] <- pool.rubin$within[i] + pool.rubin$between[i]
+  pool.rubin$logit.se[i] <- sqrt(pool.rubin$logit.var[i])
+  pool.rubin$logit.ci.lb[i] <- pool.rubin$logit.abs[i] + qnorm(0.05/2)     * pool.rubin$logit.se[i]
+  pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
+}
 
 ##################################################################################
 ###################################Miscarriage###################################
 ##################################################################################
 
 #Calculate incidence of outcome per study
-for (i in 1:length(unique(data$.imp))) {
-  d<-data[data$.imp==i,]
+for (i in 1:length(unique(data.zika$.imp))) {
+  d<-data.zika[data.zika$.imp==i,]
   inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=f.incidence(miscarriage,dataset.n)[1],ci.l<-f.incidence(miscarriage,dataset.n)[2],ci.u<-f.incidence(miscarriage,dataset.n)[3]))
   colnames(inc)<-c("studyname","incidence","ci.l","ci.u")
   if(i==1) {inc.outcome<-inc}
@@ -172,7 +224,7 @@ inc.outcome$logit.ci.l<-logit(inc.outcome$ci.l)
 inc.outcome$logit.ci.u<-logit(inc.outcome$ci.u)
 inc.outcome$logit.se<-(inc.outcome$logit.ci.u-inc.outcome$logit.ci.l)/(2*1.96)
 
-pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data$studyname)), ncol = 8))
+pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
 colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
                         "logit.se","logit.ci.lb","logit.ci.ub")
 for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
@@ -230,8 +282,8 @@ addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction in
 ##################################################################################
 
 #Calculate incidence of outcome per study
-for (i in 1:length(unique(data$.imp))) {
-  d<-data[data$.imp==i,]
+for (i in 1:length(unique(data.zika$.imp))) {
+  d<-data.zika[data.zika$.imp==i,]
   inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=f.incidence(loss,dataset.n)[1],ci.l<-f.incidence(loss,dataset.n)[2],ci.u<-f.incidence(loss,dataset.n)[3]))
   colnames(inc)<-c("studyname","incidence","ci.l","ci.u")
   if(i==1) {inc.outcome<-inc}
@@ -247,7 +299,7 @@ inc.outcome$logit.ci.l<-logit(inc.outcome$ci.l)
 inc.outcome$logit.ci.u<-logit(inc.outcome$ci.u)
 inc.outcome$logit.se<-(inc.outcome$logit.ci.u-inc.outcome$logit.ci.l)/(2*1.96)
 
-pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data$studyname)), ncol = 8))
+pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
 colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
                         "logit.se","logit.ci.lb","logit.ci.ub")
 for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
@@ -304,8 +356,8 @@ addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction in
 ##################################################################################
 
 #Calculate incidence of outcome per study
-for (i in 1:length(unique(data$.imp))) {
-  d<-data[data$.imp==i,]
+for (i in 1:length(unique(data.zika$.imp))) {
+  d<-data.zika[data.zika$.imp==i,]
   inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=f.incidence(czsn,dataset.n)[1],ci.l<-f.incidence(czsn,dataset.n)[2],ci.u<-f.incidence(czsn,dataset.n)[3]))
   colnames(inc)<-c("studyname","incidence","ci.l","ci.u")
   if(i==1) {inc.outcome<-inc}
@@ -321,7 +373,7 @@ inc.outcome$logit.ci.l<-logit(inc.outcome$ci.l)
 inc.outcome$logit.ci.u<-logit(inc.outcome$ci.u)
 inc.outcome$logit.se<-(inc.outcome$logit.ci.u-inc.outcome$logit.ci.l)/(2*1.96)
 
-pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data$studyname)), ncol = 8))
+pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
 colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
                         "logit.se","logit.ci.lb","logit.ci.ub")
 for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
