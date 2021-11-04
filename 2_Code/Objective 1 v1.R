@@ -18,12 +18,26 @@ inv.logit <- function(x) {
 inv.logit.SE<- function(logit.se, c) {
   logit.se * (c*(1-c))
 }
+#Function for calculating absolute risk
 f.incidence <- function(variable,n.data) {
   a<-summary(variable)
   b<-prop.test(x = a[[2]], n = n.data, correct = TRUE)
   prop<-b$estimate[[1]]
   ci<-b$conf
     return(c(prop,ci))
+}
+#Function for calculating relative risk
+f.rr <- function(rr.table) {
+  rr<-(rr.table[2,2]/sum(rr.table[2,]))/(rr.table[1,2]/sum(rr.table[1,]))
+  log.rr<-log(rr)
+  log.rr.lb<-log.rr-1.96*sqrt((rr.table[2,1]/rr.table[2,2])/sum(rr.table[2,]) +
+                                (rr.table[1,1]/rr.table[1,2])/sum(rr.table[1,]))
+  log.rr.ub<-log.rr+1.96*sqrt((rr.table[2,1]/rr.table[2,2])/sum(rr.table[2,]) +
+                                (rr.table[1,1]/rr.table[1,2])/sum(rr.table[1,]))
+  log.rr.se<-(log.rr.ub-log.rr.lb)/(2*1.96)
+  rr.lb<-exp(log.rr.lb)
+  rr.ub<-exp(log.rr.ub)
+  return(c(rr,rr.lb,rr.ub,log.rr,log.rr.lb,log.rr.ub,log.rr.se))
 }
 PredInt <- function(fit.rma)
 {
@@ -87,11 +101,11 @@ setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten")
 for (i in 1:length(unique(data.zika$.imp))) {
   d<-data.zika[data.zika$.imp==i,]
   inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=f.incidence(microcephaly,dataset.n)[1],ci.l<-f.incidence(microcephaly,dataset.n)[2],ci.u<-f.incidence(microcephaly,dataset.n)[3]))
-  colnames(inc)<-c("studyname","incidence","ci.l","ci.u")
   if(i==1) {inc.outcome<-inc}
   if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
 }
 #Replace 0's by 0.000001
+colnames(inc.outcome)<-c("studyname","incidence","ci.l","ci.u")
 inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
 inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
 
@@ -155,52 +169,61 @@ addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction in
 
 ########Relative risk########
 
-
 for (i in 1:length(unique(data$.imp))) {
   d<-data[data$.imp==i,]
-  
   for (j in 1:length(unique(d$studyname))) {
-    d2<-d[d$studyname==j]
-    table(d2$zikv_preg,d2$microcephaly)
-    cbind()
+    d2<-d[d$studyname==j,]
+    d2.rrtable<-table(d2$zikv_preg,d2$microcephaly_bin)
+    #Add continuity correction?
+    inc<-(c(unique(d2$studyname),f.rr(d2.rrtable)))
+    if(i==1 & j==1) {rr.outcome<-inc} else {rr.outcome<-rbind(rr.outcome,inc)}
   }
-  
-  
-  inc<-as.data.frame(d %>% group_by(studyname) %>% summarise(p=CS(x=d,cases="microcephaly_bin",exposure="zikv_preg")$df2$`Point estimate`[2],ci.l<-CS(x=d,cases="microcephaly_bin",exposure="zikv_preg")$df2$`95%CI ll`[2],ci.u<-CS(x=d,cases="microcephaly_bin",exposure="zikv_preg")$df2$`95%CI ul`[2]))
-  colnames(inc)<-c("studyname","RR","ci.l","ci.u")
-  if(i==1) {rr.outcome<-inc}
-  if(i>1) {rr.outcome<-rbind(rr.outcome,inc)}
 }
 rr.outcome
-CS(x=data,cases="microcephaly_bin",exposure="zikv_preg")
-temp$df2$`Point estimate`
-
-
-rr.table<-table(data$zikv_preg,data$microcephaly_bin)
-rr<-(rr.table[2,2]/sum(rr.table[2,]))/(rr.table[1,2]/sum(rr.table[1,]))
-rr.lb<-rr-1.96*
-
-
+#Remove all rows for which RR could not be calculated
+rr.outcome<-rr.outcome[!is.na(rr.outcome[,2]) & rr.outcome[,2]!=0 & !is.infinite(rr.outcome[,2]),]
+colnames(rr.outcome)<-c("studyname","rr","ci.l","ci.u","log.rr","log.ci.l","log.ci.u","log.se")
+rr.outcome<-as.data.frame(rr.outcome)
 #Pool with Rubins rules
-inc.outcome$log.incidence<-log(inc.outcome$incidence)
-inc.outcome$log.ci.l<-log(inc.outcome$ci.l)
-inc.outcome$log.ci.u<-log(inc.outcome$ci.u)
-inc.outcome$log.se<-(inc.outcome$log.ci.u-inc.outcome$log.ci.l)/(2*1.96)
-
-pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
-colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
-                        "logit.se","logit.ci.lb","logit.ci.ub")
-for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
-  a<-inc.outcome[inc.outcome$studyname==i,]
+pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data$studyname)), ncol = 8))
+colnames(pool.rubin)<-c("studyname","log.rr","within","between","log.var",
+                        "log.se","log.ci.lb","log.ci.ub")
+for (i in 1:max(rr.outcome$studyname,na.rm=T)) {
+  a<-rr.outcome[rr.outcome$studyname==i,]
   pool.rubin$studyname[i]<-i
-  pool.rubin$logit.abs[i] <- mean(a$logit.incidence)
-  pool.rubin$within[i] <- mean(a$logit.se^2)
-  pool.rubin$between[i] <- (1 + (1/m)) * var(a$logit.incidence)
-  pool.rubin$logit.var[i] <- pool.rubin$within[i] + pool.rubin$between[i]
-  pool.rubin$logit.se[i] <- sqrt(pool.rubin$logit.var[i])
-  pool.rubin$logit.ci.lb[i] <- pool.rubin$logit.abs[i] + qnorm(0.05/2)     * pool.rubin$logit.se[i]
-  pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
+  pool.rubin$log.rr[i] <- mean(a$log.rr)
+  pool.rubin$within[i] <- mean(a$log.se^2)
+  pool.rubin$between[i] <- (1 + (1/m)) * var(a$log.rr)
+  pool.rubin$log.var[i] <- pool.rubin$within[i] + pool.rubin$between[i]
+  pool.rubin$log.se[i] <- sqrt(pool.rubin$log.var[i])
+  pool.rubin$log.ci.lb[i] <- pool.rubin$log.rr[i] + qnorm(0.05/2)     * pool.rubin$log.se[i]
+  pool.rubin$log.ci.ub[i] <- pool.rubin$log.rr[i] + qnorm(1 - 0.05/2) * pool.rubin$log.se[i]
 }
+
+#Recode studyname
+pool.rubin$studyname<-as.factor(pool.rubin$studyname)
+levels(pool.rubin$studyname)<-studynames
+
+rr.outcome<-pool.rubin
+rr.outcome$rr<-exp(rr.outcome$log.rr)
+rr.outcome$ci.lb<-exp(rr.outcome$log.ci.lb)
+rr.outcome$ci.ub<-exp(rr.outcome$log.ci.ub)
+
+#Pool results: two-stage meta-analysis
+fit.rma<-rma(yi = log.rr, sei = log.se, method = "REML", test = "knha", 
+             data = rr.outcome)
+pool.outcome<-data.frame(matrix(NA, nrow = 1, ncol = 8))
+colnames(pool.outcome)<-c("log.rr","log.se","log.ci.lb","log.ci.ub",
+                          "rr","ci.lb","ci.ub","n.studies")
+pool.outcome$log.rr<-fit.rma$beta
+pool.outcome$log.se<-fit.rma$se
+pool.outcome$log.ci.lb<-fit.rma$ci.lb
+pool.outcome$log.ci.ub<-fit.rma$ci.ub
+pool.outcome$rr<-exp(pool.outcome$log.rr[[1]])
+pool.outcome$ci.lb<-exp(pool.outcome$log.ci.lb)
+pool.outcome$ci.ub<-exp(pool.outcome$log.ci.ub)
+pool.outcome$n.studies<-fit.rma$k
+
 
 ##################################################################################
 ###################################Miscarriage###################################
