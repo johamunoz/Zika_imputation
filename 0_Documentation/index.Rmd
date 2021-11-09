@@ -89,11 +89,9 @@ The here package allows us to define the relative paths of each of subfolders. S
 
 ```{r}
 data <- as.data.table(read.csv(here('1_Input_data','ALLDATASET_preliminary.csv')))
-index <- as.data.table(readxl::read_xlsx(here('1_Input_data','Index.xlsx'),sheet="Sheet1")) #CSV file with the outcome, exposure and pregnant women from "20-20-20 key variables - ZIKV IPD-MA_June 7 2021.xlsx", same info but better to manipulate in R. 
-nindex <- as.data.table(readxl::read_xlsx(here('1_Input_data','Index.xlsx'),sheet="Sheet2")) #Specifies the order of list of variables included only in imputation model 
-index <- index[Bkey%in%c(1,2)]  #both Lauren and Anneke list
-vary <- c("studyname",index[,Variable]) # Select only variables with FINAL KEY VAR==1 (Key)
-data <- as.data.table(data[,..vary])
+infoexp <- as.data.table(readxl::read_xlsx(here('1_Input_data','Infoexp.xlsx'),sheet="Table")) #CSV file with the outcome, exposure and pregnant women from "20-20-20 key variables - ZIKV IPD-MA_June 7 2021.xlsx", same info but better to manipulate in R. 
+var_inc<-infoexp[Inclusion==1,Variable] #Variables to work with
+data<-as.data.table(data[,..var_inc]) #Filter dataset
 ```
 
 ## 1.1. Initial data cleanup
@@ -121,6 +119,8 @@ data[data == 777] <-  NA
 data[data == 888] <-  NA
 data[data == 999] <-  NA
 data[data == 9999] <-  NA
+data[,Comb_id:=paste(studyname,mid_original,childid_original,sep="-")] #combinated ID from study mother and child id
+
 ```
 
 
@@ -415,7 +415,7 @@ Many of these variables have a high proportion of missing values which can be av
 
 We start by combining the information of the variables miscarriage, loss, loss_etiology, birth.
 ```{r}
-data[,birth:=ifelse(!is.na(birth_ga),1,NA)] #birth indicator from birthga
+data[,birth:=ifelse(!is.na(birth_ga),1,NA)] #birth indicator from bithga
 data[,birth2:=ifelse(!is.na(inf_term),1,NA)] #birth indicator from inf_term
 data[,bdeath:=ifelse(birth==1|birth2==1,0,NA)]
 data[,bdeath_ga:=ifelse(!is.na(endga),endga,ifelse(!is.na(loss_ga),loss_ga,ifelse(!is.na(miscarriage_ga),miscarriage_ga,NA)))]
@@ -439,16 +439,18 @@ data[bdeath==1&bdeath_ga>=20,c("miscarriage","loss","loss_etiology","birth","bde
 Observations with loss =1 and birth=1, allows us to specify other variables
 ```{r}
 data[loss==1&is.na(loss_etiology),c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,1,2,0,1)]
-data[birth==1&is.na(loss_etiology),c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
+data[birth==1&loss_etiology==1&inf_vital_status==0,c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
 ```
 Then we used inf_vital status to ratify information or correct contradictory observations
 ```{r}
+data[birth==1&is.na(loss_etiology),c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
 data[miscarriage==0&loss==0&is.na(birth)&inf_vital_status==0,c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
-data[birth==1&loss_etiology==1&inf_vital_status==0,c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
 data[birth==0&inf_vital_status==0,c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
+
 ```
 Finally we use the inf_term and induceabort to correct or compleate some observations
-````{r}
+
+```{r}
 data[!is.na(data$inf_term),c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,0,0,1,0)]
 data[inducedabort==1&birth==1,c("miscarriage","loss","loss_etiology","birth","bdeath"):= list(0,1,2,0,1)]
 ```
@@ -531,11 +533,12 @@ sort(outlist)
 ## 4.2. Percentage of missingness for each variable across studies
 We calculate the proportion of missingness of each variable on each study and place it in a matrix format that allows us to plot it.
 
-````{r}
-nindex1 <- nindex[order(order),][!is.na(order)] # order according categories:  pregnancy women, exposure, outcome
-pldata<-data[, .SD, .SDcols = nindex1$names]
-dmatrix<-pldata[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname] #calulate % missingness
-dmatrix2<-melt(dmatrix,id.vars="studyname") # change study name to display
+```{r}
+var_inc<-infoexp[order(Order),][!is.na(Inclusion)]$Variable
+pldata<-data[, .SD, .SDcols = var_inc]
+
+dmatrix<-pldata[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname] #matrix of % of missingness
+dmatrix2<-melt(dmatrix,id.vars="studyname")
 dmatrix2[,name:=fcase(
   studyname=="Brazil_RiodeJaneiro_CunhaPrata","Brazil\nCunhaPrata",
   studyname=="Brazil_SP_RibeiraoPreto_Duarte","Brazil\n Duarte",
@@ -550,16 +553,13 @@ dmatrix2[,name:=fcase(
 )]
 
 dmatrix2[,miss:=round(value*100,1)]
-dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)] # set the text displayed by place the cursor over especific observation.
+dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
+
 ```
 
 The ploty package allows users to zoom out sections of the plot, by placing the cursor over an observation it displays the % missing by study.
 
 ```{r,fig.width=10, fig.height=8}
-names<-nindex1$names
-color<-ifelse(nindex1$Mod_var == 1, "red", "black")
-nindex1$color<-color
-
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
   geom_tile() +
   scale_fill_gradientn(colours=c("green","yellow","red")) +
