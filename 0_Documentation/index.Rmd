@@ -1,3 +1,9 @@
+---
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
 <script>
    $(document).ready(function() {
      $head = $('#header');
@@ -10,7 +16,7 @@
 ---
 title: "Zika imputation process"
 author: "Julius Center for Health Sciences and Primary Care | Epidemiology Methods Team" 
-output: html_document
+output:html_document
 ---
 
 ```{r setup, include=FALSE}

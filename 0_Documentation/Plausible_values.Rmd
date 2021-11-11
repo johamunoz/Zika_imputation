@@ -1,0 +1,39 @@
+---
+title: "Plausible values and creation of new variables"
+output: word_document
+---
+
+```{r echo=FALSE, results='hide',message=FALSE}
+rm(list=ls()) # clean environment
+
+# Data manipulation packages
+library(here) 
+library(data.table)
+library(dplyr)
+```
+
+
+```{r echo=FALSE, results='hide',message=FALSE}
+data <- as.data.table(read.csv(here('1_Input_data','ALLDATASET_preliminary.csv')))
+infoexp <- as.data.table(readxl::read_xlsx(here('1_Input_data','Infoexp.xlsx'),sheet="Table")) #CSV file with the outcome, exposure and pregnant women from "20-20-20 key variables - ZIKV IPD-MA_June 7 2021.xlsx", same info but better to manipulate in R. 
+var_inc<-infoexp[Inclusion==1,Variable] #Variables to work with
+data<-as.data.table(data[,..var_inc]) #Filter dataset
+```
+
+## Zika Project
+
+Under this document we describe the plausible values consider for each of the variables used in the imputation model. In addition we provide the rules that we applied on the creation of additonal variables requiered for the imputation model.
+
+```{r cars}
+infoexp[Type=="Outcome"]
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
