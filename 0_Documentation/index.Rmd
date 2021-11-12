@@ -1,9 +1,9 @@
 ---
-output:
-  html_document: default
-  word_document: default
-  pdf_document: default
+title: "Zika imputation process"
+author: "Julius Center for Health Sciences and Primary Care | Epidemiology Methods Team" 
+output: html_document
 ---
+
 <script>
    $(document).ready(function() {
      $head = $('#header');
@@ -11,13 +11,6 @@ output:
    });
 </script>
 
-
-
----
-title: "Zika imputation process"
-author: "Julius Center for Health Sciences and Primary Care | Epidemiology Methods Team" 
-output:html_document
----
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -94,7 +87,8 @@ library(growthstandards)
 The here package allows us to define the relative paths of each of subfolders. So authors do not require to define own paths. Once the file is placed in the right folder, it can be loaded automatically.
 
 ```{r}
-data <- as.data.table(read.csv(here('1_Input_data','ALLDATASET_preliminary.csv')))
+
+data <- as.data.table(read.csv(here('1_Input_data','pilot10_08SEP21_withmetadata.csv'), stringsAsFactors=FALSE, fileEncoding="latin1"))
 infoexp <- as.data.table(readxl::read_xlsx(here('1_Input_data','Infoexp.xlsx'),sheet="Table")) #CSV file with the outcome, exposure and pregnant women from "20-20-20 key variables - ZIKV IPD-MA_June 7 2021.xlsx", same info but better to manipulate in R. 
 var_inc<-infoexp[Inclusion==1,Variable] #Variables to work with
 data<-as.data.table(data[,..var_inc]) #Filter dataset
