@@ -1,5 +1,5 @@
 ---
-title: "Plausible values and creation of new variables"
+title: "Plausibility bounds"
 output: pdf_document
 ---
 
@@ -65,8 +65,8 @@ data[,Comb_id:=paste(studyname,mid_original,childid_original,sep="-")] #combinat
 
 Under this document we describe the plausible values consider for each of the variables used in the imputation model. In addition we provide the rules that we applied on the creation of additional variables required for the imputation model.
 
-## Considered plausible ranges
-The following table describes the continuous variables and the time-related variables we require to run the imputation model. There you can see for each variable, the classification, the units and the plausible range (minimum, maximum). We set all values outside the plausible range as NA.
+## Plausibility bounds 
+The following table describes the plausibility bounds for the continuous variables and the time-related variables used in the imputation process. There you can see for each variable, the classification, the units and the plausibility bounds (minimum, maximum). We set all values outside the plausible bounds as NA.
 ```{r functions,echo=F}
 Boundaries<-infoexp[Inclusion==1&Vtype%in%c("C","T"),c("Type","Variable","Vtype","Units","Min","Max")]
 Boundaries[,Vtype:=ifelse(Vtype=="C","Continuous","Time")]
@@ -81,7 +81,7 @@ knitr::kable(Boundaries,
 
 ```
 
-By running this code, it is generated the "obs_to_check.RData" file with the observations outside the plausible range, it can be found in the "3_Output_data", there is an additional column called "Var_to_check" that indicates the variable with implausible values for each observation.
+By running this code, it is automatically generated the "obs_to_check.RData" file with the observations outside the plausibility range, it can be found in the "3_Output_data" folder. Inside obs_to_check dataset, there is an additional column called "Var_to_check" that indicates the variable with implausible values for each observation.
 
 ```{r,echo=FALSE}
 boundvar=Boundaries$Variable
@@ -89,8 +89,8 @@ obs_to_check<-NULL
 for(var in boundvar){
   data$var_bound<-data[,..var]
   data$Var_to_check<-var
-  Min=Boundaries[Variable==var]$Min
-  Max=Boundaries[Variable==var]$Max
+  Min=as.numeric(Boundaries[Variable==var]$Min)
+  Max=as.numeric(ifelse(is.na(Boundaries[Variable==var]$Max),1/0,Boundaries[Variable==var]$Max))
   data_out<-data[var_bound<=Min|var_bound>=Max]
   obs_to_check<-rbind(obs_to_check,data_out)
 }    
@@ -99,4 +99,4 @@ save(obs_to_check,file=here('3_Output_data','obs_to_check.RData'))
 ```
 
 
-
+## Logic rules and discrepancies

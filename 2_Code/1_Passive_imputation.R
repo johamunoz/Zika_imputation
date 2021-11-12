@@ -27,6 +27,7 @@ library(growthstandards)
 
 base.dir <- dirname(dirname(rstudioapi::getActiveDocumentContext()$path)) # set main base working directory
 setwd(base.dir)
+
 data<-as.data.table(read.csv('1_Input_data/pilot10_08SEP21_withmetadata.csv', stringsAsFactors=FALSE, fileEncoding="latin1"))
 
 infoexp<-as.data.table(readxl::read_xlsx("1_Input_data/Infoexp.xlsx",sheet="Table")) #Table were are specified the included variables according Expert opinion, also the includes the order in which variables are imputed 
@@ -58,7 +59,7 @@ data[zikv_elisa_date_1%in%c(""),zikv_elisa_date_1:=NA]
 data[symp_date%in%c(""),symp_date:=NA]
 data[,arb_clindiag:=ifelse(arb_clindiag==777,6,arb_clindiag)] # We set the NA value ("777") to a level "6" because we later use it for define CZS variable
 
-#1.1. Set to NA : 666,777,888,999 values----
+#1.2. Set to NA : 666,777,888,999 values----
 data[data==""] <-NA
 data[data==666] <-  NA
 data[data==777] <-  NA
@@ -67,17 +68,27 @@ data[data==999] <-  NA
 data[data==9999] <-  NA
 
 data[,Comb_id:=paste(studyname,mid_original,childid_original,sep="-")] #combinated ID from study mother and child id
-#1.2. Check outcome variables----
-data[,inf_weight:=ifelse(inf_weight>6000|inf_weight<100,NA,inf_weight)]
+
+# 1.3. Set to NA continuos and time variables out of the boundaries
+Boundaries<-infoexp[Inclusion==1&Vtype%in%c("C","T"),c("Type","Variable","Vtype","Units","Min","Max")]
+Boundaries[,Max:=ifelse(is.na(Max),"Inf",Max)]
+boundvar=Boundaries$Variable
+for(var in boundvar){
+  data$var_bound<-data[,..var]
+  Min=as.numeric(Boundaries[Variable==var]$Min)
+  Max=as.numeric(ifelse(is.na(Boundaries[Variable==var]$Max),1/0,Boundaries[Variable==var]$Max))
+  data[var_bound<=Min|var_bound>=Max,(var):=NA]
+}  
+
+#1.4. Check categorical variables----
+
 data[,inf_sex:=ifelse(inf_sex==3,NA,inf_sex)] #3= NA
-data[inf_length<18,inf_length:=NA] #only babies with length bigger than 18 cm
-data[inf_head_circ_birth==0,inf_head_circ_birth:=NA] #babies with 0 circumference
 data[,endga:=ifelse(!is.na(endga),endga,birth_ga)] #end ga has same values as birthga.
 data[fet_us_micro_tri2==1|fet_us_micro_tri3==1,microcephaly_bin:=1]
-data[loss_etiology==4,loss_etiology:=NA]
+#data[loss_etiology==4,loss_etiology:=NA]
 
 
-#1.3. Check exposures----
+#1.5. Check exposures----
 
 #Studies including only women with zikv infection: Brazil_BahiaPaudaLima_Costa Brazil_SP_RibeiraoPreto_Duarte 
 #Brazil_RiodeJaneiro_CunhaPrata Colombia_Mulkey FrenchGuiana_Pomar Spain_Soriano TrinidadTobago_Sohan
@@ -104,50 +115,51 @@ data[, .(count = .N,
 #6:           TrinidadTobago_Sohan   104      83       3     18         1-2  4 removed inclusion criteria
 #10:                    USA_Mulkey    95      61      17     17         0
 
+
+
+
 #Studies that includes only woman with zika infection: Check with Diana and Mabell, look previous table
 data[studyname%in%zik_inc,zik_preg:=1]
-data[ miscarriage_ga<=0,miscarriage_ga:=NA]# codebook assigned to 666
-data[ loss_ga<=0,loss_ga:=NA]# codebook assigned to 666
-data[ birth_ga<=0,birth_ga:=NA]# codebook assigned to 666       
-data[ zikv_pcr_ga_1<=0,zikv_pcr_ga_1:=NA] # codebook assigned to 666
-data[ zikv_elisa_ga_1<=0,zikv_elisa_ga_1:=NA] # codebook assigned to 666
-data[ zikv_ga<=0,zikv_ga:=NA]# codebook assigned to 666
-data[ symp_ga<=0,symp_ga:=NA]# codebook assigned to 666
-data[ arb_clindiag_ga<=0,arb_clindiag_ga:=NA]# codebook assigned to 666
 
 
 #Zika test
-#data[,zikv_ga_min:=apply(data[,c("zikv_elisa_ga_1","zikv_pcr_ga_1")], 1, min, na.rm = TRUE)]
-#data[,zikv_ga_min:=ifelse(is.infinite(zikv_ga_min),NA,zikv_ga_min)]
-#data[,zikv_gan:=ifelse(is.na(zikv_ga),zikv_ga_min,zikv_ga_min)]
-#data[,zikv_gan:=ifelse(is.na(zikv_ga),zikv_ga_min,zikv_ga_min)]
-#data[,zikv_ga_min:=NULL]
-#data[,zikv_trin:=ifelse(is.na(zikv_gan),zikv_tri,ifelse(zikv_gan<13,0,ifelse(zikv_gan<=27,1,2)))]
+data[,zikv_ga_min:=apply(data[,c("zikv_elisa_ga_1","zikv_pcr_ga_1")], 1, min, na.rm = TRUE)]
+data[,zikv_ga_min:=ifelse(is.infinite(zikv_ga_min),NA,zikv_ga_min)]
+data[,zikv_gan:=ifelse(is.na(zikv_ga),zikv_ga_min,zikv_ga_min)]
+data[,zikv_ga:=ifelse(is.na(zikv_ga),zikv_ga_min,zikv_ga_min)]
+data[,zikv_tri:=ifelse(is.na(zikv_ga),zikv_tri,ifelse(zikv_ga<13,0,ifelse(zikv_ga<=27,1,2)))]
 
 
 #checktable<-as.data.table(table(elisa=data$zikv_elisa_res_1,elisa_everpos=data$zikv_elisa_everpos,pcr=data$zikv_pcr_res_1,zik=data$zikv_preg,arb=data$arb_clindiag,useNA = "always"))
 #checktable[N>0] #ask for observations where zik value 0 and other there is 1 aroun 273..which has more priority on information?
 
-#Zika symptoms
-#data[,symp_gan:=ifelse(is.na(symp_ga),arb_clindiag_ga,symp_ga)]
-#data[,symp_trin:=ifelse(is.na(symp_gan),symp_tri,ifelse(symp_gan<13,0,ifelse(symp_gan<=27,1,2)))]
-
-#checktable<-as.data.table(table(arb=data$arb_symp,fev=data$fever,rash=data$rash,con=data$conjunctivitis,useNA="always"))
-#checktable[N>0]   
-#table(data$arb_clindiag_plus,data$arb_clindiag,useNA = "always")
 
 #1.4.Check Pregnant woman variables---
-data[age<14,age:=NA] #  ask "Spain_Soriano" for this age records, for the moment assigned to NA
 data[tobacco==3,tobacco:=NA]
 
-
 # 2. Microcephaly correction----
+#2.0. Correction at baseline value----
 data[!is.na(inf_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = birth_ga*7, hcircm=inf_head_circ_birth,sex=ifelse(inf_sex== 0, "Male","Female")))]  
 data[, microcephaly2:= ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))]
 data[is.na(microcephaly),microcephaly:=microcephaly2]
 checkmic<-as.data.table(table(micbin=data$microcephaly_bin,mic1=data$microcephaly,mic2=data$microcephaly2,useNA = "always"))
 checkmic[N>0]  #check this inconsistency.. i prioririze microcephaly variable
 data[,microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,microcephaly_bin))]
+
+#2.1. Postnatal microcephaly---
+for(t in 1:3){
+  microvar<-paste0("microcephaly_bin_fu",t)
+  var_age<-paste0("inf_head_circ_age_fu",t)
+  var_circ<-paste0("inf_head_circ_age_fu",t)
+  data$age_fu=data[,..var_age]*30
+  data$hcirc_fu=data[,..var_circ]
+  data[!is.na(inf_sex), hcircm2zscore_fu:=as.numeric(who_hcircm2zscore(agedays =age_fu, hcircm=hcirc_fu,sex=ifelse(inf_sex== 0, "Male","Female")))]  
+  data[,micro_fu:= ifelse(hcircm2zscore_fu<=-3,2,ifelse(hcircm2zscore_fu<=-2,1,ifelse(hcircm2zscore_fu<=2,0,ifelse(!is.na(hcircm2zscore_fu),3,NA))))]
+  data[,micro_bin_fu:=ifelse(micro_fu%in%c(0,3),0,ifelse(micro_fu%in%c(1,2),1,NA))]
+  data[, (microvar):= micro_bin_fu]
+}
+data[,postsum:=rowSums(data[,c("microcephaly_bin_fu1","microcephaly_bin_fu2","microcephaly_bin_fu3")],na.rm=T)]
+data[,microcephaly_posn:=ifelse(is.na(microcephaly_bin_fu1)&is.na(microcephaly_bin_fu2)&is.na(microcephaly_bin_fu3),NA,ifelse(postsum>0&microcephaly_bin==0,1,0))]
 
 
 # 3. CZN correction----
@@ -226,8 +238,8 @@ col1<-c(col1,"anyabnormality_czs")
 
 
 #Create a czs variable according to WHO definition
-#WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
-data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & data$microcephaly==2 & data$anyabnormality_czs==1,1,
+#WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly at birth AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
+data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & data$microcephaly==2 &data$anyabnormality_czs==1,1,
                    ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
 data[,czsn:=ifelse(is.na(czs),czs2,czs)]
 data[,czs2:=NULL]
@@ -268,7 +280,7 @@ data[,birth:=NULL]
 data[,birth2:=NULL]
 
 
-
+gat0<-data[bdeath==1&micro]
 #5. Creation of additional covariates----
 
 #5.1. Maternal prescription drug use----
@@ -309,14 +321,16 @@ data[,modificated1:=ifelse(arb_clindiag==0|arb_clindiag==1,0,ifelse(!is.na(arb_c
 col1<-c("modificated1","denv_preg","chikv_preg")
 data[,arb_preg_nz:=checkcon(data=data,col1=col1)]
 
-colnames(data)
+table(micro=data$microcephaly_bin,bdeath=data$bdeath)
+
+
 
 #6. Interactive plot ------
 var_inc<-infoexp[order(Order),][!is.na(Inclusion)]$Variable
 pldata<-data[, .SD, .SDcols = var_inc]
 
 dmatrix<-pldata[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname] #matrix of % of missingness
-dmatrix2<-melt(dmatrix,id.vars="studyname")
+dmatrix2<-as.data.table(melt(dmatrix,id.vars="studyname"))
 dmatrix2[,name:=fcase(
   studyname=="Brazil_RiodeJaneiro_CunhaPrata","Brazil\nCunhaPrata",
   studyname=="Brazil_SP_RibeiraoPreto_Duarte","Brazil\n Duarte",
@@ -332,6 +346,8 @@ dmatrix2[,name:=fcase(
 
 dmatrix2[,miss:=round(value*100,1)]
 dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
+
+
 
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
   geom_tile() +
@@ -363,9 +379,8 @@ infoexp[,Nstudycomp:=as.numeric(Nstudycomp)]
 infoexp[,Imputation2 := rowSums(.SD, na.rm = TRUE), .SDcols = c("Inclusion", "Additionals", "outflux2","Nstudycomp")]
 
 write.table(infoexp,file="5_Internal_support/Infoselection.csv",sep=";")
-
-
 selecvar<-infoexp[order(Order)][Imputation2>=3,]$Variable #Vector with ordered selected variables
+
 fdata<-data[,..selecvar]
 save(fdata, file = "3_Output_data/finaldata.RData")
 
@@ -400,6 +415,25 @@ p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
 
 ggplotly(p, tooltip="text")
 
+
+
+
+# MNAR for microcephaly
+table(micro=data$microcephaly_bin,bdeath=data$bdeath,useNA = "always")
+sdata<-data[studyname%in%c("Brazil_BahiaPaudaLima_Costa","Brazil_RiodeJaneiro_CunhaPrata","Spain_Bardaji","Spain_Soriano","TrinidadTobago_Sohan"," USA_Mulkey")]
+colnames(sdata)
+colned=c("studyname","zik_preg","drugs_prescr","inducedabort","age", "parity", "gravidity","inducedabort", "alcohol", "drugs","tobacco", "vaccination","eclampsia","storch_patho","arb_symp","zikv_preg","microcephaly_bin")
+sdata<-sdata[,..colned]
+data[,ry:=ifelse(is.na(microcephaly_bin),0,1)]
+data<-sdata[!is.na(parity)]
+data[,firstp:=ifelse(parity==0,1,0)]
+library(logistf)
+
+fit5<-glm(ry~parity+age+storch_patho+arb_symp+arb_ever+inducedabort+zikv_preg+arb_symp+storch_patho,data=sdata,family=binomial("logit"))
+fit<-logistf(ry~firstp+age+arb_preg_nz+arb_symp+fever+rash+zikv_preg+storch_patho+vaccination,data=data, pl=FALSE,control=logistf.control(maxit=10000, maxstep=100))
+fit<-logistf(microcephaly_bin~firstp+age+arb_symp+arb_preg_nz+fever+rash+zikv_preg+storch_patho+vaccination,data=data, pl=FALSE,control=logistf.control(maxit=10000, maxstep=100))
+
+summary(fit)
 
 
 
