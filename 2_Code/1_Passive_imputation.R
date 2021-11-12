@@ -321,16 +321,17 @@ data[,modificated1:=ifelse(arb_clindiag==0|arb_clindiag==1,0,ifelse(!is.na(arb_c
 col1<-c("modificated1","denv_preg","chikv_preg")
 data[,arb_preg_nz:=checkcon(data=data,col1=col1)]
 
-table(micro=data$microcephaly_bin,bdeath=data$bdeath)
-
-
 
 #6. Interactive plot ------
 var_inc<-infoexp[order(Order),][!is.na(Inclusion)]$Variable
 pldata<-data[, .SD, .SDcols = var_inc]
 
+totalval<-as.data.table(table(data$studyname))
+colnames(totalval)<-c("studyname","N")
 dmatrix<-pldata[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname] #matrix of % of missingness
 dmatrix2<-as.data.table(melt(dmatrix,id.vars="studyname"))
+dmatrix2<-merge(dmatrix2,totalval,by="studyname")
+
 dmatrix2[,name:=fcase(
   studyname=="Brazil_RiodeJaneiro_CunhaPrata","Brazil\nCunhaPrata",
   studyname=="Brazil_SP_RibeiraoPreto_Duarte","Brazil\n Duarte",
@@ -344,9 +345,9 @@ dmatrix2[,name:=fcase(
   studyname=="USA_Mulkey"  ,"USA\nMulkey"
 )]
 
+dmatrix2[,name:=paste0(name,"\nN=",N)]
 dmatrix2[,miss:=round(value*100,1)]
 dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
-
 
 
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
