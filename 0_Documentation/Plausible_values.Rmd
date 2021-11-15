@@ -110,13 +110,55 @@ In case that is not specified the zikv_ga value for an observation, for which it
 if is.na (zikv_ga) then zikv_ga = min (zikv_pcr_ga_1,zikv_elisa_ga_1)
 
 
+# Creation of new variables
+On the following variables, we combine different variables in one general variable $x_{com}$in order to include the information in a simple way that help us to avoid any imputation convergence problem. For instance if we want to create a new Xm variable that combine information of $x_1$,$x_2$,...,$x_n$. 
+If for any of this $x_i$ variables with any response, there is the presence of a characteristic or a positive test $x_i==1$,then the new variable $x_{com}$ is assigned with a overall presence.
+  $$if (any (x_1==1, x_2==1,..x_n=1)) , then ,  x_{com}=1$$
+In case that no presence is found for all the $x_i$ variables with any response then the $x_{com}$ is assigened to no presence. $$if (all (x_1==0, x_2==0,..x_n=0)) , then ,  x_{com}=0$$
+If for certain patient, it was not recordered any value for all the considered $x_i$ variables then observation is assigned to NA.\\
+$$if (all (is.na(x_1), is.na(x_2),..is.na(x_n=1)) ,then,  x_{com}=NA$$
+
 # storch_patho
+Denotes the Intrauterine exposure to storch pathogens. It was created by combining the following variables with the previous explained rule. 
+
+- ifelse(storch==0,0,ifelse(!is.na(storch),1,0))]
+- storch_bin
+- toxo
+- toxo_treat
+- syphilis
+- syphilis_treat
+- varicella
+- parvo
+- rubella
+- cmv
+- herpes
+- listeria
+- chlamydia
+- gonorrhea
+- genitalwarts
 
 # arb_ever
 
+It refers to the presence of a prior arb virus infection, and it combines the following variables: 
+
+- ifelse(zikv_pcr_everpos==1,1,ifelse(zikv_pcr_everpos==0,0,NA))]
+- zikv_elisa_everpos
+- denv_ever
+- chikv_ever
+
 # flavi_alpha_virus
+This variable denotes the presence of concurrent or prior flavi- or alpha virus infection, and we used the following varibles to create it. 
+
+- ifelse(arb_clindiag_plus==0,0,ifelse(!is.na(arb_clindiag_plus),1,0))
+- ifelse(arb_clindiag!=0&arb_clindiag!=1,0,ifelse(!is.na(arb_clindiag),1,0))
+- denv_ever
+- chikv_ever
 
 # arb_preg_nz
 
+This variable is related to the presence of any arbo virus in the  current pregnancy without consider zika virus.
 
+- ifelse(arb_clindiag==0|arb_clindiag==1,0,ifelse(!is.na(arb_clindiag),1,NA))
+- denv_preg
+- chikv_preg
 
