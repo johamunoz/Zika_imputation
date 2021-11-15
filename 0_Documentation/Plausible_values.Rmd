@@ -99,4 +99,24 @@ save(obs_to_check,file=here('3_Output_data','obs_to_check.RData'))
 ```
 
 
-## Logic rules and discrepancies
+## Logic rules for exposures
+
+# Set to NA values
+SAS and R manage differently the NA values, to easy the imputation process we set to NA all the values with values equal to 666,777,888,999. Except for the arb_clindiag varaible, which "777" values were reasigned to a  "6" level as it is used later on to define the CZS variable.
+
+# Zika test time of measurement (zikv_ga)
+In case that is not specified the zikv_ga value for an observation, for which it was specified the time of measurement for the PCR "zikv_pcr_ga_1" or the elisa test "zikv_elisa_ga_1", we set the zikv_ga value with the date of measurment of the earliest test. 
+
+if is.na (zikv_ga) then zikv_ga = min (zikv_pcr_ga_1,zikv_elisa_ga_1)
+
+
+# storch_patho
+
+# arb_ever
+
+# flavi_alpha_virus
+
+# arb_preg_nz
+
+
+

@@ -1,252 +1,253 @@
-"Variable";"Type";"Lauren";"Anneke";"Inclusion";"Vtype";"Additionals";"Order";"Imputation1";"Definition";"Units";"outflux2";"Nstudycomp";"Imputation2"
-"1";"Comb_id";"ID";NA;NA;2;"STR";3;4;NA;"Combined ID (Study, Mother, Child)";NA;1;1;7
-"2";"abd_pain";"Exposure";NA;NA;NA;NA;NA;134;NA;"Abdominal pain present during the current episode of arboviral disease?";NA;0;NA;0
-"3";"age";"Pwoman";1;1;1;"C";NA;5;1;"Mother's age at baseline";"(years)";1;1;3
-"4";"alcohol";"Pwoman";1;NA;1;"B";NA;44;NA;"Maternal alcohol consumption during the current pregnancy";NA;0;1;2
-"5";"anyabnormality_czs";"Outcome";NA;NA;2;"B";NA;223;1;"Presence of any abnormality for czs calculation";NA;1;1;4
-"6";"arb_clindiag";"Exposure";1;NA;1;"CAT";NA;142;NA;"Clinical diagnosis of any arboviral disease during the current pregnanccy: ZIKV, DENV, CHIKV, other";NA;0;1;2
-"7";"arb_clindiag_ga";"Exposure";1;NA;1;"C";NA;144;NA;"GA at which the clinical diagnosis of arbovirused was made, either by LMP or ultrasound";NA;0;0;1
-"8";"arb_clindiag_plus";"Exposure";1;NA;1;"CAT";NA;143;NA;"If there were more than one arbovirus considered as diagnosis, indicate which ones?";NA;0;0;1
-"9";"arb_clindiag_tri";"Exposure";1;NA;1;"CAT";NA;145;NA;"Trimester at which the clinical diagnosis of arbovirused was made";NA;0;0;1
-"10";"arb_ever";"Exposure";NA;NA;2;"B";NA;164;1;"Presence of arbovirus ever";NA;1;1;4
-"11";"arb_preg_nz";"Exposure";NA;NA;2;"B";NA;166;1;"Presence of any arbovirus during pregnancy excluding zika";NA;0;1;3
-"12";"arb_symp";"Exposure";1;NA;1;"B";NA;118;1;"Did you have any arbovirus-related symptoms during the current pregnancy?";NA;1;1;3
-"13";"arb_symp_dur";"Exposure";NA;NA;NA;NA;NA;141;NA;"How long did your arboviral/ZIKV-related symptoms last during the current pregancy?";NA;0;NA;0
-"14";"arthralgia";"Exposure";NA;NA;NA;NA;NA;129;NA;"Joint pain/arthralgia present during the current pregnancy?";NA;0;NA;0
-"15";"arthralgia_n";"Exposure";NA;NA;NA;NA;NA;130;NA;"Number of episodes of Joint pain\arthralgia present during the current pregnancy?";NA;0;NA;0
-"16";"arthritis";"Exposure";NA;NA;NA;NA;NA;131;NA;"Presence of arthritis during the current pregnancy/current episode of arboviral disease?";NA;0;NA;0
-"17";"bdeath";"Outcome";NA;NA;2;"B";NA;176;1;"Indicator about final outcome of baby birth=0, death=1";NA;1;1;4
-"18";"bdeath_ga";"Outcome";NA;NA;2;"C";NA;177;1;"Gestational age at Bdeath event";"(weeks)";1;1;4
-"19";"birth_ga";"Outcome";1;NA;1;"C";-2;175;NA;"Gestational age in weeks at birth (live births) (note, value must be >=21 weeks)";NA;1;1;1
-"20";"bleed";"Exposure";NA;NA;NA;NA;NA;135;NA;"Bleeding (Any, nose, gums, stools) present during the current episode of arboviral disease?";NA;0;NA;0
-"21";"calcifications";"Outcome";1;NA;1;"B";2;217;1;"Brain calcifications detected during fetal or infant period using US, MRI, or CT";NA;0;1;4
-"22";"chikv_ever";"Exposure";NA;NA;1;"B";NA;155;NA;"Has the pregnant woman ever been diagnosed with CHIKV using any criteria (clinical or laboratory diagnosis or self-report)?";NA;0;0;1
-"23";"chikv_igg_res";"Exposure";NA;NA;NA;NA;NA;160;NA;"Qualitative result of pregnant woman's CHIKV IgG; during the current pregnancy";NA;0;NA;0
-"24";"chikv_igg_titer";"Exposure";NA;NA;NA;NA;NA;159;NA;"Pregnant woman's CHIKV IgG titer; during the current pregnancy";NA;0;NA;0
-"25";"chikv_igm_res";"Exposure";NA;NA;NA;NA;NA;158;NA;"Qualitative result of pregnant woman's CHIKV IgM; during the current pregnancy";NA;0;NA;0
-"26";"chikv_igm_titer";"Exposure";NA;NA;NA;NA;NA;157;NA;"Pregnant woman's CHIKV IgM titer; during the current pregnancy";NA;0;NA;0
-"27";"chikv_pcr_ct";"Exposure";NA;NA;NA;NA;NA;161;NA;"Pregnant woman's CHIKV PCR CT value; during the current pregnancy";NA;0;NA;0
-"28";"chikv_pcr_res";"Exposure";NA;NA;NA;NA;NA;162;NA;"Qualitative result of pregnant woman's CHIKV PCR ; during the current pregnancy";NA;0;NA;0
-"29";"chikv_preg";"Exposure";NA;NA;1;"B";NA;156;NA;"Was pregnant woman diagnosed with CHIKV during this pregnancy using any criteria (clinical or laboratory diagnosis or self report)?";NA;0;0;1
-"30";"childid_original";"ID";NA;NA;1;"STR";-3;3;NA;"Child ID";NA;0;0;-2
-"31";"chlamydia";"Pwoman";NA;NA;1;"B";NA;73;NA;"Diagnosis of chlamydia infectionduring the current pregnancy";NA;0;0;1
-"32";"chromoabn_risk";"Pwoman";NA;NA;NA;NA;NA;34;NA;"Indication for chromosomal abnormalities identified during this specific pregnancy (indication of RISK for choromosomal abnormalities NOT diagnosis)";NA;0;NA;0
-"33";"chromoabn_rx";"Pwoman";NA;NA;NA;NA;NA;35;NA;"Chromosomal abnormalities diagnosed during this specific pregnancy";NA;0;NA;0
+"Variable";"Type";"Lauren";"Anneke";"Inclusion";"Vtype";"Additionals";"Order";"Imputation1";"Definition";"Units";"Min";"Max";"outflux2";"Nstudycomp.x";"Imputation2";"Nstudycomp.y"
+"1";"Comb_id";"ID";NA;NA;2;"STR";3;4;NA;"Combined ID (Study, Mother, Child)";NA;NA;NA;1;1;7;"1"
+"2";"abd_pain";"Exposure";NA;NA;NA;NA;NA;134;NA;"Abdominal pain present during the current episode of arboviral disease?";NA;NA;NA;0;NA;0;NA
+"3";"age";"Pwoman";1;1;1;"C";NA;5;1;"Mother's age at baseline";"(years)";13;NA;1;1;3;"1"
+"4";"alcohol";"Pwoman";1;NA;1;"B";NA;44;NA;"Maternal alcohol consumption during the current pregnancy";NA;NA;NA;0;1;2;"1"
+"5";"anyabnormality_czs";"Outcome";NA;NA;2;"B";NA;223;1;"Presence of any abnormality for czs calculation";NA;NA;NA;1;1;4;"1"
+"6";"arb_clindiag";"Exposure";1;NA;1;"CAT";NA;142;NA;"Clinical diagnosis of any arboviral disease during the current pregnanccy: ZIKV, DENV, CHIKV, other";NA;NA;NA;0;1;2;"1"
+"7";"arb_clindiag_ga";"Exposure";1;NA;1;"T";NA;144;NA;"GA at which the clinical diagnosis of arbovirused was made, either by LMP or ultrasound";"(weeks)";0;NA;0;0;1;"0"
+"8";"arb_clindiag_plus";"Exposure";1;NA;1;"CAT";NA;143;NA;"If there were more than one arbovirus considered as diagnosis, indicate which ones?";NA;NA;NA;0;0;1;"0"
+"9";"arb_clindiag_tri";"Exposure";1;NA;1;"CAT";NA;145;NA;"Trimester at which the clinical diagnosis of arbovirused was made";NA;NA;NA;0;0;1;"0"
+"10";"arb_ever";"Exposure";NA;NA;2;"B";NA;164;1;"Presence of arbovirus ever";NA;NA;NA;1;1;4;"1"
+"11";"arb_preg_nz";"Exposure";NA;NA;2;"B";NA;166;1;"Presence of any arbovirus during pregnancy excluding zika";NA;NA;NA;0;1;3;"1"
+"12";"arb_symp";"Exposure";1;NA;1;"B";NA;118;1;"Did you have any arbovirus-related symptoms during the current pregnancy?";NA;NA;NA;1;1;3;"1"
+"13";"arb_symp_dur";"Exposure";NA;NA;NA;NA;NA;141;NA;"How long did your arboviral/ZIKV-related symptoms last during the current pregancy?";NA;NA;NA;0;NA;0;NA
+"14";"arthralgia";"Exposure";NA;NA;NA;NA;NA;129;NA;"Joint pain/arthralgia present during the current pregnancy?";NA;NA;NA;0;NA;0;NA
+"15";"arthralgia_n";"Exposure";NA;NA;NA;NA;NA;130;NA;"Number of episodes of Joint pain\arthralgia present during the current pregnancy?";NA;NA;NA;0;NA;0;NA
+"16";"arthritis";"Exposure";NA;NA;NA;NA;NA;131;NA;"Presence of arthritis during the current pregnancy/current episode of arboviral disease?";NA;NA;NA;0;NA;0;NA
+"17";"bdeath";"Outcome";NA;NA;2;"B";NA;176;1;"Indicator about final outcome of baby birth=0, death=1";NA;NA;NA;1;1;4;"1"
+"18";"bdeath_ga";"Outcome";NA;NA;2;"T";NA;177;1;"Gestational age at Bdeath event";"(weeks)";0;NA;1;1;4;"1"
+"19";"birth_ga";"Outcome";1;NA;1;"T";-2;175;NA;"Gestational age in weeks at birth (live births) (note, value must be >=21 weeks)";"(weeks)";0;NA;1;1;1;"1"
+"20";"bleed";"Exposure";NA;NA;NA;NA;NA;135;NA;"Bleeding (Any, nose, gums, stools) present during the current episode of arboviral disease?";NA;NA;NA;0;NA;0;NA
+"21";"calcifications";"Outcome";1;NA;1;"B";2;217;1;"Brain calcifications detected during fetal or infant period using US, MRI, or CT";NA;NA;NA;0;1;4;"1"
+"22";"chikv_ever";"Exposure";NA;NA;1;"B";NA;155;NA;"Has the pregnant woman ever been diagnosed with CHIKV using any criteria (clinical or laboratory diagnosis or self-report)?";NA;NA;NA;0;0;1;"0"
+"23";"chikv_igg_res";"Exposure";NA;NA;NA;NA;NA;160;NA;"Qualitative result of pregnant woman's CHIKV IgG; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"24";"chikv_igg_titer";"Exposure";NA;NA;NA;NA;NA;159;NA;"Pregnant woman's CHIKV IgG titer; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"25";"chikv_igm_res";"Exposure";NA;NA;NA;NA;NA;158;NA;"Qualitative result of pregnant woman's CHIKV IgM; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"26";"chikv_igm_titer";"Exposure";NA;NA;NA;NA;NA;157;NA;"Pregnant woman's CHIKV IgM titer; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"27";"chikv_pcr_ct";"Exposure";NA;NA;NA;NA;NA;161;NA;"Pregnant woman's CHIKV PCR CT value; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"28";"chikv_pcr_res";"Exposure";NA;NA;NA;NA;NA;162;NA;"Qualitative result of pregnant woman's CHIKV PCR ; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"29";"chikv_preg";"Exposure";NA;NA;1;"B";NA;156;NA;"Was pregnant woman diagnosed with CHIKV during this pregnancy using any criteria (clinical or laboratory diagnosis or self report)?";NA;NA;NA;0;0;1;"0"
+"30";"childid_original";"ID";NA;NA;1;"STR";-3;3;NA;"Child ID";NA;NA;NA;0;0;-2;"0"
+"31";"chlamydia";"Pwoman";NA;NA;1;"B";NA;73;NA;"Diagnosis of chlamydia infectionduring the current pregnancy";NA;NA;NA;0;0;1;"0"
+"32";"chromoabn_risk";"Pwoman";NA;NA;NA;NA;NA;34;NA;"Indication for chromosomal abnormalities identified during this specific pregnancy (indication of RISK for choromosomal abnormalities NOT diagnosis)";NA;NA;NA;0;NA;0;NA
+"33";"chromoabn_rx";"Pwoman";NA;NA;NA;NA;NA;35;NA;"Chromosomal abnormalities diagnosed during this specific pregnancy";NA;NA;NA;0;NA;0;NA
 "34";"chromoabn_screen";"Pwoman";NA;NA;NA;NA;NA;32;NA;"1=NIPT with karyotyping (Non-invasive prenatal testing with karyotying)
 2= Amniocentesis with karyotyping
 3= chorionic villus sampling with karyotyping
 4=chromosomal microarrays
 777=Other
 888=Not measured by the study
-999=Missing";NA;0;NA;0
-"35";"chromoabn_test";"Pwoman";NA;NA;NA;NA;NA;33;NA;"How did the study diagnose chromosomal abnormalities during the pregnancy?";NA;0;NA;0
-"36";"chromoabn_test_oth";"Pwoman";NA;NA;NA;NA;NA;36;NA;"Specification of other tests used to identify chromosomal abnormalities during the current preganncy.";NA;0;NA;0
-"37";"cmv";"Pwoman";NA;NA;1;"B";NA;70;NA;"Intrauterine exposure to cytomegalovirus/CMV infection (TORCH pathogen) during the current pregnancy";NA;0;0;1
-"38";"conjunctivitis";"Exposure";1;NA;1;"B";NA;125;1;"Presence of Conjunctivitis during the current pregnancy";NA;1;1;3
-"39";"conjunctivitis_n";"Exposure";NA;NA;NA;NA;NA;126;NA;"Number of conjunctivitis episodes  during preganncy";NA;0;NA;0
-"40";"corticalatrophy";"Outcome";1;NA;1;"B";2;216;1;"Cortical atrophy detected during fetal or infant period using US, MRI, or CT";NA;0;1;4
-"41";"czs";"Outcome";1;1;1;"B";NA;226;NA;"Diagnosis of congenital Zika syndrome (as measured by the study)";NA;0;1;2
-"42";"czsn";"Outcome";NA;NA;2;"B";2;227;1;"CZS obtained by using the WHO definition and clinic diagnosis.";NA;0;1;5
-"43";"denv_ever";"Exposure";1;NA;1;"B";NA;146;NA;"Has the pregnant woman ever been diagnosed with DENV using any criteria (clinical, laboratory, self-report)?";NA;0;0;1
-"44";"denv_igg_res";"Exposure";NA;NA;NA;NA;NA;151;NA;"Qualitative result of pregnant woman's DENV IgG; during the current pregnancy";NA;0;NA;0
-"45";"denv_igg_titer";"Exposure";NA;NA;NA;NA;NA;150;NA;"Pregnant woman's DENV IgG titer; during the current pregnancy";NA;0;NA;0
-"46";"denv_igm_res";"Exposure";NA;NA;NA;NA;NA;149;NA;"Qualitative result of pregnant woman's DENV IgM; during the current pregnancy";NA;0;NA;0
-"47";"denv_igm_titer";"Exposure";NA;NA;NA;NA;NA;148;NA;"Pregnant woman's DENV IgM titer; during the current pregnancy";NA;0;NA;0
-"48";"denv_ns1_res";"Exposure";NA;NA;NA;NA;NA;154;NA;"Qualitative result of pregnant woman's DENV NS1; during the current pregnancy";NA;0;NA;0
-"49";"denv_pcr_ct";"Exposure";NA;NA;NA;NA;NA;152;NA;"Pregnant woman's DENV PCR CT value; during the current pregnancy";NA;0;NA;0
-"50";"denv_pcr_res";"Exposure";NA;NA;NA;NA;NA;153;NA;"Qualitative result of pregnant woman's DENV PCR; during the current pregnancy";NA;0;NA;0
-"51";"denv_preg";"Exposure";1;NA;1;"B";NA;147;NA;"Was pregnant woman diagnosed with DENV during this pregnancy using any criteria (clinical or laboratory diagnosis or self report)?";NA;0;1;2
-"52";"drugs";"Pwoman";1;NA;1;"B";NA;45;NA;"Current maternal (illicit) drug use or opioid substitution therapy (during pregnancy)";NA;0;0;1
-"53";"eclampsia";"Pwoman";NA;1;1;"B";3;58;1;"Eclampsia";NA;0;0;4
-"54";"educ";"Pwoman";NA;1;1;"CAT";3;8;1;"Mother's highest level of education received";NA;0;1;5
-"55";"endga";"Outcome";1;NA;1;"C";-2;174;NA;"Gestational age at the end of the pregnancy regardless of pregnancy outcome or etiology";NA;1;1;1
-"56";"ethnicity";"Pwoman";NA;1;1;"CAT";3;6;1;"Maternal ethnicity as defined by the study";NA;0;1;5
-"57";"facongendisord_mat_bin";"Pwoman";NA;NA;NA;NA;NA;24;NA;"Any known  history of congenital disorders on maternal side?";NA;0;NA;0
-"58";"fatigue";"Exposure";NA;NA;NA;NA;NA;137;NA;"General fatigue/asthenia during the current pregnancy";NA;0;NA;0
-"59";"fet_micro";"Outcome";NA;NA;NA;NA;NA;190;NA;"Prenatal Diagnosis of Microcephaly (Fetal microcephaly)";NA;0;NA;0
-"60";"fet_micro_diag_ga";"Outcome";NA;NA;NA;NA;NA;191;NA;"Gestational age (week) at which prenatal microcephaly was first assessed";NA;0;NA;0
-"61";"fet_micro_diag_tri";"Outcome";NA;NA;NA;NA;NA;192;NA;"When (trimester) during pregnancy was fetal microcephaly assessed -if different from metadata";NA;0;NA;0
-"62";"fet_us_abn_spec_tri1";"Outcome";NA;NA;1;"CAT";NA;194;NA;"Specify abnormalities detected on ultrasound in 1st trimester  (if only reported one ultrasound, then use the date of the ultrasound to inform the trimester)";NA;0;0;1
-"63";"fet_us_abn_spec_tri2";"Outcome";NA;NA;1;"CAT";NA;203;NA;"Specify abnormalities detected on ultrasound in 2nd trimester (if only reported one ultrasound, then use the date of the ultrasound to inform the trimester)";NA;0;0;1
-"64";"fet_us_abn_spec_tri3";"Outcome";NA;NA;1;"CAT";NA;212;NA;"Specify abnormalities detected on ultrasound in 3rd trimester (if only reported one ultrasound, then use the date of the ultrasound to inform the trimester)";NA;0;0;1
-"65";"fet_us_bin_tri1";"Outcome";NA;NA;1;"B";NA;193;NA;"Any abnormalities detected in 1st trimester ultrasound?";NA;0;0;1
-"66";"fet_us_bin_tri2";"Outcome";NA;NA;1;"B";NA;195;NA;"Any abnormalities detected in 2nd trimester ultrasound?";NA;0;0;1
-"67";"fet_us_bin_tri3";"Outcome";NA;NA;1;"CAT";NA;204;NA;"Any abnormalities detected in 3rd trimester ultrasound?";NA;0;0;1
-"68";"fet_us_cardio_tri2";"Outcome";NA;NA;1;"CAT";NA;198;NA;"Abnormal finding for cardiovascular system (ventricular septal defect without an associated genetic syndrome, transposition or totally anomalous pulmonary venous connection, Tetralogy of Fallot, functionally univentricular heart, hypoplastic left heart syndrome) detected in 2nd trimester ultrasound";NA;0;0;1
+999=Missing";NA;NA;NA;0;NA;0;NA
+"35";"chromoabn_test";"Pwoman";NA;NA;NA;NA;NA;33;NA;"How did the study diagnose chromosomal abnormalities during the pregnancy?";NA;NA;NA;0;NA;0;NA
+"36";"chromoabn_test_oth";"Pwoman";NA;NA;NA;NA;NA;36;NA;"Specification of other tests used to identify chromosomal abnormalities during the current preganncy.";NA;NA;NA;0;NA;0;NA
+"37";"cmv";"Pwoman";NA;NA;1;"B";NA;70;NA;"Intrauterine exposure to cytomegalovirus/CMV infection (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"38";"conjunctivitis";"Exposure";1;NA;1;"B";NA;125;1;"Presence of Conjunctivitis during the current pregnancy";NA;NA;NA;1;1;3;"1"
+"39";"conjunctivitis_n";"Exposure";NA;NA;NA;NA;NA;126;NA;"Number of conjunctivitis episodes  during preganncy";NA;NA;NA;0;NA;0;NA
+"40";"corticalatrophy";"Outcome";1;NA;1;"B";2;216;1;"Cortical atrophy detected during fetal or infant period using US, MRI, or CT";NA;NA;NA;0;1;4;"1"
+"41";"czs";"Outcome";1;1;1;"B";NA;227;NA;"Diagnosis of congenital Zika syndrome (as measured by the study)";NA;NA;NA;0;1;2;"1"
+"42";"czsn";"Outcome";NA;NA;2;"B";2;228;1;"CZS obtained by using the WHO definition and clinic diagnosis.";NA;NA;NA;0;1;5;"1"
+"43";"denv_ever";"Exposure";1;NA;1;"B";NA;146;NA;"Has the pregnant woman ever been diagnosed with DENV using any criteria (clinical, laboratory, self-report)?";NA;NA;NA;0;0;1;"0"
+"44";"denv_igg_res";"Exposure";NA;NA;NA;NA;NA;151;NA;"Qualitative result of pregnant woman's DENV IgG; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"45";"denv_igg_titer";"Exposure";NA;NA;NA;NA;NA;150;NA;"Pregnant woman's DENV IgG titer; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"46";"denv_igm_res";"Exposure";NA;NA;NA;NA;NA;149;NA;"Qualitative result of pregnant woman's DENV IgM; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"47";"denv_igm_titer";"Exposure";NA;NA;NA;NA;NA;148;NA;"Pregnant woman's DENV IgM titer; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"48";"denv_ns1_res";"Exposure";NA;NA;NA;NA;NA;154;NA;"Qualitative result of pregnant woman's DENV NS1; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"49";"denv_pcr_ct";"Exposure";NA;NA;NA;NA;NA;152;NA;"Pregnant woman's DENV PCR CT value; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"50";"denv_pcr_res";"Exposure";NA;NA;NA;NA;NA;153;NA;"Qualitative result of pregnant woman's DENV PCR; during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"51";"denv_preg";"Exposure";1;NA;1;"B";NA;147;NA;"Was pregnant woman diagnosed with DENV during this pregnancy using any criteria (clinical or laboratory diagnosis or self report)?";NA;NA;NA;0;1;2;"1"
+"52";"drugs";"Pwoman";1;NA;1;"B";NA;45;NA;"Current maternal (illicit) drug use or opioid substitution therapy (during pregnancy)";NA;NA;NA;0;0;1;"0"
+"53";"eclampsia";"Pwoman";NA;1;1;"B";3;58;1;"Eclampsia";NA;NA;NA;0;0;4;"0"
+"54";"educ";"Pwoman";NA;1;1;"CAT";3;8;1;"Mother's highest level of education received";NA;NA;NA;0;1;5;"1"
+"55";"endga";"Outcome";1;NA;1;"T";-2;174;NA;"Gestational age at the end of the pregnancy regardless of pregnancy outcome or etiology";"(weeks)";0;NA;1;1;1;"1"
+"56";"ethnicity";"Pwoman";NA;1;1;"CAT";3;6;1;"Maternal ethnicity as defined by the study";NA;NA;NA;0;1;5;"1"
+"57";"facongendisord_mat_bin";"Pwoman";NA;NA;NA;NA;NA;24;NA;"Any known  history of congenital disorders on maternal side?";NA;NA;NA;0;NA;0;NA
+"58";"fatigue";"Exposure";NA;NA;NA;NA;NA;137;NA;"General fatigue/asthenia during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"59";"fet_micro";"Outcome";NA;NA;NA;NA;NA;190;NA;"Prenatal Diagnosis of Microcephaly (Fetal microcephaly)";NA;NA;NA;0;NA;0;NA
+"60";"fet_micro_diag_ga";"Outcome";NA;NA;NA;NA;NA;191;NA;"Gestational age (week) at which prenatal microcephaly was first assessed";NA;NA;NA;0;NA;0;NA
+"61";"fet_micro_diag_tri";"Outcome";NA;NA;NA;NA;NA;192;NA;"When (trimester) during pregnancy was fetal microcephaly assessed -if different from metadata";NA;NA;NA;0;NA;0;NA
+"62";"fet_us_abn_spec_tri1";"Outcome";NA;NA;1;"CAT";NA;194;NA;"Specify abnormalities detected on ultrasound in 1st trimester  (if only reported one ultrasound, then use the date of the ultrasound to inform the trimester)";NA;NA;NA;0;0;1;"0"
+"63";"fet_us_abn_spec_tri2";"Outcome";NA;NA;1;"CAT";NA;203;NA;"Specify abnormalities detected on ultrasound in 2nd trimester (if only reported one ultrasound, then use the date of the ultrasound to inform the trimester)";NA;NA;NA;0;0;1;"0"
+"64";"fet_us_abn_spec_tri3";"Outcome";NA;NA;1;"CAT";NA;212;NA;"Specify abnormalities detected on ultrasound in 3rd trimester (if only reported one ultrasound, then use the date of the ultrasound to inform the trimester)";NA;NA;NA;0;0;1;"0"
+"65";"fet_us_bin_tri1";"Outcome";NA;NA;1;"B";NA;193;NA;"Any abnormalities detected in 1st trimester ultrasound?";NA;NA;NA;0;0;1;"0"
+"66";"fet_us_bin_tri2";"Outcome";NA;NA;1;"B";NA;195;NA;"Any abnormalities detected in 2nd trimester ultrasound?";NA;NA;NA;0;0;1;"0"
+"67";"fet_us_bin_tri3";"Outcome";NA;NA;1;"CAT";NA;204;NA;"Any abnormalities detected in 3rd trimester ultrasound?";NA;NA;NA;0;0;1;"0"
+"68";"fet_us_cardio_tri2";"Outcome";NA;NA;1;"CAT";NA;198;NA;"Abnormal finding for cardiovascular system (ventricular septal defect without an associated genetic syndrome, transposition or totally anomalous pulmonary venous connection, Tetralogy of Fallot, functionally univentricular heart, hypoplastic left heart syndrome) detected in 2nd trimester ultrasound";NA;NA;NA;0;0;1;"0"
 "69";"fet_us_cardio_tri3";"Outcome";NA;NA;1;"CAT";NA;207;NA;"Abnormal finding for cardiovascular system (ventricular septal defect without an associated genetic syndrome, transposition or totally anomalous pulmonary venous connection, Tetralogy of Fallot, functionally univentricular heart, hypoplastic left heart syndrome) detected in 3rd trimester ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "70";"fet_us_cns_tri2";"Outcome";NA;NA;1;"CAT";NA;196;NA;"Abnormal finding for central nervous system (anencephaly, microcephaly, spina bifida, encephalocele, hydrocephalus, holoproscencephaly) detected on 2nd trimester ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "71";"fet_us_cns_tri3";"Outcome";NA;NA;1;"CAT";NA;205;NA;"Abnormal finding for central nervous system (anencephaly, microcephaly, spina bifida, encephalocele, hydrocephalus, holoproscencephaly) detected on 3rd trimester ultrasound
-";NA;0;0;1
-"72";"fet_us_eyeear_tri2";"Outcome";NA;NA;1;"CAT";NA;201;NA;"Abnormal eye-ear finding (Anophthalmia, microphthalmia, cataracts, anotia, microtia) detected on 2nd trimester ultrasound";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
+"72";"fet_us_eyeear_tri2";"Outcome";NA;NA;1;"CAT";NA;201;NA;"Abnormal eye-ear finding (Anophthalmia, microphthalmia, cataracts, anotia, microtia) detected on 2nd trimester ultrasound";NA;NA;NA;0;0;1;"0"
 "73";"fet_us_eyeear_tri3";"Outcome";NA;NA;1;"CAT";NA;210;NA;"Abnormal eye-ear finding (Anophthalmia/microphthalmia, Cataracts, anotia, microtia) detected on 3rd trimester ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "74";"fet_us_gastro_tri2";"Outcome";NA;NA;1;"CAT";NA;199;NA;"Abnormal finding for gastrointestinal system (Gastroschisis, omphalocele, Diaphragmatic hernia, Atresia: choanal, esophageal, intestinal, biliary, rectal) detected in 2nd trimester ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "75";"fet_us_gastro_tri3";"Outcome";NA;NA;1;"CAT";NA;208;NA;"Abnormal finding for gastrointestinal system (Gastroschisis, omphalocele, Diaphragmatic hernia, Atresia: choanal, esophageal, intestinal, biliary, rectal) detected in 3rd trimester ultrasound
-";NA;0;0;1
-"76";"fet_us_genur_tri2";"Outcome";NA;NA;1;"CAT";NA;202;NA;"Abnormal finding for genitourinary system (Hypospadias, Hermaphroditism, Phimosis, renal agenesis) detected on 2nd trimester ultrasound";NA;0;0;1
-"77";"fet_us_genur_tri3";"Outcome";NA;NA;1;"CAT";NA;211;NA;"Abnormal finding for genitourinary system (Hypospadias, Hermaphroditism, Phimosis, renal agenesis) detected on 3rd trimester ultrasound";NA;0;0;1
-"78";"fet_us_micro_tri2";"Outcome";NA;NA;1;"CAT";NA;213;NA;"Microcephaly detected on ultrasound in 2nd trimester";NA;0;1;2
-"79";"fet_us_micro_tri3";"Outcome";NA;NA;1;"CAT";NA;214;NA;"Microcephaly detected on ultrasound in 3rd trimester";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
+"76";"fet_us_genur_tri2";"Outcome";NA;NA;1;"CAT";NA;202;NA;"Abnormal finding for genitourinary system (Hypospadias, Hermaphroditism, Phimosis, renal agenesis) detected on 2nd trimester ultrasound";NA;NA;NA;0;0;1;"0"
+"77";"fet_us_genur_tri3";"Outcome";NA;NA;1;"CAT";NA;211;NA;"Abnormal finding for genitourinary system (Hypospadias, Hermaphroditism, Phimosis, renal agenesis) detected on 3rd trimester ultrasound";NA;NA;NA;0;0;1;"0"
+"78";"fet_us_micro_tri2";"Outcome";NA;NA;1;"CAT";NA;213;NA;"Microcephaly detected on ultrasound in 2nd trimester";NA;NA;NA;0;1;2;"1"
+"79";"fet_us_micro_tri3";"Outcome";NA;NA;1;"CAT";NA;214;NA;"Microcephaly detected on ultrasound in 3rd trimester";NA;NA;NA;0;0;1;"0"
 "80";"fet_us_msk_tri2";"Outcome";NA;NA;1;"CAT";NA;197;NA;"Abnormal finding for musculoskeletal system (club foot, Limb deficiency, Reduction deformity upper limbs, Reduction deformity upper limbs, hip dysplasia) detected in 2nd tri ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "81";"fet_us_msk_tri3";"Outcome";NA;NA;1;"CAT";NA;206;NA;"Abnormal finding for musculoskeletal system (club foot, Limb deficiency, Reduction deformity upper limbs, Reduction deformity upper limbs, hip dysplasia) detected in 3rd tri ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "82";"fet_us_orofac_tri2";"Outcome";NA;NA;1;"CAT";NA;200;NA;"Abnormal oro-facial finding (cleft palate, cleft lip) detected on 2nd trimester ultrasound
-";NA;0;0;1
+";NA;NA;NA;0;0;1;"0"
 "83";"fet_us_orofac_tri3";"Outcome";NA;NA;1;"CAT";NA;209;NA;"Abnormal oro-facial finding (cleft palate, cleft lip) detected on 3rd trimester ultrasound
-";NA;0;0;1
-"84";"fet_zikv";"Outcome";NA;1;1;"B";3;187;1;"Fetal ZIKV infection? As defined by the study.";NA;0;1;5
-"85";"fet_zikv_ga";"Outcome";NA;NA;NA;NA;NA;189;NA;"Gestational Age (weeks) at the time that the fetal infection was measured";NA;0;NA;0
-"86";"fet_zikv_tri";"Outcome";NA;NA;NA;NA;NA;188;NA;"Trimester at the time that the fetal infection was measured";NA;0;NA;0
-"87";"fever";"Exposure";1;NA;1;"B";NA;119;1;"Presence of Fever during the current pregancy?";NA;1;1;3
-"88";"fever_dur_1";"Exposure";NA;NA;NA;NA;NA;122;NA;"Duration (in days) of first fever episode";NA;0;NA;0
-"89";"fever_meas";"Exposure";NA;NA;NA;NA;NA;120;NA;"How was fever measured?";NA;0;NA;0
-"90";"fever_n";"Exposure";NA;NA;NA;NA;NA;121;NA;"Number of fever episodes during the current pregnancy";NA;0;NA;0
-"91";"flavi_alpha_virus";"Exposure";NA;NA;2;"B";3;165;1;"Presence of any flavi alpha virus";NA;0;1;6
-"92";"genitalwarts";"Pwoman";NA;NA;1;"B";NA;75;NA;"Diagnosis of genital warts during the current pregnancy";NA;0;0;1
-"93";"gestdiab";"Pwoman";NA;1;1;"B";3;57;1;"Gestational diabetes";NA;0;0;4
-"94";"gonorrhea";"Pwoman";NA;NA;1;"B";NA;74;NA;"Diagnosis of gonorrhea infection during the current pregnancy";NA;0;0;1
-"95";"gravidity";"Pwoman";1;NA;1;"CAT";NA;12;1;"Number of previous pregnancies up to date of enrollment (gravidity)";NA;1;1;3
-"96";"headache";"Exposure";NA;NA;NA;NA;NA;133;NA;"Headache present during the current episode of arboviral disease?";NA;0;NA;0
-"97";"height";"Pwoman";1;NA;1;"C";NA;42;NA;"Height, in cm";NA;0;0;1
-"98";"herpes";"Pwoman";NA;NA;1;"B";NA;71;NA;"Intrauterine exposure to herpes simplex infection (TORCH pathogen) during the current pregnancy";NA;0;0;1
-"99";"hiv";"Pwoman";1;NA;1;"B";NA;23;1;"What is the HIV status of the pregnant woman?";NA;1;1;3
-"100";"hydrocephaly";"Outcome";1;NA;1;"B";NA;215;1;"Hydrocephaly in fetal or infant MRI or ultrasound?";NA;1;1;3
-"101";"igr_curr_preg";"Outcome";1;1;1;"B";2;178;1;"intrauterine growth restriction";NA;0;1;4
-"102";"inducedabort";"Outcome";1;1;1;"B";NA;169;1;"Did the pregnancy result in an induced abortion?";NA;1;1;3
-"103";"inducedabort_ga";"Outcome";NA;NA;NA;NA;NA;170;NA;"Gestational age at induced abortion (Weeks)";NA;0;NA;0
-"104";"inf_chromoabn";"Pwoman";NA;NA;NA;NA;NA;37;NA;"Chromosomal abnormalities identified after delivery";NA;0;NA;0
-"105";"inf_chromoabn_test";"Pwoman";NA;NA;NA;NA;NA;38;NA;"What test was used to diagnose chromosomal abnormalities after delivery?";NA;0;NA;0
-"106";"inf_chromoabn_test_oth";"Pwoman";NA;NA;NA;NA;NA;39;NA;"Specification of other tests used to identify chromosomal abnormalities after delivery";NA;0;NA;0
-"107";"inf_craniofac_abn_bin";"Outcome";NA;1;1;"B";3;221;1;"Presence of any other cranio-facial abnormaities (head abnormalities) - other than microcephaly";NA;1;1;6
-"108";"inf_death_time";"Outcome";NA;NA;NA;NA;NA;186;NA;"Age at death in weeks following live birth";NA;0;NA;0
-"109";"inf_head_circ_age_fu1";"Outcome";1;NA;1;"T";NA;229;NA;"Age in months when head circumference measured at FIRST follow-up visit";NA;0;1;2
-"110";"inf_head_circ_age_fu2";"Outcome";1;NA;1;"T";NA;231;NA;"Age in months when head circumference measured at the SECOND follow-up visit";NA;0;0;1
-"111";"inf_head_circ_age_fu3";"Outcome";1;NA;1;"T";NA;233;NA;"Age in months when head circumference measured at the THIRD follow-up visit";NA;0;0;1
-"112";"inf_head_circ_birth";"Outcome";1;NA;1;"C";NA;184;1;"Head circumference in cms at birth or up to 24 hours after birth (occipito-frontal at birth; ideally, average of three measurements)";"(cm)";1;1;3
-"113";"inf_head_circ_fu1";"Outcome";1;NA;1;"C";NA;228;NA;"Head circumference in cms (occipito-frontal measurement taken after birth; ideally, average of three measurements) - refers to a FIRST measurement made during the follow-up after birth (or within the first 24 hours )";NA;0;1;2
-"114";"inf_head_circ_fu2";"Outcome";1;NA;1;"C";NA;230;NA;"Head circumference in cms (occipito-frontal measurement taken after birth; ideally, average of three measurements) - refers to the SECOND measurement made at ANY time AFTER the FIRST follow-up";NA;0;0;1
-"115";"inf_head_circ_fu3";"Outcome";1;NA;1;"C";NA;232;NA;"Head circumference in cms (occipito-frontal measurement taken after birth; ideally, average of three measurements) - refers to the THIRD measurement made at ANY time AFTER the SECOND follow-up";NA;0;0;1
-"116";"inf_length";"Outcome";1;NA;1;"C";2;183;1;"Crown-to-heel length (in cm) at birth";"(cm)";0;1;4
-"117";"inf_sex";"Outcome";1;NA;1;"B";NA;181;1;"Sex of the fetus/infant;";NA;1;1;3
-"118";"inf_term";"Outcome";1;NA;1;"CAT";-2;180;NA;"Was the baby term?";NA;1;1;1
-"119";"inf_vital_status";"Outcome";1;NA;1;"CAT";-2;185;NA;"Infant alive or not following live birth";NA;1;1;1
-"120";"inf_weight";"Outcome";1;1;1;"C";NA;182;1;"Birth weight in grams (<12 hours after delivery)";"(grams)";1;1;3
-"121";"listeria";"Pwoman";NA;NA;1;"B";NA;72;NA;"Intrauterine exposure to listeria infection (TORCH pathogen)during the current pregnancy";NA;0;0;1
-"122";"loss";"Outcome";1;NA;1;"B";-2;171;NA;"Pregnancy loss (anything that is not a live birth is a pregnancy loss, included induced abortions)";NA;1;1;1
-"123";"loss_etiology";"Outcome";1;NA;1;"CAT";-2;172;NA;"Cause of infant/fetus death";NA;1;1;1
-"124";"loss_ga";"Outcome";1;NA;1;"C";NA;173;NA;"Gestational age at pregnancy loss (Weeks)";NA;0;0;1
-"125";"maritalstat";"Pwoman";NA;1;1;"CAT";3;11;1;"Mother's marital status";NA;0;0;4
+";NA;NA;NA;0;0;1;"0"
+"84";"fet_zikv";"Outcome";NA;1;1;"B";3;187;1;"Fetal ZIKV infection? As defined by the study.";NA;NA;NA;0;1;5;"1"
+"85";"fet_zikv_ga";"Outcome";NA;NA;NA;NA;NA;189;NA;"Gestational Age (weeks) at the time that the fetal infection was measured";NA;NA;NA;0;NA;0;NA
+"86";"fet_zikv_tri";"Outcome";NA;NA;NA;NA;NA;188;NA;"Trimester at the time that the fetal infection was measured";NA;NA;NA;0;NA;0;NA
+"87";"fever";"Exposure";1;NA;1;"B";NA;119;1;"Presence of Fever during the current pregancy?";NA;NA;NA;1;1;3;"1"
+"88";"fever_dur_1";"Exposure";NA;NA;NA;NA;NA;122;NA;"Duration (in days) of first fever episode";NA;NA;NA;0;NA;0;NA
+"89";"fever_meas";"Exposure";NA;NA;NA;NA;NA;120;NA;"How was fever measured?";NA;NA;NA;0;NA;0;NA
+"90";"fever_n";"Exposure";NA;NA;NA;NA;NA;121;NA;"Number of fever episodes during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"91";"flavi_alpha_virus";"Exposure";NA;NA;2;"B";3;165;1;"Presence of any flavi alpha virus";NA;NA;NA;0;1;6;"1"
+"92";"genitalwarts";"Pwoman";NA;NA;1;"B";NA;75;NA;"Diagnosis of genital warts during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"93";"gestdiab";"Pwoman";NA;1;1;"B";3;57;1;"Gestational diabetes";NA;NA;NA;0;0;4;"0"
+"94";"gonorrhea";"Pwoman";NA;NA;1;"B";NA;74;NA;"Diagnosis of gonorrhea infection during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"95";"gravidity";"Pwoman";1;NA;1;"CAT";NA;12;1;"Number of previous pregnancies up to date of enrollment (gravidity)";NA;NA;NA;1;1;3;"1"
+"96";"headache";"Exposure";NA;NA;NA;NA;NA;133;NA;"Headache present during the current episode of arboviral disease?";NA;NA;NA;0;NA;0;NA
+"97";"height";"Pwoman";1;NA;1;"C";NA;42;NA;"Height, in cm";"(cm)";0;NA;0;0;1;"0"
+"98";"herpes";"Pwoman";NA;NA;1;"B";NA;71;NA;"Intrauterine exposure to herpes simplex infection (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"99";"hiv";"Pwoman";1;NA;1;"B";NA;23;1;"What is the HIV status of the pregnant woman?";NA;NA;NA;1;1;3;"1"
+"100";"hydrocephaly";"Outcome";1;NA;1;"B";NA;215;1;"Hydrocephaly in fetal or infant MRI or ultrasound?";NA;NA;NA;1;1;3;"1"
+"101";"igr_curr_preg";"Outcome";1;1;1;"B";2;178;1;"intrauterine growth restriction";NA;NA;NA;0;1;4;"1"
+"102";"inducedabort";"Outcome";1;1;1;"B";NA;169;1;"Did the pregnancy result in an induced abortion?";NA;NA;NA;1;1;3;"1"
+"103";"inducedabort_ga";"Outcome";NA;NA;NA;NA;NA;170;NA;"Gestational age at induced abortion (Weeks)";NA;NA;NA;0;NA;0;NA
+"104";"inf_chromoabn";"Pwoman";NA;NA;NA;NA;NA;37;NA;"Chromosomal abnormalities identified after delivery";NA;NA;NA;0;NA;0;NA
+"105";"inf_chromoabn_test";"Pwoman";NA;NA;NA;NA;NA;38;NA;"What test was used to diagnose chromosomal abnormalities after delivery?";NA;NA;NA;0;NA;0;NA
+"106";"inf_chromoabn_test_oth";"Pwoman";NA;NA;NA;NA;NA;39;NA;"Specification of other tests used to identify chromosomal abnormalities after delivery";NA;NA;NA;0;NA;0;NA
+"107";"inf_craniofac_abn_bin";"Outcome";NA;1;1;"B";3;221;1;"Presence of any other cranio-facial abnormaities (head abnormalities) - other than microcephaly";NA;NA;NA;1;1;6;"1"
+"108";"inf_death_time";"Outcome";NA;NA;NA;NA;NA;186;NA;"Age at death in weeks following live birth";NA;NA;NA;0;NA;0;NA
+"109";"inf_head_circ_age_fu1";"Outcome";1;NA;1;"T";NA;230;NA;"Age in months when head circumference measured at FIRST follow-up visit";"(months)";0;NA;0;1;2;"1"
+"110";"inf_head_circ_age_fu2";"Outcome";1;NA;1;"T";NA;232;NA;"Age in months when head circumference measured at the SECOND follow-up visit";"(months)";0;NA;0;0;1;"0"
+"111";"inf_head_circ_age_fu3";"Outcome";1;NA;1;"T";NA;234;NA;"Age in months when head circumference measured at the THIRD follow-up visit";"(months)";0;NA;0;0;1;"0"
+"112";"inf_head_circ_birth";"Outcome";1;NA;1;"C";NA;184;1;"Head circumference in cms at birth or up to 24 hours after birth (occipito-frontal at birth; ideally, average of three measurements)";"(cm)";0;NA;1;1;3;"1"
+"113";"inf_head_circ_fu1";"Outcome";1;NA;1;"C";NA;229;NA;"Head circumference in cms (occipito-frontal measurement taken after birth; ideally, average of three measurements) - refers to a FIRST measurement made during the follow-up after birth (or within the first 24 hours )";"(cm)";0;NA;0;1;2;"1"
+"114";"inf_head_circ_fu2";"Outcome";1;NA;1;"C";NA;231;NA;"Head circumference in cms (occipito-frontal measurement taken after birth; ideally, average of three measurements) - refers to the SECOND measurement made at ANY time AFTER the FIRST follow-up";"(cm)";0;NA;0;0;1;"0"
+"115";"inf_head_circ_fu3";"Outcome";1;NA;1;"C";NA;233;NA;"Head circumference in cms (occipito-frontal measurement taken after birth; ideally, average of three measurements) - refers to the THIRD measurement made at ANY time AFTER the SECOND follow-up";"(cm)";0;NA;0;0;1;"0"
+"116";"inf_length";"Outcome";1;NA;1;"C";2;183;1;"Crown-to-heel length (in cm) at birth";"(cm)";18;NA;0;1;4;"1"
+"117";"inf_sex";"Outcome";1;NA;1;"B";NA;181;1;"Sex of the fetus/infant;";NA;NA;NA;1;1;3;"1"
+"118";"inf_term";"Outcome";1;NA;1;"CAT";-2;180;NA;"Was the baby term?";NA;NA;NA;1;1;1;"1"
+"119";"inf_vital_status";"Outcome";1;NA;1;"CAT";-2;185;NA;"Infant alive or not following live birth";NA;NA;NA;1;1;1;"1"
+"120";"inf_weight";"Outcome";1;1;1;"C";NA;182;1;"Birth weight in grams (<12 hours after delivery)";"(grams)";100;6000;1;1;3;"1"
+"121";"listeria";"Pwoman";NA;NA;1;"B";NA;72;NA;"Intrauterine exposure to listeria infection (TORCH pathogen)during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"122";"loss";"Outcome";1;NA;1;"B";-2;171;NA;"Pregnancy loss (anything that is not a live birth is a pregnancy loss, included induced abortions)";NA;NA;NA;1;1;1;"1"
+"123";"loss_etiology";"Outcome";1;NA;1;"CAT";-2;172;NA;"Cause of infant/fetus death";NA;NA;NA;1;1;1;"1"
+"124";"loss_ga";"Outcome";1;NA;1;"T";NA;173;NA;"Gestational age at pregnancy loss (Weeks)";"(weeks)";0;NA;0;0;1;"0"
+"125";"maritalstat";"Pwoman";NA;1;1;"CAT";3;11;1;"Mother's marital status";NA;NA;NA;0;0;4;"0"
 "126";"mat_headcirc";"Pwoman";NA;NA;NA;NA;NA;43;NA;"Maternal head circumference (cm)
-";NA;0;NA;0
-"127";"med_anticonvuls";"Pwoman";NA;NA;NA;NA;NA;27;NA;"Type of anticonvulsant mother received during pregnancy";NA;0;NA;0
-"128";"med_anticonvuls_bin";"Pwoman";NA;NA;1;"B";NA;26;NA;"Mother received any anticonvulsant during pregnancy";NA;0;0;1
-"129";"med_bin";"Pwoman";NA;NA;1;"B";NA;25;NA;"Indicate if the (pregnant) woman use any type of medications during the current pregnancy";NA;0;0;1
-"130";"med_fertil";"Pwoman";NA;NA;NA;NA;NA;31;NA;"Reproductive assistance/fertility treatments received for this specific pregnancy?";NA;0;NA;0
-"131";"med_fertil_bin";"Pwoman";NA;NA;1;"B";NA;30;NA;"Medications for ovarian stimulation, such as clomiphene citrate, or Femara for this specific pregnancy?";NA;0;0;1
-"132";"med_preg";"Pwoman";NA;NA;NA;NA;NA;29;NA;"Specify medications taken specifically for the current pregnancy";NA;0;NA;0
-"133";"med_preg_bin";"Pwoman";NA;NA;1;"B";NA;28;NA;"Any pregnancy medications taken during the current pregnancy (specifically pregnancy medications such as Folic Acid, Calcium, etc)?";NA;0;0;1
-"134";"microcephaly";"Outcome";1;NA;1;"CAT";NA;225;1;"Level of microcephaly - as defined by the study.";NA;1;1;3
-"135";"microcephaly_bin";"Outcome";1;1;1;"B";-2;224;NA;"Ever diagnosed with microcephaly? As defined by the study.";NA;1;1;1
-"136";"mid_original";"ID";1;NA;1;"STR";-3;2;1;"Mother ID";NA;1;1;0
-"137";"miscarriage";"Outcome";1;NA;1;"B";-2;167;NA;"Documented miscarriage: spontaneous loss of the product of the gestation <20 wks";NA;1;1;1
-"138";"miscarriage_ga";"Outcome";1;NA;1;"C";-2;168;NA;"Gestational age of miscarriage (Weeks; miscarriage defined as spontaneous loss prior to 20 weeks is a miscarraige)";NA;0;0;-1
-"139";"multiplegest";"Outcome";1;NA;1;"B";NA;179;1;"Multiple vs single gestation";NA;1;1;3
-"140";"muscle_pain";"Exposure";NA;NA;NA;NA;NA;127;NA;"Muscle pain present during the current pregnancy?";NA;0;NA;0
-"141";"muscle_pain_n";"Exposure";NA;NA;NA;NA;NA;128;NA;"Number of episodes of muscle pain present during the current pregnancy";NA;0;NA;0
-"142";"neuroabnormality";"Outcome";NA;NA;2;"B";NA;222;1;"Presence of any neuroabnormality";NA;1;1;4
-"143";"occupation";"Pwoman";NA;NA;NA;NA;NA;9;NA;"Mother's occupation";NA;0;NA;0
-"144";"othabnorm";"Outcome";1;NA;1;"B";2;219;1;"Other brain abnormalities detected during fetal or infant period using US, MRI, or CT";NA;0;1;4
-"145";"othabnorm_spec";"Outcome";NA;NA;NA;"CAT";NA;220;NA;"Specify other fetal or infant brain abnormalities detected by US, MRI, CT";NA;0;NA;0
-"146";"parity";"Pwoman";1;NA;1;"CAT";NA;13;1;"Number of previous live births (parity)";NA;1;1;3
-"147";"parvo";"Pwoman";NA;NA;1;"B";NA;68;NA;"Intrauterine exposure to parvovirus B19 infection (TORCH pathogen) during the current pregnancy";NA;0;0;1
-"148";"pre_pregweight";"Pwoman";NA;1;1;"C";NA;41;NA;"Pre-pregnancy weight, in kg";NA;0;0;1
-"149";"preeclampsia";"Pwoman";NA;NA;NA;NA;NA;59;NA;"Preeclampsia";NA;0;NA;0
-"150";"pregcomp";"Pwoman";NA;NA;NA;NA;NA;51;NA;"Type of complications experienced by the mother during this specific pregnancy?";NA;0;NA;0
-"151";"pregcomp_bin";"Pwoman";1;NA;1;"B";NA;50;NA;"Presence of complications during this specific pregnancy?";NA;0;0;1
-"152";"pregcomp_oth";"Pwoman";NA;NA;NA;NA;NA;52;NA;"Specify other current pregnancy complications";NA;0;NA;0
-"153";"pretermlabor";"Pwoman";NA;NA;NA;NA;NA;53;NA;"Preterm labor for this specific pregnancy";NA;0;NA;0
-"154";"pretermlabor_ga";"Pwoman";NA;NA;NA;NA;NA;54;NA;"GA when preterm labor started for this current pregnancy";NA;0;NA;0
-"155";"prev_birthdef_bin";"Pwoman";NA;NA;NA;NA;NA;19;NA;"Birth defects in pregnancy prior to this one.";NA;0;NA;0
-"156";"prev_comorbid_bin";"Pwoman";NA;1;1;"B";NA;22;NA;"Presence of comorbidities (i.e: chronic/ pre-existent/ conditions) before the current pregnancy?";NA;0;0;1
-"157";"prev_eclampsia";"Pwoman";NA;NA;NA;NA;NA;17;NA;"Eclampsia in pregnancy prior to this one.";NA;0;NA;0
-"158";"prev_gestdiabet";"Pwoman";NA;NA;NA;NA;NA;16;NA;"Gestational diabetes in any prior pregnancies?";NA;0;NA;0
-"159";"prev_preeclampsia";"Pwoman";NA;NA;NA;NA;NA;18;NA;"Preeclampsia in pregnancy prior to this one.";NA;0;NA;0
-"160";"prev_pregcomp_oth_bin";"Pwoman";NA;NA;NA;NA;NA;20;NA;"Complications in pregnancy prior to this one other than gestational diabetes, preterm labor, preeclampsia and eclapmsia in previous pregnancies.";NA;0;NA;0
-"161";"prev_pregcomp_oth_spec";"Pwoman";NA;NA;NA;NA;NA;21;NA;"Specify other complications during a previous pregnancy";NA;0;NA;0
-"162";"prev_pregloss";"Pwoman";NA;NA;NA;NA;NA;14;NA;"Any previous pregnancy loss";NA;0;NA;0
-"163";"prev_pretermlabor";"Pwoman";NA;NA;NA;NA;NA;15;NA;"Any history of preterm labor in any prior pregnancies?";NA;0;NA;0
-"164";"rash";"Exposure";1;NA;1;"B";NA;123;1;"Presence of rash during the current pregnancy";NA;1;1;3
-"165";"rash_type";"Exposure";NA;NA;NA;NA;NA;124;NA;"Type of rash";NA;0;NA;0
-"166";"rubella";"Pwoman";NA;NA;1;"B";NA;69;NA;"Intrauterine exposure to rubella infection (TORCH pathogen) during the current pregnancy";NA;0;0;1
-"167";"runnynose";"Exposure";NA;NA;NA;NA;NA;136;NA;"Runny nose present during the current pregnancy?";NA;0;NA;0
-"168";"ses";"Pwoman";NA;1;1;"CAT";NA;7;NA;"Maternal socioeconomic status identified as low, medium or high SES, or income";NA;0;0;1
-"169";"sorethroat";"Exposure";NA;NA;NA;NA;NA;138;NA;"Sore throat during the current pregnancy";NA;0;NA;0
-"170";"storch";"Pwoman";NA;NA;1;"CAT";-2;61;NA;"Which STORCH pathogens were found during the current pregnancy?";NA;1;1;1
-"171";"storch_bin";"Pwoman";NA;NA;1;"B";-2;60;NA;"Evidence of any (overall) STORCH pathogen infection during the current pregnancy?";NA;1;1;1
-"172";"storch_patho";"Exposure";NA;NA;2;"B";NA;163;1;"Presence of any storch pathogen";NA;1;1;4
-"173";"studyname";"ID";NA;NA;1;"STR";2;1;1;"Study ID";NA;1;NA;4
-"174";"symp_date";"Exposure";1;NA;1;"D";NA;113;NA;"Date of onset of ZIKV-related symptoms (ZIKV symptoms as defined by the study) in pregnant woman";NA;0;1;2
-"175";"symp_ga";"Exposure";1;NA;1;"C";-2;114;NA;"Gestational age (weeks) at onset of ZIKV-related symptoms in pregnant woman, as measured by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";NA;0;0;-1
-"176";"symp_oth";"Exposure";NA;NA;NA;NA;NA;139;NA;"Other symptoms present the current pregnancy?";NA;0;NA;0
-"177";"symp_oth_spec";"Exposure";NA;NA;NA;NA;NA;140;NA;"Specify other symptoms present during the current pregnancy";NA;0;NA;0
-"178";"symp_tri";"Exposure";1;NA;1;"CAT";-2;115;NA;"Trimester onset of ZIKV-related symptoms in pregnant woman, as measured by US, LMP or unspecified self report";NA;1;1;1
-"179";"syphilis";"Pwoman";NA;NA;1;"B";NA;64;NA;"Intrauterine exposure to syphilis infection/treponema pallidum (TORCH pathogen) during the current pregnancy";NA;0;1;2
-"180";"syphilis_treat";"Pwoman";NA;NA;1;"B";NA;65;NA;"Did you receive treatment for syphilis infection during the current pregnancy?";NA;0;0;1
-"181";"syphilis_treat_type";"Pwoman";NA;NA;NA;NA;NA;66;NA;"Describe the treatment received for the episode of syphilis infection during the current pregnancy?";NA;0;NA;0
-"182";"tobacco";"Pwoman";1;1;1;"CAT";3;46;1;"Mother smokes tobacco during the current pregancy";NA;0;1;5
-"183";"toxo";"Pwoman";NA;NA;1;"B";NA;62;NA;"Intrauterine exposure to toxoplasmosis (TORCH pathogen) during the current pregnancy";NA;0;1;2
-"184";"toxo_treat";"Pwoman";NA;NA;1;"B";NA;63;NA;"Did you receive treatment for toxoplasmosis infection during the current pregnancy?";NA;0;0;1
-"185";"travel";"Pwoman";NA;NA;NA;NA;NA;10;NA;"History of travel to endemic areas during current pregnancy including the period around the gestation (if Known)? 
-Endemic areas -as per study definition, and/or if Travels to Latin America and the Caribbean, South Asia or Africa.";NA;0;NA;0
-"186";"uti";"Pwoman";NA;NA;NA;NA;NA;55;NA;"Urinary tract infection";NA;0;NA;0
-"187";"uti_n";"Pwoman";NA;NA;NA;NA;NA;56;NA;"Number of UTI during the current pregancy?";NA;0;NA;0
-"188";"vac_rub_enroll";"Pwoman";NA;NA;1;"B";NA;47;NA;"History of rubella vaccination at enrollment?";NA;0;0;1
-"189";"vac_vari_enroll";"Pwoman";NA;NA;1;"B";NA;48;NA;"History of varicella vaccination at enrollment?";NA;0;0;1
-"190";"vac_yf_enroll";"Pwoman";NA;NA;1;"B";NA;49;NA;"History of yellow fever vaccination at enrollment?";NA;0;0;1
-"191";"varicella";"Pwoman";NA;NA;1;"B";NA;67;NA;"Intrauterine exposure to varicella-zoster infection (TORCH pathogen) during the current pregnancy";NA;0;0;1
-"192";"ventriculomegaly";"Outcome";1;NA;1;"B";NA;218;1;"Ventriculomegaly detected during fetal or infant period using US, MRI, or CT.  Ventriculomegaly is an enlargement of the ventricles of the brain.";NA;1;1;3
-"193";"vomiting";"Exposure";NA;NA;NA;NA;NA;132;NA;"Vomiting present during the current  episode of arboviral disease?";NA;0;NA;0
-"194";"weight";"Pwoman";1;NA;1;"C";NA;40;NA;"Weight, in kg (1st trimester)";NA;0;0;1
-"195";"zikv_assay_date";"Exposure";NA;NA;NA;NA;NA;76;NA;"Date of sample collection for ANY ZIKV-related assay for pregnant woman";NA;0;NA;0
-"196";"zikv_assay_ga";"Exposure";NA;NA;NA;NA;NA;77;NA;"Gestational age at sample collection for ANY ZIKV-related assay in pregnant woman, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information";NA;0;NA;0
-"197";"zikv_assay_tri";"Exposure";NA;NA;NA;NA;NA;78;NA;"Trimester at sample collection for ANY ZIKV assay in pregnant woman";NA;0;NA;0
-"198";"zikv_confirmtest";"Exposure";NA;NA;NA;NA;NA;112;NA;"Was the ZIKV diagnosis subject to confirmatory testing?";NA;0;NA;0
-"199";"zikv_elisa_date_1";"Exposure";1;NA;1;"D";NA;87;NA;"Date of sample collection for 1st ZIKV ELISA (either IgM/IgG) for pregnant woman";NA;0;0;1
-"200";"zikv_elisa_everpos";"Exposure";1;NA;1;"CAT";NA;90;NA;"Did the pregnant woman ever have a positive ZIKV ELISA (IgM/IgG)";NA;0;1;2
-"201";"zikv_elisa_ga_1";"Exposure";1;NA;1;"D";NA;86;NA;"Gestational age at sample collection for 1st ZIKV ELISA (either IgM/IgG) in pregnant women, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";NA;0;0;1
-"202";"zikv_elisa_res_1";"Exposure";1;NA;1;"CAT";NA;91;NA;"Result of 1st ZIKV ELISA (IgM/IgG) in pregnant woman (According to the type of testing and the comparison with other arboviruses)";NA;0;1;2
-"203";"zikv_elisa_res_studydef_1";"Exposure";NA;NA;NA;NA;NA;89;NA;"Result of 1st ZIKV ELISA (IgM/IgG) in pregnant woman (As defined by the study)";NA;0;NA;0
-"204";"zikv_elisa_tri_1";"Exposure";1;NA;1;"CAT";NA;88;NA;"Trimester at sample collection for 1st ZIKV ELISA (IgM/IgG) in pregnant woman";NA;0;0;1
-"205";"zikv_ga";"Exposure";1;NA;1;"C";2;109;1;"Gestational age at which women diagnosed with ZIKV, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";"(weeks)";0;1;4
-"206";"zikv_igg_ga_1";"Exposure";NA;NA;NA;NA;NA;95;NA;"Gestational age at sample collection for 1st IgG ZIKV ELISA in pregnant women, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";NA;0;NA;0
-"207";"zikv_igg_pnratio_1";"Exposure";NA;NA;NA;NA;NA;101;NA;"ZIKV IgG P/N ratio";NA;0;NA;0
-"208";"zikv_igg_res_1";"Exposure";NA;NA;NA;NA;NA;97;NA;"ZIKV IgG result";NA;0;NA;0
-"209";"zikv_igg_titer_1";"Exposure";NA;NA;NA;NA;NA;100;NA;"ZIKV IgG titer";NA;0;NA;0
-"210";"zikv_igg_tri_1";"Exposure";NA;NA;NA;NA;NA;96;NA;"Trimester at sample collection for 1st IgG ZIKV ELISA in pregnant woman";NA;0;NA;0
-"211";"zikv_igm_ga_1";"Exposure";NA;NA;NA;NA;NA;92;NA;"Gestational age at sample collection for 1st IgM ZIKV ELISA  in pregnant women, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";NA;0;NA;0
-"212";"zikv_igm_pnratio_1";"Exposure";NA;NA;NA;NA;NA;99;NA;"ZIKV IgM P/N ratio";NA;0;NA;0
-"213";"zikv_igm_res_1";"Exposure";NA;NA;NA;NA;NA;94;NA;"ZIKV IgM result";NA;0;NA;0
-"214";"zikv_igm_titer_1";"Exposure";NA;NA;NA;NA;NA;98;NA;"ZIKV IgM titer";NA;0;NA;0
-"215";"zikv_igm_tri_1";"Exposure";NA;NA;NA;NA;NA;93;NA;"Trimester at sample collection for 1st IgM ZIKV ELISA  in pregnant woman";NA;0;NA;0
-"216";"zikv_pcr_ct_1";"Exposure";NA;NA;NA;NA;NA;84;NA;"ZIKV PCR Cycle Time Threshold (CT) value for 1st ZIKV PCR";NA;0;NA;0
-"217";"zikv_pcr_date_1";"Exposure";1;NA;1;"D";NA;79;NA;"Date of sample collection for 1st ZIKV PCR assay for pregnant woman";NA;0;1;2
-"218";"zikv_pcr_everpos";"Exposure";1;NA;1;"CAT";-2;85;NA;"Was the pregnant woman ever PCR positive in any maternal body fluid (including placenta & amnio)?";NA;1;1;1
-"219";"zikv_pcr_ga_1";"Exposure";1;NA;1;"C";NA;80;NA;"Gestational age at sample collection for 1st ZIKV PCR in pregnant woman, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information";NA;0;0;1
-"220";"zikv_pcr_res_1";"Exposure";1;NA;1;"B";-2;82;NA;"Result of 1st ZIKV PCR in pregnant woman";NA;1;1;1
-"221";"zikv_pcr_tri_1";"Exposure";1;NA;1;"CAT";NA;81;NA;"Trimester at sample collection for 1st ZIKV PCR in pregnant woman";NA;0;0;1
-"222";"zikv_pcr_vl_1";"Exposure";NA;1;1;"C";NA;83;NA;"Viral load (copies/µL) for a PCR for 1st ZIKV PCR";NA;0;0;1
-"223";"zikv_preg";"Exposure";1;1;1;"B";NA;111;1;"Was pregnant woman diagnosed with ZIKV during this pregnancy using any criteria (clinical or laboratory diagnosis or self report) as defined by the study?";NA;1;1;3
-"224";"zikv_prnt_1";"Exposure";NA;NA;NA;NA;NA;102;NA;"ZIKV PRNT result per WHO definition";NA;0;NA;0
-"225";"zikv_prnt_everpos";"Exposure";NA;NA;NA;NA;NA;107;NA;"ZIKV PRNT Ever titers => 20";NA;0;NA;0
-"226";"zikv_prnt_everpos_studydef";"Exposure";NA;NA;NA;NA;NA;108;NA;"ZIKV PRNT Ever titers => 20 as per study definition";NA;0;NA;0
-"227";"zikv_prnt_studydef_1";"Exposure";NA;NA;NA;NA;NA;103;NA;"ZIKV PRNT result per the study definition";NA;0;NA;0
-"228";"zikv_prnt_titer_1";"Exposure";NA;NA;NA;NA;NA;104;NA;"ZIKV PRNT titer (This is the point at which 90% or greater inhibition of plaque formation was documented)";NA;0;NA;0
-"229";"zikv_symp_to_sampcol";"Exposure";NA;NA;NA;NA;NA;116;NA;"Time (in days) between ZIKV-related symptom onset and sample collection for ZIKV assay";NA;0;NA;0
-"230";"zikv_symp_to_test";"Exposure";NA;NA;NA;NA;NA;117;NA;"Time (in days) between ZIKV-related symptom onset and ZIKV assay date";NA;0;NA;0
-"231";"zikv_tri";"Exposure";1;NA;1;"CAT";NA;110;NA;"If yes, at what point  (trimester) during the current pregnancy did you get the Zika diagnosis?";NA;0;1;2
-"232";"zikvdenv_prnt_titerdiff_1";"Exposure";NA;NA;NA;NA;NA;105;NA;"Difference between ZIKV and DENV PRNTs";NA;0;NA;0
-"233";"zikvdenv_prnt_titerdiff_res_1";"Exposure";NA;NA;NA;NA;NA;106;NA;"Result of the difference between the ZIKV and DENV PRNTs";NA;0;NA;0
+";NA;NA;NA;0;NA;0;NA
+"127";"med_anticonvuls";"Pwoman";NA;NA;NA;NA;NA;27;NA;"Type of anticonvulsant mother received during pregnancy";NA;NA;NA;0;NA;0;NA
+"128";"med_anticonvuls_bin";"Pwoman";NA;NA;1;"B";NA;26;NA;"Mother received any anticonvulsant during pregnancy";NA;NA;NA;0;0;1;"0"
+"129";"med_bin";"Pwoman";NA;NA;1;"B";NA;25;NA;"Indicate if the (pregnant) woman use any type of medications during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"130";"med_fertil";"Pwoman";NA;NA;NA;NA;NA;31;NA;"Reproductive assistance/fertility treatments received for this specific pregnancy?";NA;NA;NA;0;NA;0;NA
+"131";"med_fertil_bin";"Pwoman";NA;NA;1;"B";NA;30;NA;"Medications for ovarian stimulation, such as clomiphene citrate, or Femara for this specific pregnancy?";NA;NA;NA;0;0;1;"0"
+"132";"med_preg";"Pwoman";NA;NA;NA;NA;NA;29;NA;"Specify medications taken specifically for the current pregnancy";NA;NA;NA;0;NA;0;NA
+"133";"med_preg_bin";"Pwoman";NA;NA;1;"B";NA;28;NA;"Any pregnancy medications taken during the current pregnancy (specifically pregnancy medications such as Folic Acid, Calcium, etc)?";NA;NA;NA;0;0;1;"0"
+"134";"microcephaly";"Outcome";1;NA;1;"CAT";NA;225;1;"Level of microcephaly - as defined by the study.";NA;NA;NA;1;1;3;"1"
+"135";"microcephaly_bin";"Outcome";1;1;1;"B";-2;224;NA;"Ever diagnosed with microcephaly? As defined by the study.";NA;NA;NA;1;1;1;"1"
+"136";"microcephaly_posn";"Outcome";NA;NA;2;"B";NA;226;NA;"Presence of postnatal microcephalea, microscephalia criteria for follow up measures was calculated with the who_hcircm2zscore() function";NA;NA;NA;0;1;3;"1"
+"137";"mid_original";"ID";1;NA;1;"STR";-3;2;1;"Mother ID";NA;NA;NA;1;1;0;"1"
+"138";"miscarriage";"Outcome";1;NA;1;"B";-2;167;NA;"Documented miscarriage: spontaneous loss of the product of the gestation <20 wks";NA;NA;NA;1;1;1;"1"
+"139";"miscarriage_ga";"Outcome";1;NA;1;"T";-2;168;NA;"Gestational age of miscarriage (Weeks; miscarriage defined as spontaneous loss prior to 20 weeks is a miscarraige)";"(weeks)";0;NA;0;0;-1;"0"
+"140";"multiplegest";"Outcome";1;NA;1;"B";NA;179;1;"Multiple vs single gestation";NA;NA;NA;1;1;3;"1"
+"141";"muscle_pain";"Exposure";NA;NA;NA;NA;NA;127;NA;"Muscle pain present during the current pregnancy?";NA;NA;NA;0;NA;0;NA
+"142";"muscle_pain_n";"Exposure";NA;NA;NA;NA;NA;128;NA;"Number of episodes of muscle pain present during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"143";"neuroabnormality";"Outcome";NA;NA;2;"B";NA;222;1;"Presence of any neuroabnormality";NA;NA;NA;1;1;4;"1"
+"144";"occupation";"Pwoman";NA;NA;NA;NA;NA;9;NA;"Mother's occupation";NA;NA;NA;0;NA;0;NA
+"145";"othabnorm";"Outcome";1;NA;1;"B";2;219;1;"Other brain abnormalities detected during fetal or infant period using US, MRI, or CT";NA;NA;NA;0;1;4;"1"
+"146";"othabnorm_spec";"Outcome";NA;NA;NA;"CAT";NA;220;NA;"Specify other fetal or infant brain abnormalities detected by US, MRI, CT";NA;NA;NA;0;NA;0;NA
+"147";"parity";"Pwoman";1;NA;1;"CAT";NA;13;1;"Number of previous live births (parity)";NA;NA;NA;1;1;3;"1"
+"148";"parvo";"Pwoman";NA;NA;1;"B";NA;68;NA;"Intrauterine exposure to parvovirus B19 infection (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"149";"pre_pregweight";"Pwoman";NA;1;1;"C";NA;41;NA;"Pre-pregnancy weight, in kg";"(Kg)";0;NA;0;0;1;"0"
+"150";"preeclampsia";"Pwoman";NA;NA;NA;NA;NA;59;NA;"Preeclampsia";NA;NA;NA;0;NA;0;NA
+"151";"pregcomp";"Pwoman";NA;NA;NA;NA;NA;51;NA;"Type of complications experienced by the mother during this specific pregnancy?";NA;NA;NA;0;NA;0;NA
+"152";"pregcomp_bin";"Pwoman";1;NA;1;"B";NA;50;NA;"Presence of complications during this specific pregnancy?";NA;NA;NA;0;0;1;"0"
+"153";"pregcomp_oth";"Pwoman";NA;NA;NA;NA;NA;52;NA;"Specify other current pregnancy complications";NA;NA;NA;0;NA;0;NA
+"154";"pretermlabor";"Pwoman";NA;NA;NA;NA;NA;53;NA;"Preterm labor for this specific pregnancy";NA;NA;NA;0;NA;0;NA
+"155";"pretermlabor_ga";"Pwoman";NA;NA;NA;NA;NA;54;NA;"GA when preterm labor started for this current pregnancy";NA;NA;NA;0;NA;0;NA
+"156";"prev_birthdef_bin";"Pwoman";NA;NA;NA;NA;NA;19;NA;"Birth defects in pregnancy prior to this one.";NA;NA;NA;0;NA;0;NA
+"157";"prev_comorbid_bin";"Pwoman";NA;1;1;"B";NA;22;NA;"Presence of comorbidities (i.e: chronic/ pre-existent/ conditions) before the current pregnancy?";NA;NA;NA;0;0;1;"0"
+"158";"prev_eclampsia";"Pwoman";NA;NA;NA;NA;NA;17;NA;"Eclampsia in pregnancy prior to this one.";NA;NA;NA;0;NA;0;NA
+"159";"prev_gestdiabet";"Pwoman";NA;NA;NA;NA;NA;16;NA;"Gestational diabetes in any prior pregnancies?";NA;NA;NA;0;NA;0;NA
+"160";"prev_preeclampsia";"Pwoman";NA;NA;NA;NA;NA;18;NA;"Preeclampsia in pregnancy prior to this one.";NA;NA;NA;0;NA;0;NA
+"161";"prev_pregcomp_oth_bin";"Pwoman";NA;NA;NA;NA;NA;20;NA;"Complications in pregnancy prior to this one other than gestational diabetes, preterm labor, preeclampsia and eclapmsia in previous pregnancies.";NA;NA;NA;0;NA;0;NA
+"162";"prev_pregcomp_oth_spec";"Pwoman";NA;NA;NA;NA;NA;21;NA;"Specify other complications during a previous pregnancy";NA;NA;NA;0;NA;0;NA
+"163";"prev_pregloss";"Pwoman";NA;NA;NA;NA;NA;14;NA;"Any previous pregnancy loss";NA;NA;NA;0;NA;0;NA
+"164";"prev_pretermlabor";"Pwoman";NA;NA;NA;NA;NA;15;NA;"Any history of preterm labor in any prior pregnancies?";NA;NA;NA;0;NA;0;NA
+"165";"rash";"Exposure";1;NA;1;"B";NA;123;1;"Presence of rash during the current pregnancy";NA;NA;NA;1;1;3;"1"
+"166";"rash_type";"Exposure";NA;NA;NA;NA;NA;124;NA;"Type of rash";NA;NA;NA;0;NA;0;NA
+"167";"rubella";"Pwoman";NA;NA;1;"B";NA;69;NA;"Intrauterine exposure to rubella infection (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"168";"runnynose";"Exposure";NA;NA;NA;NA;NA;136;NA;"Runny nose present during the current pregnancy?";NA;NA;NA;0;NA;0;NA
+"169";"ses";"Pwoman";NA;1;1;"CAT";NA;7;NA;"Maternal socioeconomic status identified as low, medium or high SES, or income";NA;NA;NA;0;0;1;"0"
+"170";"sorethroat";"Exposure";NA;NA;NA;NA;NA;138;NA;"Sore throat during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"171";"storch";"Pwoman";NA;NA;1;"CAT";-2;61;NA;"Which STORCH pathogens were found during the current pregnancy?";NA;NA;NA;1;1;1;"1"
+"172";"storch_bin";"Pwoman";NA;NA;1;"B";-2;60;NA;"Evidence of any (overall) STORCH pathogen infection during the current pregnancy?";NA;NA;NA;1;1;1;"1"
+"173";"storch_patho";"Exposure";NA;NA;2;"B";NA;163;1;"Presence of any storch pathogen";NA;NA;NA;1;1;4;"1"
+"174";"studyname";"ID";NA;NA;1;"STR";2;1;1;"Study ID";NA;NA;NA;1;NA;4;NA
+"175";"symp_date";"Exposure";1;NA;1;"D";NA;113;NA;"Date of onset of ZIKV-related symptoms (ZIKV symptoms as defined by the study) in pregnant woman";NA;NA;NA;0;1;2;"1"
+"176";"symp_ga";"Exposure";1;NA;1;"T";-2;114;NA;"Gestational age (weeks) at onset of ZIKV-related symptoms in pregnant woman, as measured by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";"(weeks)";0;NA;0;0;-1;"0"
+"177";"symp_oth";"Exposure";NA;NA;NA;NA;NA;139;NA;"Other symptoms present the current pregnancy?";NA;NA;NA;0;NA;0;NA
+"178";"symp_oth_spec";"Exposure";NA;NA;NA;NA;NA;140;NA;"Specify other symptoms present during the current pregnancy";NA;NA;NA;0;NA;0;NA
+"179";"symp_tri";"Exposure";1;NA;1;"CAT";-2;115;NA;"Trimester onset of ZIKV-related symptoms in pregnant woman, as measured by US, LMP or unspecified self report";NA;NA;NA;1;1;1;"1"
+"180";"syphilis";"Pwoman";NA;NA;1;"B";NA;64;NA;"Intrauterine exposure to syphilis infection/treponema pallidum (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;1;2;"1"
+"181";"syphilis_treat";"Pwoman";NA;NA;1;"B";NA;65;NA;"Did you receive treatment for syphilis infection during the current pregnancy?";NA;NA;NA;0;0;1;"0"
+"182";"syphilis_treat_type";"Pwoman";NA;NA;NA;NA;NA;66;NA;"Describe the treatment received for the episode of syphilis infection during the current pregnancy?";NA;NA;NA;0;NA;0;NA
+"183";"tobacco";"Pwoman";1;1;1;"CAT";3;46;1;"Mother smokes tobacco during the current pregancy";NA;NA;NA;0;1;5;"1"
+"184";"toxo";"Pwoman";NA;NA;1;"B";NA;62;NA;"Intrauterine exposure to toxoplasmosis (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;1;2;"1"
+"185";"toxo_treat";"Pwoman";NA;NA;1;"B";NA;63;NA;"Did you receive treatment for toxoplasmosis infection during the current pregnancy?";NA;NA;NA;0;0;1;"0"
+"186";"travel";"Pwoman";NA;NA;NA;NA;NA;10;NA;"History of travel to endemic areas during current pregnancy including the period around the gestation (if Known)? 
+Endemic areas -as per study definition, and/or if Travels to Latin America and the Caribbean, South Asia or Africa.";NA;NA;NA;0;NA;0;NA
+"187";"uti";"Pwoman";NA;NA;NA;NA;NA;55;NA;"Urinary tract infection";NA;NA;NA;0;NA;0;NA
+"188";"uti_n";"Pwoman";NA;NA;NA;NA;NA;56;NA;"Number of UTI during the current pregancy?";NA;NA;NA;0;NA;0;NA
+"189";"vac_rub_enroll";"Pwoman";NA;NA;1;"B";NA;47;NA;"History of rubella vaccination at enrollment?";NA;NA;NA;0;0;1;"0"
+"190";"vac_vari_enroll";"Pwoman";NA;NA;1;"B";NA;48;NA;"History of varicella vaccination at enrollment?";NA;NA;NA;0;0;1;"0"
+"191";"vac_yf_enroll";"Pwoman";NA;NA;1;"B";NA;49;NA;"History of yellow fever vaccination at enrollment?";NA;NA;NA;0;0;1;"0"
+"192";"varicella";"Pwoman";NA;NA;1;"B";NA;67;NA;"Intrauterine exposure to varicella-zoster infection (TORCH pathogen) during the current pregnancy";NA;NA;NA;0;0;1;"0"
+"193";"ventriculomegaly";"Outcome";1;NA;1;"B";NA;218;1;"Ventriculomegaly detected during fetal or infant period using US, MRI, or CT.  Ventriculomegaly is an enlargement of the ventricles of the brain.";NA;NA;NA;1;1;3;"1"
+"194";"vomiting";"Exposure";NA;NA;NA;NA;NA;132;NA;"Vomiting present during the current  episode of arboviral disease?";NA;NA;NA;0;NA;0;NA
+"195";"weight";"Pwoman";1;NA;1;"C";NA;40;NA;"Weight, in kg (1st trimester)";"(Kg)";0;NA;0;0;1;"0"
+"196";"zikv_assay_date";"Exposure";NA;NA;NA;"D";NA;76;NA;"Date of sample collection for ANY ZIKV-related assay for pregnant woman";NA;NA;NA;0;NA;0;NA
+"197";"zikv_assay_ga";"Exposure";NA;NA;NA;"T";NA;77;NA;"Gestational age at sample collection for ANY ZIKV-related assay in pregnant woman, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information";NA;NA;NA;0;NA;0;NA
+"198";"zikv_assay_tri";"Exposure";NA;NA;NA;"CAT";NA;78;NA;"Trimester at sample collection for ANY ZIKV assay in pregnant woman";NA;NA;NA;0;NA;0;NA
+"199";"zikv_confirmtest";"Exposure";NA;NA;NA;NA;NA;112;NA;"Was the ZIKV diagnosis subject to confirmatory testing?";NA;NA;NA;0;NA;0;NA
+"200";"zikv_elisa_date_1";"Exposure";1;NA;1;"D";NA;87;NA;"Date of sample collection for 1st ZIKV ELISA (either IgM/IgG) for pregnant woman";NA;NA;NA;0;0;1;"0"
+"201";"zikv_elisa_everpos";"Exposure";1;NA;1;"CAT";NA;90;NA;"Did the pregnant woman ever have a positive ZIKV ELISA (IgM/IgG)";NA;NA;NA;0;1;2;"1"
+"202";"zikv_elisa_ga_1";"Exposure";1;NA;1;"T";NA;86;NA;"Gestational age at sample collection for 1st ZIKV ELISA (either IgM/IgG) in pregnant women, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";"(weeks)";0;NA;0;0;1;"0"
+"203";"zikv_elisa_res_1";"Exposure";1;NA;1;"CAT";NA;91;NA;"Result of 1st ZIKV ELISA (IgM/IgG) in pregnant woman (According to the type of testing and the comparison with other arboviruses)";NA;NA;NA;0;1;2;"1"
+"204";"zikv_elisa_res_studydef_1";"Exposure";NA;NA;NA;NA;NA;89;NA;"Result of 1st ZIKV ELISA (IgM/IgG) in pregnant woman (As defined by the study)";NA;NA;NA;0;NA;0;NA
+"205";"zikv_elisa_tri_1";"Exposure";1;NA;1;"CAT";NA;88;NA;"Trimester at sample collection for 1st ZIKV ELISA (IgM/IgG) in pregnant woman";NA;NA;NA;0;0;1;"0"
+"206";"zikv_ga";"Exposure";1;NA;1;"T";2;109;1;"Gestational age at which women diagnosed with ZIKV, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";"(weeks)";0;NA;0;1;4;"1"
+"207";"zikv_igg_ga_1";"Exposure";NA;NA;NA;NA;NA;95;NA;"Gestational age at sample collection for 1st IgG ZIKV ELISA in pregnant women, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";NA;NA;NA;0;NA;0;NA
+"208";"zikv_igg_pnratio_1";"Exposure";NA;NA;NA;NA;NA;101;NA;"ZIKV IgG P/N ratio";NA;NA;NA;0;NA;0;NA
+"209";"zikv_igg_res_1";"Exposure";NA;NA;NA;NA;NA;97;NA;"ZIKV IgG result";NA;NA;NA;0;NA;0;NA
+"210";"zikv_igg_titer_1";"Exposure";NA;NA;NA;NA;NA;100;NA;"ZIKV IgG titer";NA;NA;NA;0;NA;0;NA
+"211";"zikv_igg_tri_1";"Exposure";NA;NA;NA;NA;NA;96;NA;"Trimester at sample collection for 1st IgG ZIKV ELISA in pregnant woman";NA;NA;NA;0;NA;0;NA
+"212";"zikv_igm_ga_1";"Exposure";NA;NA;NA;NA;NA;92;NA;"Gestational age at sample collection for 1st IgM ZIKV ELISA  in pregnant women, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information.";NA;NA;NA;0;NA;0;NA
+"213";"zikv_igm_pnratio_1";"Exposure";NA;NA;NA;NA;NA;99;NA;"ZIKV IgM P/N ratio";NA;NA;NA;0;NA;0;NA
+"214";"zikv_igm_res_1";"Exposure";NA;NA;NA;NA;NA;94;NA;"ZIKV IgM result";NA;NA;NA;0;NA;0;NA
+"215";"zikv_igm_titer_1";"Exposure";NA;NA;NA;NA;NA;98;NA;"ZIKV IgM titer";NA;NA;NA;0;NA;0;NA
+"216";"zikv_igm_tri_1";"Exposure";NA;NA;NA;NA;NA;93;NA;"Trimester at sample collection for 1st IgM ZIKV ELISA  in pregnant woman";NA;NA;NA;0;NA;0;NA
+"217";"zikv_pcr_ct_1";"Exposure";NA;NA;NA;NA;NA;84;NA;"ZIKV PCR Cycle Time Threshold (CT) value for 1st ZIKV PCR";NA;NA;NA;0;NA;0;NA
+"218";"zikv_pcr_date_1";"Exposure";1;NA;1;"D";NA;79;NA;"Date of sample collection for 1st ZIKV PCR assay for pregnant woman";NA;NA;NA;0;1;2;"1"
+"219";"zikv_pcr_everpos";"Exposure";1;NA;1;"CAT";-2;85;NA;"Was the pregnant woman ever PCR positive in any maternal body fluid (including placenta & amnio)?";NA;NA;NA;1;1;1;"1"
+"220";"zikv_pcr_ga_1";"Exposure";1;NA;1;"T";NA;80;NA;"Gestational age at sample collection for 1st ZIKV PCR in pregnant woman, by EITHER ultrasound or LMP, in weeks. If both (ultrasound and LMP) information is avaiblable, priorotize ultrasound's GA information";"(weeks)";0;NA;0;0;1;"0"
+"221";"zikv_pcr_res_1";"Exposure";1;NA;1;"B";-2;82;NA;"Result of 1st ZIKV PCR in pregnant woman";NA;NA;NA;1;1;1;"1"
+"222";"zikv_pcr_tri_1";"Exposure";1;NA;1;"CAT";NA;81;NA;"Trimester at sample collection for 1st ZIKV PCR in pregnant woman";NA;NA;NA;0;0;1;"0"
+"223";"zikv_pcr_vl_1";"Exposure";NA;1;1;"C";NA;83;NA;"Viral load (copies/µL) for a PCR for 1st ZIKV PCR";"(copies/microL)";0;NA;0;0;1;"0"
+"224";"zikv_preg";"Exposure";1;1;1;"B";NA;111;1;"Was pregnant woman diagnosed with ZIKV during this pregnancy using any criteria (clinical or laboratory diagnosis or self report) as defined by the study?";NA;NA;NA;1;1;3;"1"
+"225";"zikv_prnt_1";"Exposure";NA;NA;NA;NA;NA;102;NA;"ZIKV PRNT result per WHO definition";NA;NA;NA;0;NA;0;NA
+"226";"zikv_prnt_everpos";"Exposure";NA;NA;NA;NA;NA;107;NA;"ZIKV PRNT Ever titers => 20";NA;NA;NA;0;NA;0;NA
+"227";"zikv_prnt_everpos_studydef";"Exposure";NA;NA;NA;NA;NA;108;NA;"ZIKV PRNT Ever titers => 20 as per study definition";NA;NA;NA;0;NA;0;NA
+"228";"zikv_prnt_studydef_1";"Exposure";NA;NA;NA;NA;NA;103;NA;"ZIKV PRNT result per the study definition";NA;NA;NA;0;NA;0;NA
+"229";"zikv_prnt_titer_1";"Exposure";NA;NA;NA;NA;NA;104;NA;"ZIKV PRNT titer (This is the point at which 90% or greater inhibition of plaque formation was documented)";NA;NA;NA;0;NA;0;NA
+"230";"zikv_symp_to_sampcol";"Exposure";NA;NA;NA;NA;NA;116;NA;"Time (in days) between ZIKV-related symptom onset and sample collection for ZIKV assay";NA;NA;NA;0;NA;0;NA
+"231";"zikv_symp_to_test";"Exposure";NA;NA;NA;NA;NA;117;NA;"Time (in days) between ZIKV-related symptom onset and ZIKV assay date";NA;NA;NA;0;NA;0;NA
+"232";"zikv_tri";"Exposure";1;NA;1;"CAT";NA;110;NA;"If yes, at what point  (trimester) during the current pregnancy did you get the Zika diagnosis?";NA;NA;NA;1;1;3;"1"
+"233";"zikvdenv_prnt_titerdiff_1";"Exposure";NA;NA;NA;NA;NA;105;NA;"Difference between ZIKV and DENV PRNTs";NA;NA;NA;0;NA;0;NA
+"234";"zikvdenv_prnt_titerdiff_res_1";"Exposure";NA;NA;NA;NA;NA;106;NA;"Result of the difference between the ZIKV and DENV PRNTs";NA;NA;NA;0;NA;0;NA
