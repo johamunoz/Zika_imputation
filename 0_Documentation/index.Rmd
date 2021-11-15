@@ -225,7 +225,7 @@ data[,microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c
 ```
 
 ## 2.1. Calculate postnatal microcephaly
-In order to calculate the microscephaly z score we used the who_hcirm2zcore that provide the scores according WHO definitions. It is necessary to remark that the zscore of follow up measurements taken after 61 months were set to NA as time values are outside the range of the WHO standards.
+In order to calculate the microscephaly z score we used the who_hcirm2zcore that provide the scores according to WHO definitions. It is necessary to remark that the zscore of follow up measurements taken after 61 months were set to NA as time values are outside the range of the WHO standards.
 
 ```{r}
 for(t in 1:3){
@@ -243,9 +243,6 @@ data[,postsum:=rowSums(data[,c("microcephaly_bin_fu1","microcephaly_bin_fu2","mi
 data[,microcephaly_posn:=ifelse(is.na(microcephaly_bin_fu1)&is.na(microcephaly_bin_fu2)&is.na(microcephaly_bin_fu3),NA,ifelse(postsum>0&microcephaly_bin==0,1,0))]
 
 ```
-
-# Notes @Anneke
-No idea how to add the microcephaly_posn in the czsn value...
 
 ## 2.2. CZS correction
 To facilitate the construction of abnormality variables we created the following function
