@@ -39,21 +39,105 @@ f.rr <- function(rr.table) {
   rr.ub<-exp(log.rr.ub)
   return(c(rr,rr.lb,rr.ub,log.rr,log.rr.lb,log.rr.ub,log.rr.se))
 }
+#Function to calculate prediction interval using logit transformation
 PredInt <- function(fit.rma)
 {
   pi <- inv.logit(fit.rma$b + qt(c(0.025, 0.975), df=(fit.rma$k-2))*sqrt(fit.rma$tau2 + fit.rma$se**2))
   return(pi)
 } #Function predict.rma uses k-1 degrees of freedom instead of k-2. Therefore written this function
-PredIntOE <- function(fit.rma)
+#Function to calculate prediction interval using log transformation
+PredIntLog <- function(fit.rma)
 {
   pi <- exp(fit.rma$b + qt(c(0.025, 0.975), df=(fit.rma$k-2))*sqrt(fit.rma$tau2 + fit.rma$se**2))
   return(pi)
 }
+#Function to calculate absolute risk of an outcome per study and per imputed dataset
+f.abs.perstudy<-function(data, outcome_name) {
+  
+  dataset.n<-length(data[data$.imp==1,]$studyname)
+  #Calculate absolute risk of outcome per study
+  for (i in 1:length(unique(data$.imp))) {
+    d<-data[data$.imp==i,]
+    d$outcome <- d[, outcome_name]
+    inc<-as.data.frame(d %>% 
+                         group_by(studyname) %>% 
+                         summarise(p=f.incidence(outcome,dataset.n)[1],
+                                   ci.l=f.incidence(outcome,dataset.n)[2],
+                                   ci.u=f.incidence(outcome,dataset.n)[3]))
+    if(i==1) {inc.outcome<-inc}
+    if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
+  }
+  #Replace 0's by 0.000001
+  colnames(inc.outcome)<-c("studyname","incidence","ci.l","ci.u")
+  inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
+  inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
+  
+  #Logit transformation
+  inc.outcome$logit.incidence<-logit(inc.outcome$incidence)
+  inc.outcome$logit.ci.l<-logit(inc.outcome$ci.l)
+  inc.outcome$logit.ci.u<-logit(inc.outcome$ci.u)
+  inc.outcome$logit.se<-(inc.outcome$logit.ci.u-inc.outcome$logit.ci.l)/(2*1.96)
+  inc.outcome
+}
+
+#Function to pool the absolute risks per study per imputed dataset using rubins rules
+#Results in absolute risk per study
+f.abs.poolrubin <-function(data,inc.outcome) {
+  pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data$studyname)), ncol = 8))
+  colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
+                          "logit.se","logit.ci.lb","logit.ci.ub")
+  for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
+    a<-inc.outcome[inc.outcome$studyname==i,]
+    pool.rubin$studyname[i]<-i
+    pool.rubin$logit.abs[i] <- mean(a$logit.incidence)
+    pool.rubin$within[i] <- mean(a$logit.se^2)
+    pool.rubin$between[i] <- (1 + (1/m)) * var(a$logit.incidence)
+    pool.rubin$logit.var[i] <- pool.rubin$within[i] + pool.rubin$between[i]
+    pool.rubin$logit.se[i] <- sqrt(pool.rubin$logit.var[i])
+    pool.rubin$logit.ci.lb[i] <- pool.rubin$logit.abs[i] + qnorm(0.05/2)     * pool.rubin$logit.se[i]
+    pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
+  }
+  #Recode studyname
+  pool.rubin$studyname<-as.factor(pool.rubin$studyname)
+  levels(pool.rubin$studyname)<-studynames
+  
+  abs.outcome<-pool.rubin
+  abs.outcome$incidence<-inv.logit(abs.outcome$logit.abs)*100
+  abs.outcome$ci.lb<-inv.logit(abs.outcome$logit.ci.lb)*100
+  abs.outcome$ci.ub<-inv.logit(abs.outcome$logit.ci.ub)*100
+  
+  return(abs.outcome)
+}
+#Function to perform a meta-analysis of the absolute risks per study
+#Results in one overall pooled estimate of absolute risk
+f.abs.2s.ma<-function(abs.outcome) {
+  #Pool results: two-stage meta-analysis
+  fit.rma<-rma(yi = logit.abs, sei = logit.se, method = "REML", test = "knha", 
+               data = abs.outcome)
+  pool.outcome<-data.frame(matrix(NA, nrow = 1, ncol = 9))
+  colnames(pool.outcome)<-c("logit.abs","logit.se","logit.ci.lb","logit.ci.ub",
+                            "abs.risk","ci.lb","ci.ub","pi.lb","pi.ub")
+  pool.outcome$logit.abs<-fit.rma$beta
+  pool.outcome$logit.se<-fit.rma$se
+  pool.outcome$logit.ci.lb<-fit.rma$ci.lb
+  pool.outcome$logit.ci.ub<-fit.rma$ci.ub
+  pool.outcome$abs.risk<-inv.logit(pool.outcome$logit.abs[[1]])*100
+  pool.outcome$ci.lb<-inv.logit(pool.outcome$logit.ci.lb)*100
+  pool.outcome$ci.ub<-inv.logit(pool.outcome$logit.ci.ub)*100
+  #Prediction interval
+  PI<-PredInt(fit.rma)
+  pool.outcome$pi.lb<-PI[1]*100
+  pool.outcome$pi.ub<-PI[2]*100
+  return(pool.outcome)
+}
+
+######################################################################################
+#################################Load and prepare data################################
+######################################################################################
 
 setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data")
 load("imputation2.RData")
 data <- complete(merged_imp, "long")
-dataset.n<-length(data[data$.imp==1,]$studyname)
 rm(merged_imp)
 m<-max(data$.imp)
 studynames<-c("014-BRA","001-BRA","002-BRA","010-BRA","007-COL",
@@ -97,76 +181,23 @@ setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten")
 ###################################Microcephaly###################################
 ##################################################################################
 
-#Calculate incidence of outcome per study
-for (i in 1:length(unique(data.zika$.imp))) {
-  d<-data.zika[data.zika$.imp==i,]
-  inc<-as.data.frame(d %>% 
-                       group_by(studyname) %>% 
-                       summarise(p=f.incidence(microcephaly,dataset.n)[1],ci.l=f.incidence(microcephaly,dataset.n)[2],ci.u=f.incidence(microcephaly,dataset.n)[3]))
-  if(i==1) {inc.outcome<-inc}
-  if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
-}
-#Replace 0's by 0.000001
-colnames(inc.outcome)<-c("studyname","incidence","ci.l","ci.u")
-inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
-inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
-
-#Pool with Rubins rules
-inc.outcome$logit.incidence<-logit(inc.outcome$incidence)
-inc.outcome$logit.ci.l<-logit(inc.outcome$ci.l)
-inc.outcome$logit.ci.u<-logit(inc.outcome$ci.u)
-inc.outcome$logit.se<-(inc.outcome$logit.ci.u-inc.outcome$logit.ci.l)/(2*1.96)
-
-pool.rubin<- data.frame(matrix(NA, nrow = length(unique(data.zika$studyname)), ncol = 8))
-colnames(pool.rubin)<-c("studyname","logit.abs","within","between","logit.var",
-                                    "logit.se","logit.ci.lb","logit.ci.ub")
-for (i in 1:max(inc.outcome$studyname,na.rm=T)) {
-  a<-inc.outcome[inc.outcome$studyname==i,]
-  pool.rubin$studyname[i]<-i
-  pool.rubin$logit.abs[i] <- mean(a$logit.incidence)
-  pool.rubin$within[i] <- mean(a$logit.se^2)
-  pool.rubin$between[i] <- (1 + (1/m)) * var(a$logit.incidence)
-  pool.rubin$logit.var[i] <- pool.rubin$within[i] + pool.rubin$between[i]
-  pool.rubin$logit.se[i] <- sqrt(pool.rubin$logit.var[i])
-  pool.rubin$logit.ci.lb[i] <- pool.rubin$logit.abs[i] + qnorm(0.05/2)     * pool.rubin$logit.se[i]
-  pool.rubin$logit.ci.ub[i] <- pool.rubin$logit.abs[i] + qnorm(1 - 0.05/2) * pool.rubin$logit.se[i]
-}
-#Recode studyname
-pool.rubin$studyname<-as.factor(pool.rubin$studyname)
-levels(pool.rubin$studyname)<-studynames
-
-abs.outcome<-pool.rubin
-abs.outcome$incidence<-inv.logit(abs.outcome$logit.abs)*100
-abs.outcome$ci.lb<-inv.logit(abs.outcome$logit.ci.lb)*100
-abs.outcome$ci.ub<-inv.logit(abs.outcome$logit.ci.ub)*100
-
-#Pool results: two-stage meta-analysis
-fit.rma<-rma(yi = logit.abs, sei = logit.se, method = "REML", test = "knha", 
-                       data = abs.outcome)
-pool.outcome<-data.frame(matrix(NA, nrow = 1, ncol = 7))
-colnames(pool.outcome)<-c("logit.abs","logit.se","logit.ci.lb","logit.ci.ub",
-                               "abs.risk","ci.lb","ci.ub")
-pool.outcome$logit.abs<-fit.rma$beta
-pool.outcome$logit.se<-fit.rma$se
-pool.outcome$logit.ci.lb<-fit.rma$ci.lb
-pool.outcome$logit.ci.ub<-fit.rma$ci.ub
-pool.outcome$abs.risk<-inv.logit(pool.outcome$logit.abs[[1]])*100
-pool.outcome$ci.lb<-inv.logit(pool.outcome$logit.ci.lb)*100
-pool.outcome$ci.ub<-inv.logit(pool.outcome$logit.ci.ub)*100
-#Prediction interval
-PI<-PredInt(fit.rma)
-PI<-cbind(inv.logit(fit.rma$b)[1,1], PI[1], PI[2])*100
+#Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
+inc.outcome<-f.abs.perstudy(data.zika,"microcephaly_bin")
+#Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
+abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
+#Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
+pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20210930 Microcephaly.png",width=750,height=500,res=100)
+#png(file="20211122 Microcephaly zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,13)), cex=1, steps=7, main="Microcephaly",
+                ylim=(c(-1,13)), cex=1, steps=7, main="Microcephaly, zika-positive women",
                 xlim=(c(-9,11)), alim=(c(0,6)))
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
-addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 ########Relative risk########
@@ -230,7 +261,7 @@ pool.outcome$ci.ub<-exp(pool.outcome$log.ci.ub)
 pool.outcome$n.studies<-fit.rma$k
 
 #Forest plot
-#png(file="20210930 Microcephaly RR.png",width=750,height=500,res=100)
+png(file="20211122 Microcephaly RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 0, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -238,8 +269,8 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlim=(c(-9,11)), alim=(c(0,6)))
 addpoly(x = pool.outcome$rr, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
-addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+dev.off()
 
 ##################################################################################
 ###################################Miscarriage###################################
