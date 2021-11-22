@@ -1,5 +1,5 @@
 ---
-title: "Plausibility bounds"
+title: "Assumptions for exposure variables"
 output: pdf_document
 ---
 
@@ -63,10 +63,11 @@ data[data==9999] <-  NA
 data[,Comb_id:=paste(studyname,mid_original,childid_original,sep="-")] #combined ID from study mother and child id
 ```
 
-In this document we describe the plausible values that are considered for each of the variables used in the imputation model. In addition we provide the rules that we applied on the creation of additional variables required for the imputation model.
+In this document we describe the range of plausible values considered for each of the variables used in the imputation model. In addition, we provide the rules we use for combination variables, which were created in order to include as much information in the model as possible without the need to add many variables with a high proportion of missing values. 
 
-## Plausibility bounds 
-The following table describes the plausibility bounds for the continuous variables and the time-related variables used in the imputation process. There you can see for each variable, the classification, the units and the plausibility bounds (minimum, maximum). We plan to set all values outside the plausible bounds as NA.
+# Plausibility bounds
+The following table describes the plausibility ranges for the continuous and time-related variables used in the imputation process. It shows the minimum and maximum value for each variable.  When an observation has values greater than or equal to the maximum value or less than or equal to the minimum value, we set the value of the variable out of range as NA. 
+
 ```{r functions,echo=F}
 Boundaries<-infoexp[Inclusion==1&Vtype%in%c("C","T"),c("Type","Variable","Vtype","Units","Min","Max")]
 Boundaries[,Vtype:=ifelse(Vtype=="C","Continuous","Time")]
@@ -77,11 +78,13 @@ knitr::kable(Boundaries,
                            "Variable type",
                            "Units",
                            "Min",
-                           "Max"))
+                           "Max"),
+             caption = "Plausibility bounds")
 
 ```
 
-By running this code, the "obs_to_check.RData" file is automatically generated with the observations outside the plausibility range. It can be found in the "3_Output_data" file. Inside the obs_to_check dataset, there is an additional column called "Var_to_check" that indicates the variable with possible implausible values for each observation.
+When running this code, the file "obs_to_check.RData" with the observations outside the plausibility range is automatically generated. This file contains all the information of the conflicting observations and additionally has the column "Var_to_check" with the name of the variable outside the limits and the column "Var_bound" with the possible outlier value. This file can be found in the folder "3_Output_data" in the folder "imputation process". 
+
 
 ```{r,echo=FALSE}
 boundvar=Boundaries$Variable
@@ -98,27 +101,36 @@ for(var in boundvar){
 save(obs_to_check,file=here('3_Output_data','obs_to_check.RData'))
 ```
 
+# Logical rules for exposures
 
-## Logic rules for exposures
+## Set to NA values
+SAS and R handle missing values differently. To facilitate the imputation process, we set to NA all values designated in the harmonisation process as 666,777,888,999. However, this assignment is not generalised as sometimes these NA values contain useful information in the definition of other variables.
 
-# Set to NA values
-SAS and R manage missing values differently. To make the imputation process easier, we set to NA all values equal to 666,777,888,999. Except for the arb_clindiag varaible, for which "777" values were assigned to a "6" level as it is used later on to define the CZS variable.
+## Zika test measurement time (zikv_ga)
+In case the date of the Zika test "zikv_ga" is not specified but information about the date of the PCR test "zikv_pcr_ga_1" or the elisa test "zikv_elisa_ga_1" is available. We set the value of zika_ga as the earliest date of the PCR and ELISA tests. 
+if is.na (zikv_ga) then zikv_ga = min(zikv_pcr_ga_1,zikv_elisa_ga_1)
 
-# Zika test time of measurement (zikv_ga)
-In case the zikv_ga value is not specified for an observation, but the time of measurement for the PCR "zikv_pcr_ga_1" or the elisa test "zikv_elisa_ga_1" wás specified, we set the zikv_ga value with the date of measurement of the earliest test. 
+After the last meeting with the exposures group, we will include the test value in the assignment, i.e. for tests with positive values, the date of the first positive test, and in case of tests with negative values, the date of the last test performed.
 
-if is.na (zikv_ga) then zikv_ga = min (zikv_pcr_ga_1,zikv_elisa_ga_1)
+## Creation of combination variables
+For the following variables, we combine different variables into a combination variable $x_{c}$ in order to include as much information as possible without affecting the imputation process. These variables try to describe globally the presence of a certain characteristic or disease in the subject. 
 
-# Creation of new variables
-For the following variables, we combine different variables in one general variable $x_{com}$in order to include the information in a simple way that helps us to avoid any imputation convergence problem. For instance if we want to create a new Xm variable that combines information of $x_1$,$x_2$,...,$x_n$. 
-If for any of this $x_i$ variables with any response, there is the presence of a characteristic, outcome or a positive test $x_i==1$,then the new variable $x_{com}$ is assigned with overall presence.
-  $$if (any (x_1==1, x_2==1,..x_n=1)) , then ,  x_{com}=1$$
-In case that no presence is found for all the $x_i$ variables with any response then the $x_{com}$ is assigned to no presence. $$if (all (x_1==0, x_2==0,..x_n=0)) , then ,  x_{com}=0$$
-If for a certain patient, there was no information on any of these $x_i$ variables then the observation is assigned to NA.\\
-$$if (all (is.na(x_1), is.na(x_2),..is.na(x_n=1)) ,then,  x_{com}=NA$$
+| Patient | x1 | x2 | x3 | xn | xc |
+|---------|----|----|----|----|----|
+| 1       | 1  | 0  | NA | NA | 1  |
+| 2       | NA | 0  | NA | 0  | 0  |
+| 3       | NA | NA | NA | NA | NA |
+Table: Example of combination variable
 
-# storch_patho
-Denotes the Intrauterine exposure to storch pathogens. It was created by combining the following variables with the previous explained rule. 
+For example, given the combination variable $x_c$ created from the variables $x_1$,$x_2$,...,$x_n$. We assign a presence value $x_m=1$, if any of the variables $x_i$ has a presence value $x_i=1$. (i.e. Patient 1, Table 2) 
+$$if (any (x_1==1, x_2==1,..x_n=1)),  then , x_{c}=1.$$
+We assign a non-presence value $x_m=0$ in case all variables has a non-presence value $x_i=0$ (i.e. Patient 2, Table 2). 
+$$if (all (is.na(x_1), is.na(x_2),..is.na(x_n=1))) ,then, x_{c}=NA.$$
+We assume that in case of missing values in some variable $x_i= NA$ its value is equal to non-presence $x_i=0$. When there are not observable values for all the $x_i$ we assign NA to the combination variable $x_c=NA$ (i.e. Patient 3, Table 2).
+
+### 1. storch_patho
+Denotes intrauterine exposure to storch pathogens. It was created by combining the following variables with the rule explained above. 
+
 
 - ifelse(storch==0,0,ifelse(!is.na(storch),1,0))]
 - storch_bin
@@ -136,26 +148,27 @@ Denotes the Intrauterine exposure to storch pathogens. It was created by combini
 - gonorrhea
 - genitalwarts
 
-# arb_ever
+### 2. arb_ever
 
-It refers to the presence of a prior arb virus infection, and it combines the following variables: 
+Refers to the presence of a previous arb virus infection, and the following variables were used to create it
 
 - ifelse(zikv_pcr_everpos==1,1,ifelse(zikv_pcr_everpos==0,0,NA))]
 - zikv_elisa_everpos
 - denv_ever
 - chikv_ever
 
-# flavi_alpha_virus
-This variable denotes the presence of concurrent or prior flavi- or alpha virus infection, and we used the following variables to create it. 
+### 3. flavi_alpha_virus
+This variable denotes the presence of a concurrent or previous flavi or alpha virus infection, and we combine the following variables 
+
 
 - ifelse(arb_clindiag_plus==0,0,ifelse(!is.na(arb_clindiag_plus),1,0))
 - ifelse(arb_clindiag!=0&arb_clindiag!=1,0,ifelse(!is.na(arb_clindiag),1,0))
 - denv_ever
 - chikv_ever
 
-# arb_preg_nz
+### 4. arb_preg_nz
 
-This variable is related to the presence of any arbo virus in the current pregnancy without considering zika virus.
+This variable is related to the presence of any arbovirus in the current pregnancy without considering zika virus, as the information on the presence of zika is found in the variable zika_preg.
 
 - ifelse(arb_clindiag==0|arb_clindiag==1,0,ifelse(!is.na(arb_clindiag),1,NA))
 - denv_preg
