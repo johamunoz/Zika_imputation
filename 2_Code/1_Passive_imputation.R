@@ -280,7 +280,7 @@ data[,birth:=NULL]
 data[,birth2:=NULL]
 
 
-gat0<-data[bdeath==1&micro]
+
 #5. Creation of additional covariates----
 
 #5.1. Maternal prescription drug use----
@@ -348,7 +348,7 @@ dmatrix2[,name:=fcase(
 dmatrix2[,name:=paste0(name,"\nN=",N)]
 dmatrix2[,miss:=round(value*100,1)]
 dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
-
+dmatrix2[,tmiss:=ifelse(miss==100,"Systematical","Sporadical")]
 
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
   geom_tile() +
@@ -359,7 +359,14 @@ p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
 
 ggplotly(p, tooltip="text")
 
+p2<- ggplot(dmatrix2, aes(x=name, y=variable,fill=tmiss,text=text)) +
+  geom_tile() +
+  scale_fill_manual(values=c("green","red")) +
+  theme(axis.text.x = element_text(angle = 45,vjust=0.5,size=8),
+        axis.text.y = element_text(size=8))+xlab("Study name")+ylab("Variable")+
+  labs(fill='Type of missing') 
 
+ggplotly(p2, tooltip="text")
 
 #7. Flux plot -----
 fx<-flux(data)
@@ -387,10 +394,11 @@ save(fdata, file = "3_Output_data/finaldata.RData")
 
 
 #10. Plot final----
-nindexf<-nindex[Final==1,]
-fdata<-data[, .SD, .SDcols = nindexf$names]
+nindexf<-infoexp[Imputation2>2,]
+fdata<-data[, .SD, .SDcols = nindexf$Variable]
 dmatrix<-fdata[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname]
 dmatrix2<-melt(dmatrix,id.vars="studyname")
+dmatrix2<-merge(dmatrix2,totalval,by="studyname")
 dmatrix2[,name:=fcase(
   studyname=="Brazil_RiodeJaneiro_CunhaPrata","Brazil\nCunhaPrata",
   studyname=="Brazil_SP_RibeiraoPreto_Duarte","Brazil\n Duarte",
@@ -403,9 +411,10 @@ dmatrix2[,name:=fcase(
   studyname=="Colombia_Mulkey"  ,"Colombia\nMulkey",
   studyname=="USA_Mulkey"  ,"USA\nMulkey"
 )]
-
+dmatrix2[,name:=paste0(name,"\nN=",N)]
 dmatrix2[,miss:=round(value*100,1)]
 dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
+dmatrix2[,tmiss:=ifelse(miss==100,"Systematical","Sporadical")]
 
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
   geom_tile() +
@@ -416,6 +425,17 @@ p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
 
 ggplotly(p, tooltip="text")
 
+p2<- ggplot(dmatrix2, aes(x=name, y=variable,fill=tmiss,text=text)) +
+  geom_tile() +
+  scale_fill_manual(values=c("green","red")) +
+  theme(axis.text.x = element_text(angle = 45,vjust=0.5,size=8),
+        axis.text.y = element_text(size=8))+xlab("Study name")+ylab("Variable")+
+  labs(fill='Type of missing') 
+
+ggplotly(p2, tooltip="text")
+
+
+####END of CODE##########
 
 
 
