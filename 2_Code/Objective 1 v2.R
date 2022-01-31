@@ -7,6 +7,8 @@ library(micemd)
 library(metafor)
 library(metamisc)
 library(EpiStats)
+library("lme4")
+library("logistf")
 
 #######Functions#######
 logit <- function(x) {
