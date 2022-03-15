@@ -32,7 +32,8 @@ rm(merged_imp)
 m<-max(data$.imp)
 studynames<-c("014-BRA","001-BRA","002-BRA","010-BRA","007-COL",
               "003-GUF","005-ESP","004-ESP","012-TTO","008-USA")
-data$studyname_fac<-as.factor(data$studyname,levels)
+data$studyname_fac<-factor(data$studyname)
+levels(data$studyname_fac)<-studynames
 
 #Create dichotomous outcome variables to calculate incidence
 #Microcephaly_bin
@@ -65,17 +66,55 @@ data.zika<-data[data$zikv_preg==1,]
 data.nozika<-data[data$zikv_preg==0,]
 
 ########################Analyses#############
-#Absolute risk:
-
+#Absolute risk with log link:
 fit1 <- glm(microcephaly_bin ~ zikv_preg, 
-            data = data, 
-            family = binomial(link="log")) #-> log RR Deze kan ik gebruiken om absolute risks te berekenen
-summary(fit1)
-exp(fit1$coefficients[2])
+            data = data, family = binomial(link="log")) #-> log RR Deze kan ik gebruiken om absolute risks te berekenen
+fit1.coef<-summary(fit1)$coefficients[2,]
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) #1.060795 -> is dit de RR?
 
-fit2 <- glm(microcephaly_bin ~ 0 + SID + zikv_preg + AGE:SID + GENDER:SID + BILAT_0:SID, 
-            data = ds.final, 
-            family = binomial(link="log"))
-summary(fit2)
+#Logit link
+fit1b <- glm(microcephaly_bin ~ zikv_preg, 
+            data = data, family = binomial(link="logit"))
+fit1b.coef<-summary(fit1b)$coefficients[2,]
+c(inv.logit(fit1b.coef[1]),inv.logit(fit1b.coef[1]-1.96*fit1b.coef[2]),inv.logit(fit1b.coef[1]+1.96*fit1b.coef[2])) #0.51584 -> is dit de OR?
 
-#Random intercept: functie glmer uit lme4 package
+#Random intercept per study
+#Log
+fit2 <- glmer(microcephaly_bin ~ zikv_preg + (1 | studyname_fac), 
+              data=data, family = binomial(link = "log"))
+fit2.coef<-summary(fit2)$coefficients[2,]
+c(exp(fit2.coef[1]),exp(fit2.coef[1]-1.96*fit2.coef[2]),exp(fit2.coef[1]+1.96*fit2.coef[2])) #1.283628 -> RR met random intercept per studie?
+#Logit
+fit2b <- glmer(microcephaly_bin ~ zikv_preg + (1 | studyname_fac), 
+              data=data, family = binomial(link = "logit"))
+fit2b.coef<-summary(fit2b)$coefficients[2,]
+c(inv.logit(fit2b.coef[1]),inv.logit(fit2b.coef[1]-1.96*fit2b.coef[2]),inv.logit(fit2b.coef[1]+1.96*fit2b.coef[2])) #0.57106 -> OR met random intercept per studie?
+
+#Random intercept and random slope
+#Log
+fit3<-glmer(microcephaly_bin ~ zikv_preg + (0+zikv_preg | studyname_fac), 
+      data=data, family = binomial(link = "log")) #Geen warnings!?
+fit3.coef<-summary(fit3)$coefficients[2,]
+c(exp(fit3.coef[1]),exp(fit3.coef[1]-1.96*fit3.coef[2]),exp(fit3.coef[1]+1.96*fit3.coef[2])) #0.8506 -> RR met random intercept en random slope
+#Logit
+fit3b<-glmer(microcephaly_bin ~ zikv_preg + (0+zikv_preg | studyname_fac), 
+            data=data, family = binomial(link = "logit")) 
+fit3b.coef<-summary(fit3b)$coefficients[2,]
+c(exp(fit3b.coef[1]),exp(fit3b.coef[1]-1.96*fit3b.coef[2]),exp(fit3b.coef[1]+1.96*fit3b.coef[2])) #0.8529 -> OR met random intercept en random slope
+
+
+#Absolute risks
+newdata<-subset(data,select=c(studyname_fac,zikv_preg))
+predicted<-newdata
+predicted$fit1.pred<-predict(fit1, newdata = newdata, type = "response")
+unique(predicted$fit1.pred) #Geen transformatie nodig?
+predicted$fit1b.pred<-predict(fit1b, newdata = newdata, type = "response")
+unique(predicted$fit1b.pred) #Exact hetzelfde
+predicted$fit2.pred<-predict(fit2, newdata = newdata, type = "response")
+unique(predicted$fit2.pred)
+predicted$fit2b.pred<-predict(fit2b, newdata = newdata, type = "response")
+unique(predicted$fit2b.pred) #Vanaf 3e decimaal achter de komma nét iets anders dan fit2
+predicted$fit3.pred<-predict(fit3, newdata = newdata, type = "response")
+unique(predicted$fit3.pred) #Vrij weinig verschil met fit2
+predicted$fit3b.pred<-predict(fit3b, newdata = newdata, type = "response")
+unique(predicted$fit3b.pred) #Ook weinig verschil
