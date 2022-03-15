@@ -19,6 +19,8 @@ inv.logit <- function(x) {
 }
 
 
+#
+
 ######################################################################################
 #################################Load and prepare data################################
 ######################################################################################
@@ -63,10 +65,11 @@ data.zika<-data[data$zikv_preg==1,]
 data.nozika<-data[data$zikv_preg==0,]
 
 ########################Analyses#############
+#Absolute risk:
 
 fit1 <- glm(microcephaly_bin ~ zikv_preg, 
             data = data, 
-            family = binomial(link="log"))
+            family = binomial(link="log")) #-> log RR Deze kan ik gebruiken om absolute risks te berekenen
 summary(fit1)
 exp(fit1$coefficients[2])
 
@@ -74,3 +77,5 @@ fit2 <- glm(microcephaly_bin ~ 0 + SID + zikv_preg + AGE:SID + GENDER:SID + BILA
             data = ds.final, 
             family = binomial(link="log"))
 summary(fit2)
+
+#Random intercept: functie glmer uit lme4 package
