@@ -220,8 +220,9 @@ studynames<-c("014-BRA","001-BRA","002-BRA","010-BRA","007-COL",
 #Create dichotomous outcome variables to calculate incidence
 #Microcephaly_bin
 data$microcephaly_bin<-data$microcephaly
+data$microcephaly_bin[data$microcephaly_bin==1]<-1
 data$microcephaly_bin[data$microcephaly_bin==2]<-1
-data$microcephaly_bin[data$microcephaly_bin==3]<-1
+data$microcephaly_bin[data$microcephaly_bin==3]<-0
 data$microcephaly_bin <- droplevels(data$microcephaly_bin)
 #miscarriage (<20 weeks gestation)
 data$miscarriage<-0
@@ -270,7 +271,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20220117 Microcephaly zika positive.png",width=750,height=500,res=100)
+png(file="20220328 Microcephaly zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -279,7 +280,7 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
+dev.off()
 
 #Store results
 results<-pool.outcome
@@ -293,7 +294,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20220117 Microcephaly zika negative.png",width=750,height=500,res=100)
+png(file="20220328 Microcephaly zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -302,7 +303,7 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
+dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome)
@@ -317,7 +318,7 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20220117 Microcephaly RR.png",width=750,height=500,res=100)
+png(file="20220328 Microcephaly RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 0, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -326,7 +327,7 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
 addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
+dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
