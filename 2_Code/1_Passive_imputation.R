@@ -32,7 +32,7 @@ data<-as.data.table(read.csv('1_Input_data/pilot10_08SEP21_withmetadata.csv', st
 
 infoexp<-as.data.table(readxl::read_xlsx("1_Input_data/Infoexp.xlsx",sheet="Table")) #Table were are specified the included variables according Expert opinion, also the includes the order in which variables are imputed 
 var_inc<-infoexp[Inclusion==1,Variable] #Variables to work with
-data<-as.data.table(data[,..var_inc]) #Filter dataset
+data<-data[,colnames(data)%in%var_inc,with = FALSE] #Filter dataset
 
 #1. Initial clean up the dataset -----
 #1.0. Check for duplicates ----
@@ -87,7 +87,7 @@ data[,endga:=ifelse(!is.na(endga),endga,birth_ga)] #end ga has same values as bi
 data[fet_us_micro_tri2==1|fet_us_micro_tri3==1,microcephaly_bin:=1]
 #data[loss_etiology==4,loss_etiology:=NA]
 
-
+head(data)
 #1.5. Check exposures----
 
 #Studies including only women with zikv infection: Brazil_BahiaPaudaLima_Costa Brazil_SP_RibeiraoPreto_Duarte 
@@ -120,7 +120,17 @@ data[, .(count = .N,
 
 #Studies that includes only woman with zika infection: Check with Diana and Mabell, look previous table
 data[studyname%in%zik_inc,zik_preg:=1]
-
+unique(data$studyname)
+data[,studycode:=fcase (studyname == "Brazil_BahiaPaudaLima_Costa", "014-BRA",
+                        studyname == "Brazil_RiodeJaneiro_CunhaPrata", "001-BRA",
+                        studyname == "Brazil_RiodeJaneiro_Joao" , "002-BRA",
+                        studyname == "Brazil_SP_RibeiraoPreto_Duarte", "010-BRA",
+                        studyname == "Colombia_Mulkey", "007-COL",
+                        studyname == "FrenchGuiana_Pomar", "003-GUF",
+                        studyname == "Spain_Bardaji" , "005-ESP",
+                        studyname == "Spain_Soriano", "004-ESP",
+                        studyname == "TrinidadTobago_Sohan", "012-TTO",
+                        studyname == "USA_Mulkey", "008-USA")]
 
 #Zika test
 data[,zikv_ga_min:=apply(data[,c("zikv_elisa_ga_1","zikv_pcr_ga_1")], 1, min, na.rm = TRUE)]
@@ -128,21 +138,25 @@ data[,zikv_ga_min:=ifelse(is.infinite(zikv_ga_min),NA,zikv_ga_min)]
 data[,zikv_gan:=ifelse(is.na(zikv_ga),zikv_ga_min,zikv_ga_min)]
 data[,zikv_ga:=ifelse(is.na(zikv_ga),zikv_ga_min,zikv_ga_min)]
 data[,zikv_tri:=ifelse(is.na(zikv_ga),zikv_tri,ifelse(zikv_ga<13,0,ifelse(zikv_ga<=27,1,2)))]
-
+data[,zikv_test:=fcase(zikv_pcr_res_1==1|(zikv_elisa_res_1==1&zikv_prnt_studydef_1==1),"robust",
+                       zikv_elisa_res_1==1|zikv_prnt_studydef_1==1, "moderate_limit",
+                       zikv_pcr_res_1==0&zikv_elisa_res_1==0,"negative",
+                       zikv_pcr_res_1==0|zikv_elisa_res_1==0,"any_negative")] #according to test paper
 
 #checktable<-as.data.table(table(elisa=data$zikv_elisa_res_1,elisa_everpos=data$zikv_elisa_everpos,pcr=data$zikv_pcr_res_1,zik=data$zikv_preg,arb=data$arb_clindiag,useNA = "always"))
 #checktable[N>0] #ask for observations where zik value 0 and other there is 1 aroun 273..which has more priority on information?
-
 
 #1.4.Check Pregnant woman variables---
 data[tobacco==3,tobacco:=NA]
 
 # 2. Microcephaly correction----
 #2.0. Correction at baseline value----
+data[,microcephaly1:=microcephaly] # given by hospital 
 data[!is.na(inf_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = birth_ga*7, hcircm=inf_head_circ_birth,sex=ifelse(inf_sex== 0, "Male","Female")))]  
-data[, microcephaly2:= ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))]
-data[is.na(microcephaly),microcephaly:=microcephaly2]
-checkmic<-as.data.table(table(micbin=data$microcephaly_bin,mic1=data$microcephaly,mic2=data$microcephaly2,useNA = "always"))
+data[, microcephaly2:= ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
+data[, microcephaly:=ifelse(is.na(microcephaly2),microcephaly,microcephaly2)] # we give priority to microcephaly based on head circunference function
+#data[is.na(microcephaly),microcephaly:=microcephaly2]
+checkmic<-as.data.table(table(micbin=data$microcephaly_bin,mic1=data$microcephaly,mic2=data$microcephaly2,micn=data$microcephalyn,useNA = "always"))
 checkmic[N>0]  #check this inconsistency.. i prioririze microcephaly variable
 data[,microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,microcephaly_bin))]
 
@@ -239,7 +253,7 @@ col1<-c(col1,"anyabnormality_czs")
 
 #Create a czs variable according to WHO definition
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly at birth AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
-data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & data$microcephaly==2 &data$anyabnormality_czs==1,1,
+data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2 |data$anyabnormality_czs==1),1,
                    ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
 data[,czsn:=ifelse(is.na(czs),czs2,czs)]
 data[,czs2:=NULL]
@@ -326,28 +340,17 @@ data[,arb_preg_nz:=checkcon(data=data,col1=col1)]
 var_inc<-infoexp[order(Order),][!is.na(Inclusion)]$Variable
 pldata<-data[, .SD, .SDcols = var_inc]
 
-totalval<-as.data.table(table(data$studyname))
-colnames(totalval)<-c("studyname","N")
-dmatrix<-pldata[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname] #matrix of % of missingness
-dmatrix2<-as.data.table(melt(dmatrix,id.vars="studyname"))
-dmatrix2<-merge(dmatrix2,totalval,by="studyname")
+save(pldata, file = "3_Output_data/pldata.RData")
 
-dmatrix2[,name:=fcase(
-  studyname=="Brazil_RiodeJaneiro_CunhaPrata","Brazil\nCunhaPrata",
-  studyname=="Brazil_SP_RibeiraoPreto_Duarte","Brazil\n Duarte",
-  studyname=="Brazil_BahiaPaudaLima_Costa","Brazil\nCosta",
-  studyname=="Spain_Soriano" ,"Spain\nSoriano",
-  studyname=="FrenchGuiana_Pomar" ,"Fr.Guiana\nPomar",
-  studyname=="TrinidadTobago_Sohan" ,"Tri.Tobago\nSohan",
-  studyname=="Brazil_RiodeJaneiro_Joao" ,"Brazil\nJoao",
-  studyname=="Spain_Bardaji" ,"Spain\nBardaji",
-  studyname=="Colombia_Mulkey"  ,"Colombia\nMulkey",
-  studyname=="USA_Mulkey"  ,"USA\nMulkey"
-)]
+totalval<-as.data.table(table(data$studycode))
+colnames(totalval)<-c("studycode","N")
+dmatrix<-pldata[, lapply(.SD, function(x) sum(is.na(x))/.N), studycode] #matrix of % of missingness
+dmatrix2<-as.data.table(melt(dmatrix,id.vars="studycode"))
+dmatrix2<-merge(dmatrix2,totalval,by="studycode")
 
-dmatrix2[,name:=paste0(name,"\nN=",N)]
+dmatrix2[,name:=paste0(studycode,"\nN=",N)]
 dmatrix2[,miss:=round(value*100,1)]
-dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
+dmatrix2[,text:=paste0("study: ", studycode, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
 dmatrix2[,tmiss:=ifelse(miss==100,"Systematical","Sporadical")]
 
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
