@@ -68,7 +68,7 @@ data.nozika<-data[data$zikv_preg==0,]
 ########################Analyses#############
 #Absolute risk with log link:
 fit1 <- glm(microcephaly_bin ~ zikv_preg, 
-            data = data, family = binomial(link="log")) #-> log RR Deze kan ik gebruiken om absolute risks te berekenen
+            data = data, family = binomial(link="log")) #log RR
 fit1.coef<-summary(fit1)$coefficients[2,]
 c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) #1.060795 -> is dit de RR?
 
@@ -119,3 +119,53 @@ predicted$fit3.pred<-predict(fit3, newdata = newdata, type = "response")
 unique(predicted$fit3.pred) #Vrij weinig verschil met fit2
 predicted$fit3b.pred<-predict(fit3b, newdata = newdata, type = "response")
 unique(predicted$fit3b.pred) #Ook weinig verschil
+
+
+
+##Objective 1: one-stage meta-analysis per outcome with log link and random intercept per study -> fit 1
+#Microcephaly
+fit1 <- glmer(microcephaly_bin ~ zikv_preg + (1 | studyname_fac), 
+              data=data, family = binomial(link = "log"))
+fit1.coef<-summary(fit1)$coefficients[2,]
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) 
+#Miscarriage
+fit1 <- glmer(miscarriage ~ zikv_preg + (1 | studyname_fac), 
+              data=data, family = binomial(link = "log"))
+fit1.coef<-summary(fit1)$coefficients[2,]
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) 
+#Fetal loss
+fit1 <- glmer(loss ~ zikv_preg + (1 | studyname_fac), 
+              data=data, family = binomial(link = "log"))
+fit1.coef<-summary(fit1)$coefficients[2,]
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) 
+#Congenital zika syndrome
+fit1 <- glmer(czsn ~ zikv_preg + (1 | studyname_fac), 
+              data=data, family = binomial(link = "log"))
+fit1.coef<-summary(fit1)$coefficients[2,]
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) 
+
+##Objective 2: one-stage meta-analysis per outcome with log link and random effects on intercept and exposure -> fit 2
+#Microcephaly
+fit2<-glmer(microcephaly_bin ~ zikv_preg + (1+zikv_preg | studyname_fac), 
+            data=data, family = binomial(link = "log"))
+fit2.coef<-summary(fit2)$coefficients[2,]
+c(exp(fit2.coef[1]),exp(fit2.coef[1]-1.96*fit2.coef[2]),exp(fit2.coef[1]+1.96*fit2.coef[2]))
+
+
+##Fit 2 + all confounders
+#Microcephaly
+#Confounders: age, maritalstat
+fit2c<-glmer(microcephaly_bin ~ zikv_preg + age + maritalstat + (1+zikv_preg | studyname_fac), 
+            data=data, family = binomial(link = "log"))
+fit2c.coef<-as.data.frame(summary(fit2c)$coefficients[c(2:nrow(summary(fit2c)$coefficients)),c(1:2)])
+colnames(fit2c.coef)<-c("log.rr", "log.rr.se")
+fit2c.coef$rr<-exp(fit2c.coef$log.rr)
+fit2c.coef$rr.lb<-exp(fit2c.coef$log.rr-1.96*fit2c.coef$log.rr.se)
+fit2c.coef$rr.ub<-exp(fit2c.coef$log.rr+1.96*fit2c.coef$log.rr.se)
+fit2c.coef
+
+
+##Fit 2 + effect modifiers (one by one)
+
+##Calculate absolute risks for fit 2: check protocol!
+
