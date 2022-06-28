@@ -19,7 +19,44 @@ inv.logit <- function(x) {
 }
 
 
-#
+#Functions
+
+#Function to do one stage meta-analysis with log link and random intercept per study, per imputed dataset
+f.1ma.r.int<-function(data, outcome_name) {
+  for (i in 1:length(unique(data$.imp))) {
+    d<-data[data$.imp==i,]
+    d$outcome <- d[, outcome_name]
+    fit1 <- glmer(outcome ~ zikv_preg + (1 | studyname_fac), 
+                  data=d, family = binomial(link = "log"))
+    #Store results
+    if(i==1) {fit1.coef<-summary(fit1)$coefficients[2,(1:2)]}
+    if(i>1) {fit1.coef<-rbind(fit1.coef,summary(fit1)$coefficients[2,(1:2)])}
+  }
+  colnames(fit1.coef)<-c("log.rr","log.se")
+  rownames(fit1.coef)<-NULL
+  return(fit1.coef)
+}
+#Function to pool the results of the one stage meta-analysis using Rubins rules
+f.1ma.poolrubin <-function(data,fit1.coef) {
+  #Pool with Rubins rules
+  pool.rubin<- data.frame(matrix(NA, nrow = 1, ncol = 7))
+  colnames(pool.rubin)<-c("log.rr.1ma","within","between","log.var",
+                          "log.se.1ma","log.ci.lb.1ma","log.ci.ub.1ma")
+  pool.rubin$log.rr.1ma <- mean(fit1.coef$log.rr)
+  pool.rubin$within <- mean(fit1.coef$log.se^2)
+  pool.rubin$between <- (1 + (1/m)) * var(fit1.coef$log.rr)
+  pool.rubin$log.var <- pool.rubin$within + pool.rubin$between
+  pool.rubin$log.se.1ma <- sqrt(pool.rubin$log.var)
+  pool.rubin$log.ci.lb.1ma <- pool.rubin$log.rr.1ma + qnorm(0.05/2)     * pool.rubin$log.se.1ma
+  pool.rubin$log.ci.ub.1ma <- pool.rubin$log.rr.1ma + qnorm(1 - 0.05/2) * pool.rubin$log.se.1ma
+  
+  rr.outcome<-subset(pool.rubin,select=c(log.rr.1ma,log.se.1ma,log.ci.lb.1ma,log.ci.ub.1ma))
+  rr.outcome$rr.1ma<-exp(rr.outcome$log.rr.1ma)
+  rr.outcome$rr.ci.lb.1ma<-exp(rr.outcome$log.ci.lb.1ma)
+  rr.outcome$rr.ci.ub.1ma<-exp(rr.outcome$log.ci.ub.1ma)
+  
+  return(rr.outcome)
+}
 
 ######################################################################################
 #################################Load and prepare data################################
@@ -27,98 +64,24 @@ inv.logit <- function(x) {
 
 setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data")
 load("imputation2.RData")
-data <- complete(merged_imp, "long")
-rm(merged_imp)
-m<-max(data$.imp)
-studynames<-c("014-BRA","001-BRA","002-BRA","010-BRA","007-COL",
-              "003-GUF","005-ESP","004-ESP","012-TTO","008-USA")
-data$studyname_fac<-factor(data$studyname)
-levels(data$studyname_fac)<-studynames
-
-#Create dichotomous outcome variables to calculate incidence
-#Microcephaly_bin
-data$microcephaly_bin<-data$microcephaly
-data$microcephaly_bin[data$microcephaly_bin==2]<-1
-data$microcephaly_bin[data$microcephaly_bin==3]<-1
-data$microcephaly_bin <- droplevels(data$microcephaly_bin)
-#miscarriage (<20 weeks gestation)
-data$miscarriage<-0
-data$miscarriage[data$bdeath==1 & data$bdeath_ga<20]<-1
-data$miscarriage<-as.factor(data$miscarriage)
-#Fetal loss (>=20 weeks gestation)
-data$loss<-0
-data$loss[data$bdeath==1 & data$bdeath_ga>=20]<-1
-data$loss<-as.factor(data$loss)
-#Early fetal death (20-27 weeks gestation)
-data$efdeath<-0
-data$efdeath[data$bdeath==1 & data$bdeath_ga>=20 & data$bdeath_ga<28]<-1
-data$efdeath<-as.factor(data$efdeath)
-#Late fetal death (after 28 weeks gestation)
-data$lfdeath<-0
-data$lfdeath[data$bdeath==1 & data$bdeath_ga>=28]<-1
-data$lfdeath<-as.factor(data$lfdeath)
-#Late fetal death (after 28 weeks gestation) with microcephaly
-#data$lfdeath_micro<-0
-#data$lfdeath_micro[data$lfdeath==1 & data$bdeath_ga>=28]<-1
-#data$lfdeath<-as.factor(data$lfdeath)
-
-data.zika<-data[data$zikv_preg==1,]
-data.nozika<-data[data$zikv_preg==0,]
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2_Code")
+source("ZIKV prep.R")
 
 ########################Analyses#############
-#Absolute risk with log link:
-fit1 <- glm(microcephaly_bin ~ zikv_preg, 
-            data = data, family = binomial(link="log")) #log RR
-fit1.coef<-summary(fit1)$coefficients[2,]
-c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) #1.060795 -> is dit de RR?
-
-#Logit link
-fit1b <- glm(microcephaly_bin ~ zikv_preg, 
-            data = data, family = binomial(link="logit"))
-fit1b.coef<-summary(fit1b)$coefficients[2,]
-c(exp(fit1b.coef[1]),exp(fit1b.coef[1]-1.96*fit1b.coef[2]),exp(fit1b.coef[1]+1.96*fit1b.coef[2])) #0.51584 -> is dit de OR?
-#confint(fit1b)
-
-#Random intercept per study
-#Log
-fit2 <- glmer(microcephaly_bin ~ zikv_preg + (1 | studyname_fac), 
-              data=data, family = binomial(link = "log"))
-fit2.coef<-summary(fit2)$coefficients[2,]
-c(exp(fit2.coef[1]),exp(fit2.coef[1]-1.96*fit2.coef[2]),exp(fit2.coef[1]+1.96*fit2.coef[2])) #1.283628 -> RR met random intercept per studie?
-#Logit
-fit2b <- glmer(microcephaly_bin ~ zikv_preg + (1 | studyname_fac), 
-              data=data, family = binomial(link = "logit"))
-fit2b.coef<-summary(fit2b)$coefficients[2,]
-c(exp(fit2b.coef[1]),exp(fit2b.coef[1]-1.96*fit2b.coef[2]),exp(fit2b.coef[1]+1.96*fit2b.coef[2])) #0.57106 -> OR met random intercept per studie?
-
-#Random intercept and random slope
-#Log
-fit3<-glmer(microcephaly_bin ~ zikv_preg + (1+zikv_preg | studyname_fac), 
-      data=data, family = binomial(link = "log")) #Geen warnings!?
-fit3.coef<-summary(fit3)$coefficients[2,]
-c(exp(fit3.coef[1]),exp(fit3.coef[1]-1.96*fit3.coef[2]),exp(fit3.coef[1]+1.96*fit3.coef[2])) #0.8506 -> RR met random intercept en random slope
-#Logit
-fit3b<-glmer(microcephaly_bin ~ zikv_preg + (1+zikv_preg | studyname_fac), 
-            data=data, family = binomial(link = "logit")) 
-fit3b.coef<-summary(fit3b)$coefficients[2,]
-c(exp(fit3b.coef[1]),exp(fit3b.coef[1]-1.96*fit3b.coef[2]),exp(fit3b.coef[1]+1.96*fit3b.coef[2])) #0.8529 -> OR met random intercept en random slope
 
 
-#Absolute risks
-newdata<-subset(data,select=c(studyname_fac,zikv_preg))
-predicted<-newdata
-predicted$fit1.pred<-predict(fit1, newdata = newdata, type = "response")
-unique(predicted$fit1.pred) #Geen transformatie nodig?
-predicted$fit1b.pred<-predict(fit1b, newdata = newdata, type = "response")
-unique(predicted$fit1b.pred) #Exact hetzelfde
-predicted$fit2.pred<-predict(fit2, newdata = newdata, type = "response")
-unique(predicted$fit2.pred)
-predicted$fit2b.pred<-predict(fit2b, newdata = newdata, type = "response")
-unique(predicted$fit2b.pred) #Vanaf 3e decimaal achter de komma nét iets anders dan fit2
-predicted$fit3.pred<-predict(fit3, newdata = newdata, type = "response")
-unique(predicted$fit3.pred) #Vrij weinig verschil met fit2
-predicted$fit3b.pred<-predict(fit3b, newdata = newdata, type = "response")
-unique(predicted$fit3b.pred) #Ook weinig verschil
+#one stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"microcephaly_bin"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+  
+  
+
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2]))
+
+
+
 
 
 
@@ -127,7 +90,7 @@ unique(predicted$fit3b.pred) #Ook weinig verschil
 fit1 <- glmer(microcephaly_bin ~ zikv_preg + (1 | studyname_fac), 
               data=data, family = binomial(link = "log"))
 fit1.coef<-summary(fit1)$coefficients[2,]
-c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) 
+c(exp(fit1.coef[1]),exp(fit1.coef[1]-1.96*fit1.coef[2]),exp(fit1.coef[1]+1.96*fit1.coef[2])) #RR
 #Miscarriage
 fit1 <- glmer(miscarriage ~ zikv_preg + (1 | studyname_fac), 
               data=data, family = binomial(link = "log"))

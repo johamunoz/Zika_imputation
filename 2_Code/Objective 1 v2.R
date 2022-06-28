@@ -192,17 +192,54 @@ f.rel.2s.ma<-function(rr.outcome) {
   fit.rma<-rma(yi = log.rr, sei = log.se, method = "REML", test = "knha", 
                data = rr.outcome)
   pool.outcome.rr<-data.frame(matrix(NA, nrow = 1, ncol = 8))
-  colnames(pool.outcome.rr)<-c("log.rr","log.se","log.ci.lb","log.ci.ub",
-                               "rr","ci.lb","ci.ub","n.studies")
+  colnames(pool.outcome.rr)<-c("log.rr","log.rr.se","log.rr.ci.lb","log.rr.ci.ub",
+                               "rr","rr.ci.lb","rr.ci.ub","n.studies")
   pool.outcome.rr$log.rr<-fit.rma$beta
-  pool.outcome.rr$log.se<-fit.rma$se
-  pool.outcome.rr$log.ci.lb<-fit.rma$ci.lb
-  pool.outcome.rr$log.ci.ub<-fit.rma$ci.ub
+  pool.outcome.rr$log.rr.se<-fit.rma$se
+  pool.outcome.rr$log.rr.ci.lb<-fit.rma$ci.lb
+  pool.outcome.rr$log.rr.ci.ub<-fit.rma$ci.ub
   pool.outcome.rr$rr<-exp(pool.outcome.rr$log.rr[[1]])
-  pool.outcome.rr$ci.lb<-exp(pool.outcome.rr$log.ci.lb)
-  pool.outcome.rr$ci.ub<-exp(pool.outcome.rr$log.ci.ub)
+  pool.outcome.rr$rr.ci.lb<-exp(pool.outcome.rr$log.rr.ci.lb)
+  pool.outcome.rr$rr.ci.ub<-exp(pool.outcome.rr$log.rr.ci.ub)
   pool.outcome.rr$n.studies<-fit.rma$k
   return(pool.outcome.rr)
+}
+
+#Function to do one stage meta-analysis with log link and random intercept per study, per imputed dataset
+f.1ma.r.int<-function(data, outcome_name) {
+  for (i in 1:length(unique(data$.imp))) {
+    d<-data[data$.imp==i,]
+    d$outcome <- d[, outcome_name]
+    fit1 <- glmer(outcome ~ zikv_preg + (1 | studyname_fac), 
+                  data=d, family = binomial(link = "log"))
+    #Store results
+    if(i==1) {fit1.coef<-summary(fit1)$coefficients[2,(1:2)]}
+    if(i>1) {fit1.coef<-rbind(fit1.coef,summary(fit1)$coefficients[2,(1:2)])}
+  }
+  colnames(fit1.coef)<-c("log.rr","log.se")
+  rownames(fit1.coef)<-NULL
+  return(fit1.coef)
+}
+#Function to pool the results of the one stage meta-analysis using Rubins rules
+f.1ma.poolrubin <-function(data,fit1.coef) {
+  #Pool with Rubins rules
+  pool.rubin<- data.frame(matrix(NA, nrow = 1, ncol = 7))
+  colnames(pool.rubin)<-c("log.rr.1ma","within","between","log.var",
+                          "log.se.1ma","log.ci.lb.1ma","log.ci.ub.1ma")
+  pool.rubin$log.rr.1ma <- mean(fit1.coef$log.rr)
+  pool.rubin$within <- mean(fit1.coef$log.se^2)
+  pool.rubin$between <- (1 + (1/m)) * var(fit1.coef$log.rr)
+  pool.rubin$log.var <- pool.rubin$within + pool.rubin$between
+  pool.rubin$log.se.1ma <- sqrt(pool.rubin$log.var)
+  pool.rubin$log.ci.lb.1ma <- pool.rubin$log.rr.1ma + qnorm(0.05/2)     * pool.rubin$log.se.1ma
+  pool.rubin$log.ci.ub.1ma <- pool.rubin$log.rr.1ma + qnorm(1 - 0.05/2) * pool.rubin$log.se.1ma
+  
+  rr.outcome<-subset(pool.rubin,select=c(log.rr.1ma,log.se.1ma,log.ci.lb.1ma,log.ci.ub.1ma))
+  rr.outcome$rr.1ma<-exp(rr.outcome$log.rr.1ma)
+  rr.outcome$rr.ci.lb.1ma<-exp(rr.outcome$log.ci.lb.1ma)
+  rr.outcome$rr.ci.ub.1ma<-exp(rr.outcome$log.ci.ub.1ma)
+  
+  return(rr.outcome)
 }
 
 ######################################################################################
@@ -211,42 +248,8 @@ f.rel.2s.ma<-function(rr.outcome) {
 
 setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data")
 load("imputation2.RData")
-data <- complete(merged_imp, "long")
-rm(merged_imp)
-m<-max(data$.imp)
-studynames<-c("014-BRA","001-BRA","002-BRA","010-BRA","007-COL",
-              "003-GUF","005-ESP","004-ESP","012-TTO","008-USA")
-
-#Create dichotomous outcome variables to calculate incidence
-#Microcephaly_bin
-data$microcephaly_bin<-data$microcephaly
-data$microcephaly_bin[data$microcephaly_bin==1]<-1
-data$microcephaly_bin[data$microcephaly_bin==2]<-1
-data$microcephaly_bin[data$microcephaly_bin==3]<-0
-data$microcephaly_bin <- droplevels(data$microcephaly_bin)
-#miscarriage (<20 weeks gestation)
-data$miscarriage<-0
-data$miscarriage[data$bdeath==1 & data$bdeath_ga<20]<-1
-data$miscarriage<-as.factor(data$miscarriage)
-#Fetal loss (>=20 weeks gestation)
-data$loss<-0
-data$loss[data$bdeath==1 & data$bdeath_ga>=20]<-1
-data$loss<-as.factor(data$loss)
-#Early fetal death (20-27 weeks gestation)
-data$efdeath<-0
-data$efdeath[data$bdeath==1 & data$bdeath_ga>=20 & data$bdeath_ga<28]<-1
-data$efdeath<-as.factor(data$efdeath)
-#Late fetal death (after 28 weeks gestation)
-data$lfdeath<-0
-data$lfdeath[data$bdeath==1 & data$bdeath_ga>=28]<-1
-data$lfdeath<-as.factor(data$lfdeath)
-#Late fetal death (after 28 weeks gestation) with microcephaly
-#data$lfdeath_micro<-0
-#data$lfdeath_micro[data$lfdeath==1 & data$bdeath_ga>=28]<-1
-#data$lfdeath<-as.factor(data$lfdeath)
-
-data.zika<-data[data$zikv_preg==1,]
-data.nozika<-data[data$zikv_preg==0,]
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2_Code")
+source("ZIKV prep.R")
 
 ########################Analyses#############
 #Change directory to save plots
@@ -271,7 +274,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-png(file="20220328 Microcephaly zika positive.png",width=750,height=500,res=100)
+#png(file="20220328 Microcephaly zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -280,7 +283,7 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-dev.off()
+#dev.off()
 
 #Store results
 results<-pool.outcome
@@ -294,7 +297,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-png(file="20220328 Microcephaly zika negative.png",width=750,height=500,res=100)
+#png(file="20220328 Microcephaly zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -303,13 +306,16 @@ metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcom
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-dev.off()
+#dev.off()
 
 #Store results
+colnames(pool.outcome)<-c("logit.abs.neg","logit.se.neg","logit.ci.lb.neg","logit.ci.ub.neg",
+                          "abs.risk.neg","ci.lb.neg","ci.ub.neg","pi.lb.neg","pi.ub.neg")
 results<-cbind(results,pool.outcome)
 
 ########Relative risk########
 
+####Two-stage meta-analysis
 #calculate relative risk of outcome per study and per imputed dataset
 rr.outcome.all<-f.rel.perstudy(data,"microcephaly_bin")
 #pool the relative risks per study per imputed dataset using rubins rules, resulting in RR per study
@@ -318,19 +324,28 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-png(file="20220328 Microcephaly RR.png",width=750,height=500,res=100)
+#png(file="20220328 Microcephaly RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 0, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Microcephaly",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-dev.off()
+#dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"microcephaly_bin"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Microcephaly"
 all.results<-results
 
@@ -400,13 +415,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Miscarriage",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"miscarriage"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Miscarriage"
 all.results<-rbind(all.results,results)
 
@@ -476,13 +500,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Fetal loss",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"loss"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Fetal loss"
 all.results<-rbind(all.results,results)
 
@@ -564,13 +597,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Congenital zika syndrome",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"czsn"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"CZS"
 all.results<-rbind(all.results,results)
 
@@ -640,13 +682,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Induced abortion",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"inducedabort"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Induced abortion"
 all.results<-rbind(all.results,results)
 
@@ -716,13 +767,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Early fetal death",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"efdeath"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Early fetal death"
 all.results<-rbind(all.results,results)
 
@@ -792,13 +852,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Late fetal death",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"lfdeath"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Late fetal death"
 all.results<-rbind(all.results,results)
 
@@ -868,13 +937,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Intrauterine growth restriction",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"igr_curr_preg"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Intrauterine growth restriction"
 all.results<-rbind(all.results,results)
 
@@ -944,13 +1022,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Craniofacial disproportion",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"inf_craniofac_abn_bin"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Craniofacial disproportion"
 all.results<-rbind(all.results,results)
 
@@ -1020,13 +1107,22 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Neuroimaging abnormalities",
                 xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$ci.lb, ci.ub=pool.outcome.rr$ci.ub,
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data,"neuroabnormality"))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Neuroimaging abnormalities"
 all.results<-rbind(all.results,results)
 
