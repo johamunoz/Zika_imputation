@@ -25,3 +25,9 @@ missings<-as.data.frame(missings)
 #write.csv(missings,file="/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/20220706 Percentage missings.csv")
 
 summary(zikv$weight)
+
+summary(as.factor(zikv$mid))
+levels(as.factor(zikv$mid))
+summary(as.factor(zikv$mid_original))
+levels(as.factor(zikv$mid_original))
+
