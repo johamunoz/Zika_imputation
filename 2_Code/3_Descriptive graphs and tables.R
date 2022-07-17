@@ -60,7 +60,7 @@ write.csv(table_con,here('6_Tables_graphs', 'Descriptive_continuous'))
 table_con %>%
   kbl(caption = "Continuos variables",
       digits = c(0,0,0,0,3,3,3,3,3,3,3,3),
-      col.names = c("Variable","Study code", "Valid","Missing"," mean","std","min","2.5%","25%","50%","75%","97.5","max")) %>%
+      col.names = c("Variable","Study code", "Valid","Missing"," mean","std","min","2.5%","25%","50%","75%","97.5%","max")) %>%
   kable_paper(full_width = F) %>%
   column_spec(1, bold = T) %>%
   collapse_rows(columns = 1:2, valign = "top")%>%

@@ -253,7 +253,7 @@ col1<-c(col1,"anyabnormality_czs")
 
 #Create a czs variable according to WHO definition
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly at birth AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
-data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2 |data$anyabnormality_czs==1),1,
+data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2) & (data$anyabnormality_czs==1),1,
                    ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
 data[,czsn:=ifelse(is.na(czs),czs2,czs)]
 data[,czs2:=NULL]
@@ -261,6 +261,8 @@ data[,czs2:=NULL]
 checktable<-data.table(table(czs=data$czs,czsn=data$czsn,useNA = "always"))
 checktable[N>0] #Combinations where the czv calculated differs from the given one. czsn gave information of around 100 observations 
 
+
+table(csz=data$czsn,micro=data$microcephaly_bin,useNA = "always")
 
 #4. Construct Bdeath (baby death variable) -----
 
