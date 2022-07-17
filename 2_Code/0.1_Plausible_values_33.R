@@ -82,4 +82,4 @@ ggplot(data=obs_to_check[Var_to_check=="zikv_ga",],aes(x=var_bound))+
   geom_histogram(color="darkblue", fill="lightblue")+ theme_minimal()+
   labs(title="zikv_ga No plausible values",x="weeks", y = "Count")
 
-save(obs_to_check,file=here('Desktop/Zika_Jun22','obs_to_check_33.RData'))
+
