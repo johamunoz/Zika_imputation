@@ -124,7 +124,7 @@ testfunc<-function(datav,respv,timev, minv, maxv,name,diff,func){
   return(datares)
 }
 
-
+# Robust
 robs1<-testfunc(datav=data_test_m,respv="pcr_res1",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_pos_any_preg",func="any",diff=FALSE)
 robs2<-testfunc(datav=robs1,respv="igmz",timev="elisa_ga",minv="preg0", maxv="endga",name="igm_zero_any_preg",func="any",diff=TRUE)
 robs3<-testfunc(datav=robs2,respv="prntz",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt_zero_any_preg",func="any",diff=TRUE)
@@ -134,6 +134,7 @@ robs42<-testfunc(datav=robs41,respv="prntz",timev="elisa_ga",minv="endga", maxv=
 robs43<-testfunc(datav=robs42,respv="prnt_titer_20",timev="elisa_ga",minv="endga", maxv="post6",name="prnt20_any_post6",func="any",diff=FALSE)
 robs43[,robs:=pcr_pos_any_preg|igm_zero_any_preg|prnt_zero_any_preg|(igm_pos_any_preg&(prnt20_any_preg|prnt_zero_any_post6|prnt20_any_post6))]
 
+# Moderated
 mod20<-testfunc(datav=robs43,respv="prnt_titer_1000",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt1000_any_preg",func="any",diff=FALSE)
 mod21a<-testfunc(datav=mod20,respv="prnt_titer",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt_max_preg",func="max",diff=FALSE)
 mod21b<-testfunc(datav=mod21a,respv="prnt_titer",timev="elisa_ga",minv="endga", maxv="post2",name="prnt_max_post2",func="max",diff=FALSE)
@@ -145,13 +146,17 @@ mod40b<-testfunc(datav=mod40a,respv="igm_res2",timev="elisa_ga",minv="preg0", ma
 mod41 <-testfunc(datav=mod40b,respv="prnt_titer_100",timev="elisa_ga",minv="endga", maxv="post3",name="prnt100_any_post3",func="any",diff=FALSE)
 mod41[,mod:=igm_pos_any_preg|(prnt1000_any_preg&prnt_rise_post2)|prnt_4rise_post2|(prnt100_any_post3&(pcr_eq_any_preg|igm_eq_any_preg))]
 
+# Limited
 lim1<-testfunc(datav=mod41,respv="prnt_titer_100",timev="elisa_ga",minv="preg0", maxv="post6",name="prnt100_any",func="any",diff=FALSE)
 lim2<-testfunc(datav=lim1,respv="prntz",timev="elisa_ga",minv="endga", maxv="post3",name="prnt_zero_any_post3",func="any",diff=TRUE)
 lim2[,lim:=prnt100_any| prnt_zero_any_post3]
 
+# Negative
 neg1<-testfunc(datav=lim2,respv="pcr_res0",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_neg_any_preg",func="any",diff=FALSE)
 neg2<-testfunc(datav=neg1,respv="igm_res0",timev="pcr_ga",minv="preg0", maxv="endga",name="igm_neg_any_preg",func="any",diff=FALSE)
 finaltest<-testfunc(datav=neg2,respv="pcr_resNA",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_na_all_preg",func="all",diff=FALSE)
 finaltest[,neg:=pcr_neg_any_preg&igm_neg_any_preg|igm_neg_any_preg&pcr_na_all_preg]
+
+#Colapse all conditions in one variable zikv_test_ev
 finaltest[,zikv_test_ev:=ifelse(robs==TRUE,"Robust",ifelse(mod==TRUE,"Moderate",ifelse(lim==TRUE,"Limited",ifelse(neg==TRUE,"Negative",NA))))]
 finaltest[,zikv_test_ev:=as.factor(zikv_test_ev)]
