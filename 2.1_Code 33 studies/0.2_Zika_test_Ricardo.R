@@ -9,7 +9,8 @@ library(dplyr)
 library(haven)
 require(ggplot2)
 
-data <- as.data.table(readxl::read_xlsx(here('1_Input_data','zikv_033_datasets.xlsx'),sheet="Sheet1"))
+#data<-as.data.table(read.csv("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/zikv_033_datasets.csv",header=T)) #Line for Anneke
+data <- as.data.table(readxl::read_xlsx(here('1_Input_data','zikv_033_datasets.xlsx'),sheet="Sheet1")) #Line for Johanna
 data[,studycode:=fcase(file=="001","001-BRA",
                        file=="002","002-BRA",
                        file=="003","003-GUF",
@@ -47,7 +48,7 @@ data[data==888] <-  NA
 data[data==999] <-  NA
 data[data==9999] <-  NA
 data[data==999] <-  NA
-data[data==777] <-  NA
+data[data==777] <-  NA #@Johanna, not sure if we need to keep this line. Maybe better to specify in which variables we would like to recode 777 to missing
 data[data=="NA"] <-NA 
 
 
@@ -160,3 +161,12 @@ finaltest[,neg:=pcr_neg_any_preg&igm_neg_any_preg|igm_neg_any_preg&pcr_na_all_pr
 #Colapse all conditions in one variable zikv_test_ev
 finaltest[,zikv_test_ev:=ifelse(robs==TRUE,"Robust",ifelse(mod==TRUE,"Moderate",ifelse(lim==TRUE,"Limited",ifelse(neg==TRUE,"Negative",NA))))]
 finaltest[,zikv_test_ev:=as.factor(zikv_test_ev)]
+
+
+#Check why everyone is missing
+#Are there women in the dataset with moderate evidence?
+#Check if there are women who are igm positive, but do not have seroconversion and no other positive tests
+igmpos<-data[data$zikv_igm_res_1==1,] #First igM is positive - n=4045
+igmpos<-igmpos[igmpos$zikv_pcr_everpos==0,] #Exclude with positive pcr
+igmpos<-igmpos[is.na(igmpos$zikv_prnt_1) | igmpos$zikv_prnt_1==0,] #Exclude positive prnts
+summary(as.factor(igmpos$zikv_igm_res_4)) 
