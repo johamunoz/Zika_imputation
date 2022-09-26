@@ -8,9 +8,9 @@ library(data.table)
 library(dplyr)
 library(haven)
 require(ggplot2)
+library(rio)
 
-#data<-as.data.table(read.csv("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/zikv_033_datasets.csv",header=T)) #Line for Anneke
-data <- as.data.table(readxl::read_xlsx(here('1_Input_data','zikv_033_datasets.xlsx'),sheet="Sheet1")) #Line for Johanna
+data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 data[,studycode:=fcase(file=="001","001-BRA",
                        file=="002","002-BRA",
                        file=="003","003-GUF",
@@ -165,7 +165,8 @@ finaltest[,lim:=as.factor(ifelse(is.na(lim),"NA",lim))]
 finaltest[,neg:=as.factor(ifelse(is.na(neg),"NA",neg))]
 finaltest[,zikv_test_ev:=ifelse(robs=="TRUE","Robust",ifelse(mod=="TRUE","Moderate",ifelse(lim=="TRUE","Limited",ifelse(neg=="TRUE","Negative",NA))))]
 childtest<-finaltest[, head(.SD, 1), by = "childid"]
-table(childtest$zikv_test_ev, useNA = "always")
+
+table(childtest$zikv_test_ev,useNA = "always")
 
 nomeasure<-childtest[is.na(zikv_test_ev),]
 navalue<-finaltest[childid%in%nomeasure$childid&pcr_res1==1&!is.na(pcr_ga)&!is.na(endga),]
@@ -175,13 +176,3 @@ nomeasure[,navalue:=ifelse(robs==TRUE,"T",ifelse(!is.na(robs),"NA","F"))]
 
 
 
-#Check why everyone is missing
-table(finaltest$zikv_test_ev,useNA = "always")
-108380/(108380+31530)
-missing<-finaltest[is.na(zikv_test_ev),]
-#Are there women in the dataset with moderate evidence?
-#Check if there are women who are igm positive, but do not have seroconversion and no other positive tests
-length(data[zikv_igm_res_1==1,]) #First igM is positive - n=4045
-igmpos<-igmpos[igmpos$zikv_pcr_everpos==0,] #Exclude with positive pcr
-igmpos<-igmpos[is.na(igmpos$zikv_prnt_1) | igmpos$zikv_prnt_1==0,] #Exclude positive prnts
-summary(as.factor(igmpos$zikv_igm_res_4)) 
