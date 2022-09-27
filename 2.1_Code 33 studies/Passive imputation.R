@@ -3,12 +3,12 @@
 library(here) 
 library(data.table)
 library(dplyr)
-
+library(rio)
 #Functions
 
 #Function returns 1 if there is any anomaly detected and 0 if there were no anomaly detected across the recorded variables , NA no recorded variables.
 checkcon<-function(data,col1){ #
-  data<-as.numeric(data)
+  data[,(col1):= lapply(.SD, as.numeric), .SDcols = col1]
   data$anyT <- rowSums(data[, .SD, .SDcols = col1], na.rm=T)
   data$allNA <- rowSums(!is.na(data[, .SD, .SDcols = col1]))
   data$Final<- ifelse(data$allNA==0,NA,ifelse(data$anyT>0,1,0))
@@ -68,8 +68,6 @@ data[data=="NA"] <-NA
 #Neuroimaging abnormalities other than microcephaly
 col1<-c("fet_us_cns_tri2","fet_us_cns_tri3","ch_hydrocephaly","ch_corticalatrophy","ch_calcifications","ch_ventriculomegaly")
 data[,neuroabnormality:=checkcon(data=data,col1=col1)]
-
-
 
 
 
