@@ -10,6 +10,7 @@ library(haven)
 require(ggplot2)
 library(rio)
 
+#data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) #For Anneke - please leave this line in :-)
 data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 data[,studycode:=fcase(file=="001","001-BRA",
                        file=="002","002-BRA",
