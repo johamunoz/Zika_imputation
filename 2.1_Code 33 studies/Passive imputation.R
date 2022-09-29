@@ -134,6 +134,12 @@ data$nonneurologic<-ifelse(is.na(data$nonneurologic) & data$temp==0,0,data$nonne
 data$bmi<-data$pre_pregweight/((data$height/100)**2)
 
 #Maternal teratogenic drug use
+#Category X is teratogenic.
+data$drug_tera[!is.na(data$med_oth)]<-0
+data$drug_tera[data$med_oth=="ortho-cyclen"]<-1
+data$drug_tera[data$med_oth=="norethindrone (Micronor) 0.35 mg tablet"]<-1
+
+
 
 #Maternal vaccination
 data$vaccination<-NA
@@ -188,17 +194,26 @@ data$comorbid_preg<-ifelse(is.na(data$comorbid_preg) & data$temp==0,0,data$comor
 
 
 data2<-subset(data, select=c(studycode,
-                             zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_weight, ch_craniofac_abn_bin,
+                             zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_microcephaly, ch_weight, ch_craniofac_abn_bin,
                              neuroabnormality, ocularabnormality, contractures, nonneurologic,
-                             age, educ, maritalstat,ethnicity, bmi, ses, tobacco, drugs_bin, alcohol,
+                             age, educ, maritalstat,ethnicity, bmi, ses, tobacco, drugs_bin, alcohol, drug_tera,
                              vaccination, gen_anomalies, zikv_pcr_vl_1, denv_preg_ever, chikv_preg_ever,
                              comorbid_bin, comorbid_preg, storch_bin, arb_symp, fever, rash, arthralgia, headache,
                              muscle_pain, arthritis, vomiting, abd_pain, bleed, fatigue, sorethroat))
 #Change to numeric
-data2$studycode<-as.factor(data2$studycode)
-data2<-data2 %>% mutate_if(is.character,as.numeric)
+#data2$studycode<-as.factor(data2$studycode)
+#data2<-data2 %>% mutate_if(is.character,as.numeric)
 #sapply(data2, class)
 
 #Not yet included in subset: zikv_test_ev, bdeath, bdeath_ga,fet_micro, czsn, ch_microcephaly_bin
+
+#
+
+#Descriptives categorical variables
+data2<-data2 %>% mutate_if(is.character,as.factor)
+data2<-data2 %>% mutate_if(is.numeric,as.factor)
+
+#Drop continuous variables
+data2<-subset(data2,select=-c(zikv_ga,ch_weight,age,bmi,zikv_pcr_vl_1))
 
 summary(data2)
