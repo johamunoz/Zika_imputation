@@ -19,7 +19,7 @@ ziktest_sum<-function(datav,respv,timev, minv, maxv,name,diff,func){
   #' @param name name given to the return variable
   #' @param diff if calculates lag difference or not (TRUE, FALSE)
   #' @param func specify type  of summary ("all", "any")
-  #' @return dataframe that includes new summarizing variable 
+  #' @return dataframe that includes new summarized variable 
   
   datav[,min:= get(minv)]
   datav[,max:= get(maxv)]
@@ -46,7 +46,7 @@ ziktest_sum<-function(datav,respv,timev, minv, maxv,name,diff,func){
 ziktest_ml <- function(data){
 
   #' Function that returns zikv_test_ev,i.e. a zika test variable with multiple evidence levels ("robust","moderate","limited","negative") 
-  #' Refer to Ricardo paper, ensure that end_ga have been defined it before run the function
+  #' Refer to Ricardo paper, ensure that end_ga have been defined it before running the function
   #'
   #' @param data original dataset 
   #' @return dataframe that includes new ziktest_ml variable and child id that will be merged with full dataset
@@ -145,6 +145,7 @@ ziktest_ml <- function(data){
     childtest<-finaltest[, .SD[c(1)]$zikv_test_ev, by ="childid"]
     colnames(childtest)<-c("childid","zikv_test_ev")
     childtest[,zikv_test_ev:=as.factor(zikv_test_ev)]
+    
  return(childtest)
 }
 
