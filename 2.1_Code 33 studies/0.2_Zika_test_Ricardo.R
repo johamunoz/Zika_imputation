@@ -12,34 +12,14 @@ library(rio)
 
 #data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) #For Anneke - please leave this line in :-)
 data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
-data[,studycode:=fcase(file=="001","001-BRA",
-                       file=="002","002-BRA",
-                       file=="003","003-GUF",
-                       file=="004","004-ESP",
-                       file=="005","005-ESP",
-                       file=="006","006-COL",
-                       file=="007","007-COL",
-                       file=="008","008-USA",
-                       file=="009","009-GRD",
-                       file=="010","010-BRA",
-                       file=="011","011-BRA",
-                       file=="012","012-TTO",
-                       file=="013","013-BRA",
-                       file=="014","014-BRA",
-                       file=="015","015-BRA",
-                       file=="016","016-HND",
-                       file=="017","017-USA",
-                       file=="018","018-COL",
-                       file=="019","019-BRA",
-                       file=="020","020-BRA",
-                       file=="021","021-PRI",
-                       file=="022","022-BRA",
-                       file=="023","023-BRA",
-                       file=="024","024-BRA",
-                       file=="025","025-BRA",
-                       file=="026","026-BRA",
-                       file=="027","027-BRA"
-)]
+
+data[, studycode:=fcase(file=="001","001-BRA",file=="002","002-BRA",file=="003","003-GUF",file=="004","004-ESP",
+                       file=="005","005-ESP",file=="006","006-COL",file=="007","007-COL",file=="008","008-USA",
+                       file=="009","009-GRD",file=="010","010-BRA",file=="011","011-BRA",file=="012","012-TTO",
+                       file=="013","013-BRA",file=="014","014-BRA",file=="015","015-BRA",file=="016","016-HND",
+                       file=="017","017-USA",file=="018","018-COL",file=="019","019-BRA",file=="020","020-BRA",
+                       file=="021","021-PRI",file=="022","022-BRA",file=="023","023-BRA",file=="024","024-BRA",
+                       file=="025","025-BRA",file=="026","026-BRA",file=="027","027-BRA")]
 
 #1.1. Set to NA : 666,777,888,999 values----
 data[data==""] <-NA
@@ -49,8 +29,7 @@ data[data==888] <-  NA
 data[data==999] <-  NA
 data[data==9999] <-  NA
 data[data==999] <-  NA
-data[data==777] <-  NA #@Johanna, not sure if we need to keep this line. Maybe better to specify in which variables we would like to recode 777 to missing
-data[data=="NA"] <-NA 
+data[data==777] <-  NA # @Anneke could you please check if there is any valuable information on 777 among your selected variables :) 
 
 
 
@@ -165,6 +144,8 @@ finaltest[,mod:=as.factor(ifelse(is.na(mod),"NA",mod))]
 finaltest[,lim:=as.factor(ifelse(is.na(lim),"NA",lim))]
 finaltest[,neg:=as.factor(ifelse(is.na(neg),"NA",neg))]
 finaltest[,zikv_test_ev:=ifelse(robs=="TRUE","Robust",ifelse(mod=="TRUE","Moderate",ifelse(lim=="TRUE","Limited",ifelse(neg=="TRUE","Negative",NA))))]
+
+
 childtest<-finaltest[, head(.SD, 1), by = "childid"]
 
 table(childtest$zikv_test_ev,useNA = "always")
