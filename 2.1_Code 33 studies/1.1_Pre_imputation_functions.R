@@ -153,13 +153,13 @@ ziktest_ml <- function(data){
 # Functions related to CZN correction---
 
 checkcon<-function(data,setcol){ 
-  #' Function that summarize if there is any anormality in a set of variables for a given child
-  #' Returns 1: anormality detected on any of the set of variables.
-  #'         0: no anormality detected across the set of variables.
+  #' Function that summarize if there is any abnormality in a set of variables for a given child
+  #' Returns 1: abnormality detected on any of the set of variables.
+  #'         0: no abnormality detected across the set of variables.
   #'         NA: no information available on any variable.
-  #' @param data original dataset 
+  #' @param data original data set 
   #' @param col1 set of variables across which the detection is summarized
-  #' @return detection of anormality in set of variables. 
+  #' @return detection of abnormality in set of variables. 
   
   data[,(setcol):= lapply(.SD, as.numeric), .SDcols = setcol]
   data$anyT <- rowSums(data[, .SD, .SDcols = setcol], na.rm=T)
@@ -169,5 +169,39 @@ checkcon<-function(data,setcol){
 }
 
 
+# Function postnatal microcephaly
+
+micro_postnatal<-function(data){ 
+  #' Function that summarize if there is any postnatal microcephaly diagnosis 
+  #' based on the head circumference
+  #' We used igprepost_hcircm2zscore when birth was <=36 weeks and who_hcircm2zscore otherwise
+  #' when the functions return inf we set the zcore to NA
+  #' @param data original dataset 
+  #' @return original dataset + micro_postnatal binary variable
+  
+  micr_test<-c("childid","ch_sex","fet_death","end_ga",paste0("ch_head_circ_",1:20),paste0("ch_head_circ_age_",1:20))
+  data_micr<-data[,..micr_test]
+  colA = paste("ch_head_circ_", 1:20, sep = "")
+  colB = paste("ch_head_circ_age_", 1:20, sep = "")
+  data_micr_m = melt(data_micr, measure = list(colA,colB), 
+                     value.name = c("circ", "age"),
+                     variable.name="visit")
+  
+  data_micr_m[,sex:=ifelse(is.na(ch_sex),NA,ifelse(ch_sex== 0, "Male","Female"))]
+  data_micr_m[,days:=age*30]
+  data_micr_m[!is.na(sex),zscorepreterm:=igprepost_hcircm2zscore(pmagedays=days, hcircm=circ, sex =sex)]
+  data_micr_m[!is.na(sex),zscorenorm:=who_hcircm2zscore(agedays=days, hcircm=circ, sex =sex)]
+  data_micr_m[,zscore:=ifelse(end_ga<=36,zscorepreterm,zscorenorm)]
+  data_micr_m[,zscore:=ifelse(is.infinite(zscore),NA,zscore)]
+  data_micr_m[,micro:= ifelse(zscore<=-3,2,ifelse(zscore<=-2,1,ifelse(zscore<=2,0,ifelse(!is.na(zscore),3,NA))))]
+  data_micr_m[,micro_bin:=ifelse(micro%in%c(0,3),0,ifelse(micro%in%c(1,2),1,NA))]
+  
+  post_micro<-data_micr_m[ , max(micro_bin,na.rm=TRUE), by = childid]
+  colnames(post_micro)<-c("childid","microcephaly_bin_postnatal")
+  post_micro[,microcephaly_bin_postnatal:=ifelse(microcephaly_bin_postnatal=="-Inf",NA,microcephaly_bin_postnatal)]
+  data<-as.data.table(merge(data,post_micro,by="childid",all.x = TRUE))
+  
+  return(data)
+}
 
 

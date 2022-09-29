@@ -19,7 +19,7 @@ rm(list=ls()) # clean environment
 # 0. Initial checks ----
   
 # 0.1 Missing data observations----
-  data[data==""] <-NA
+  data[data==""] <- NA
   data[data==555] <-  NA
   data[data==666] <-  NA
   data[data==888] <-  NA
@@ -45,27 +45,29 @@ rm(list=ls()) # clean environment
 
 # Study code 
   data[, studycode:= fcase(file=="001","001-BRA",file=="002","002-BRA",file=="003","003-GUF",file=="004","004-ESP",
-                         file=="005","005-ESP",file=="006","006-COL",file=="007","007-COL",file=="008","008-USA",
-                         file=="009","009-GRD",file=="010","010-BRA",file=="011","011-BRA",file=="012","012-TTO",
-                         file=="013","013-BRA",file=="014","014-BRA",file=="015","015-BRA",file=="016","016-HND",
-                         file=="017","017-USA",file=="018","018-COL",file=="019","019-BRA",file=="020","020-BRA",
-                         file=="021","021-PRI",file=="022","022-BRA",file=="023","023-BRA",file=="024","024-BRA",
-                         file=="025","025-BRA",file=="026","026-BRA",file=="027","027-BRA")]
+                           file=="005","005-ESP",file=="006","006-COL",file=="007","007-COL",file=="008","008-USA",
+                           file=="009","009-GRD",file=="010","010-BRA",file=="011","011-BRA",file=="012","012-TTO",
+                           file=="013","013-BRA",file=="014","014-BRA",file=="015","015-BRA",file=="016","016-HND",
+                           file=="017","017-USA",file=="018","018-COL",file=="019","019-BRA",file=="020","020-BRA",
+                           file=="021","021-PRI",file=="022","022-BRA",file=="023","023-BRA",file=="024","024-BRA",
+                           file=="025","025-BRA",file=="026","026-BRA",file=="027","027-BRA")]
 
 
   
 # 1. Fet_death (fetus death variable) and fet_death_ga (time of fetus death) -----
 
 # 1.1. Add miscarriage, loss, loss_etiology, birth in one variable fet_death and fet_death_ga
+  
+# TODO @ Anneke given we did not have a lot of end dates I used for NA cases the maximum ga of the specified ch_term
+  data[,maxbirth_ga:=fcase(ch_term==1,42,ch_term==2,28,ch_term==3,21,ch_term==4,33,ch_term==5,36,ch_term==6,44,default=NA)] #max ga according to ch_term
+  data[,birth_ga:=ifelse(is.na(birth_ga),maxbirth_ga,birth_ga)]
+
 # TODO @ Anneke following Mabel's new notation i defined bdeath as fet_death..
   data[,birth:=ifelse(!is.na(birth_ga)|!is.na(ch_term),1,NA)] #birth indicator
   data[,fet_death:=ifelse(inducedabort==1,1,ifelse(birth==1,0,NA))]
   data[,fet_death_ga:=ifelse(!is.na(endga),endga,ifelse(!is.na(loss_ga),loss_ga,ifelse(!is.na(miscarriage_ga),miscarriage_ga,ifelse(!is.na(inducedabort_ga),inducedabort_ga,NA))))]
   data[,end_ga := ifelse(!is.na(endga),endga,ifelse(!is.na(birth_ga),birth_ga,fet_death_ga))] #clean end_ga 
-# TODO @ Anneke given we did not have a lot of end dates I used for NA cases the maximum ga of the specified ch_term
-  data[,maxbirth_ga:=fcase(ch_term==1,42,ch_term==2,28,ch_term==3,21,ch_term==4,33,ch_term==5,36,ch_term==6,44)] #max ga according to ch_term
   data[,end_ga :=ifelse(is.na(end_ga),maxbirth_ga,end_ga)] 
-
 
 #1.2. Use etiology to set fet_death (et 0=live 1=miss 2=loss 3=imp fet_death) 
   data[loss_etiology==0&(is.na(fet_death)|fet_death==0),c("miscarriage","loss","loss_etiology","birth","fet_death"):= list(0,0,0,1,0)] #birth
@@ -83,65 +85,33 @@ rm(list=ls()) # clean environment
   data[birth==0&ch_vital_status==0,c("miscarriage","loss","loss_etiology","birth","fet_death"):= list(0,0,0,1,0)]
 
 #1.3. Check whether is coherent with inf_alive_birth 0=alive, induce abort 0=No
+#TODO @Anneke Could you please ask what is loss_etiology=4?
   checktable<-data.table(table(miss=data$miscarriage,loss=data$loss,et=data$loss_etiology,birth=data$birth,fet_death=data$fet_death,vst=data$ch_vital_status,iabo=data$inducedabort,inft=!is.na(data$ch_term), useNA="always")) #V1 is miscarriage, V2 is loss and N the number of observations
   checktable[N!=0,]
 
 
 
 # 2. Microcephaly ----
-# TODO @Anneke ask about fet_micro_diag_ga definition (diagnosis!=assessment) and inconsistences with fet_micro_diag_tri I mean can we used us_diagnosis term to aprox the micro_diag_ga?
-  table(data$fet_micro_diag_ga,data$fet_micro_diag_tri,useNA = "always") # from masterbook 0=1st trimester,1=2nd,2=3rd,3=postnatal.. no zero here and inconsistence on ga.
-  table(ga=is.na(data$fet_micro_diag_ga),diag=is.na(data$fet_micro_diag_tri),useNA = "always")
-  table(data$fet_micro_diag_tri,data$fet_us_micro_tri3)  
   
-table(data$ch_microcephaly,data$ch_microcephaly_bin,useNA = "always")
-table(data$fet_micro_diag_tri,data$fet_micro_diag_ga,useNA = "always")
+# 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin, microcephayly_ga)
+  
+  #igb_hcircm2zscore : function (gagebrth, hcircm, sex = "Female")  # birth measurements 
 
+  data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
+  data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
+  data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we priorized the result given by circunference
+  data[, microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
+# TODO @Anneke ask about fet_micro_diag_ga definition (diagnosis!=assessment) and inconsistences with fet_micro_diag_tri I mean can we used us_diagnosis term to aprox the micro_diag_ga?
+  data[,  microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
+                                ifelse(fet_micro_diag_tri==0,13,
+                                ifelse(fet_micro_diag_tri==1,27,
+                                ifelse(fet_micro_diag_tri==2,40,NA))))] 
 
-
-data[ fet_micro_diag_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
-                                ifelse(fet_micro_diag_tri==0,12,
-                                ifelse(fet_micro_diag_tri==1,24,
-                                ifelse(fet_micro_diag_tri==2,36,NA))))] #ask #weeks
-
-table(data$fet_micro_diag_tri,data$fet_us_micro_tri2)
-
-data$ch_microcephaly
-data$ch_microcephaly_bin
-data$fet_micro
-data$fet_micro_diag_ga
-data$fet_micro_diag_tri
-data$fet_us_micro_tri1
-data$fet_us_micro_tri2
-data$fet_us_micro_tri3
-
-##Fetal and child??
-# 2.1. Correction at baseline value ----
-data[,microcephaly1:=microcephaly] # given by hospital 
-data[!is.na(inf_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = birth_ga*7, hcircm=inf_head_circ_birth,sex=ifelse(inf_sex== 0, "Male","Female")))]  
-data[, microcephaly2:= ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
-data[, microcephaly:=ifelse(is.na(microcephaly2),microcephaly,microcephaly2)] # we give priority to microcephaly based on head circunference function
-#data[is.na(microcephaly),microcephaly:=microcephaly2]
-checkmic<-as.data.table(table(micbin=data$microcephaly_bin,mic1=data$microcephaly,mic2=data$microcephaly2,micn=data$microcephalyn,useNA = "always"))
-checkmic[N>0]  #check this inconsistency.. i prioririze microcephaly variable
-data[,microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,microcephaly_bin))]
 
 # 2.2. Postnatal microcephaly ----
-for(t in 1:3){
-  microvar<-paste0("microcephaly_bin_fu",t)
-  var_age<-paste0("inf_head_circ_age_fu",t)
-  var_circ<-paste0("inf_head_circ_age_fu",t)
-  data$age_fu=data[,..var_age]*30
-  data$hcirc_fu=data[,..var_circ]
-  data[!is.na(inf_sex), hcircm2zscore_fu:=as.numeric(who_hcircm2zscore(agedays =age_fu, hcircm=hcirc_fu,sex=ifelse(inf_sex== 0, "Male","Female")))]  
-  data[,micro_fu:= ifelse(hcircm2zscore_fu<=-3,2,ifelse(hcircm2zscore_fu<=-2,1,ifelse(hcircm2zscore_fu<=2,0,ifelse(!is.na(hcircm2zscore_fu),3,NA))))]
-  data[,micro_bin_fu:=ifelse(micro_fu%in%c(0,3),0,ifelse(micro_fu%in%c(1,2),1,NA))]
-  data[, (microvar):= micro_bin_fu]
-}
-data[,postsum:=rowSums(data[,c("microcephaly_bin_fu1","microcephaly_bin_fu2","microcephaly_bin_fu3")],na.rm=T)]
-data[,microcephaly_posn:=ifelse(is.na(microcephaly_bin_fu1)&is.na(microcephaly_bin_fu2)&is.na(microcephaly_bin_fu3),NA,ifelse(postsum>0&microcephaly_bin==0,1,0))]
-
-
+  data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
+  table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin)  
+  
 # 3. Abnormalities ----
   
   ncol<-c("fet_us_cns_tri2","fet_us_cns_tri3","ch_hydrocephaly","ch_corticalatrophy","ch_calcifications","ch_ventriculomegaly")
@@ -175,14 +145,7 @@ data[,microcephaly_posn:=ifelse(is.na(microcephaly_bin_fu1)&is.na(microcephaly_b
   data[,gen_abnormality:=checkcon(data=data,setcol=gencol)]  # Any congenital abnormality excluding microcephaly
   
 
-# 4. CZS variable according to WHO definition ----
-  #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly at birth AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
-  data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2) & (data$anyabnormality_czs==1),1,
-                     ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
-  data[,czsn:=ifelse(is.na(czs),czs2,czs)]  
-  
- 
-# 5. Zika related test and load
+# 4. Zika related test and load
   
   #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
   data_zik_test_ev <- ziktest_ml(data)  
@@ -190,7 +153,17 @@ data[,microcephaly_posn:=ifelse(is.na(microcephaly_bin_fu1)&is.na(microcephaly_b
   #Viral load
   data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
   
-    
+
+# 5. CZS variable according to WHO definition ----
+#TODO@ Anneke how we will calcualte the CZS i mean we will use the zikv_test_ev variable somewhere?
+  
+  #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly at birth AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
+  data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2) & (data$anyabnormality_czs==1),1,
+                     ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
+  data[,czsn:=ifelse(is.na(ch_czs),czs2,ch_czs)]  
+
+  
+      
 
 # 6. Exposure to virus or pathogeneus----
   
@@ -244,7 +217,12 @@ data[,microcephaly_posn:=ifelse(is.na(microcephaly_bin_fu1)&is.na(microcephaly_b
   vcol<-c("vac_rub","vac_vari","vac_yf")
   data[,vaccination:=checkcon(data=data,setcol=vcol)]
 
-  
+  #7.3. Maternal  teratogenic drug use
+  #Category X is teratogenic.
+#TODO @ Anneke no idea what is this,, but thanks God i work with you :), please check it.  
+  data[,drug_tera:=ifelse(is.na(med_oth),NA,
+                    ifelse(med_oth%in%c("ortho-cyclen","norethindrone (Micronor) 0.35 mg tablet"),1,0))]
+
 # 8. Preganancy comorbidities ----
   corcol<-c("pregcomp_bin","gestdiab","eclampsia","preeclampsia")
   data[,comorbid_preg:=checkcon(data=data,setcol=corcol)]
