@@ -17,7 +17,7 @@ checkcon<-function(data,col1){ #
 
 
 #data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) #For Anneke - please leave this line in :-)
-data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
+#data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 data[,studycode:=fcase(file=="001","001-BRA",
                        file=="002","002-BRA",
                        file=="003","003-GUF",
@@ -62,8 +62,39 @@ data[data=="NA"] <-NA
 #zikv status according to Ricardo
 #bdeath and bdeath_ga
 #fetal microcephaly
+library(growthstandards)
+
+intragrowthzscores <- function(data,birth_ga){
+  dataset.zscore = subset(data,is.na(ch_sex) == F&ch_sex != 999)
+  lencm2zscore=  igb_lencm2zscore(gagebrth = dataset.zscore$birth_ga*7, lencm=dataset.zscore$ch_length ,
+                                  sex = ifelse( dataset.zscore$ch_sex== 0, "Male",ifelse(dataset.zscore$ch_sex== 1, "Female",NA)))  
+  wtkg2zscore = igb_wtkg2zscore(gagebrth = dataset.zscore$birth_ga*7, wtkg=dataset.zscore$ch_weight/1000, 
+                                sex = ifelse( dataset.zscore$ch_sex== 0, "Male",ifelse(dataset.zscore$ch_sex== 1, "Female",NA)))
+  hcircm2zscore = igb_hcircm2zscore(gagebrth = dataset.zscore$birth_ga*7, hcircm=dataset.zscore$ch_head_circ_birth, 
+                                    sex = ifelse( dataset.zscore$ch_sex== 0, "Male",ifelse(dataset.zscore$ch_sex== 1, "Female",NA))) 
+  list(lencm2zscore,wtkg2zscore,hcircm2zscore)
+}
+lencm2zscore = intragrowthzscores(data)[[1]]
+wtkg2zscore = intragrowthzscores(data)[[2]]
+hcircm2zscore = intragrowthzscores(data)[[3]]
+
+data$microcephaly_bin2[is.na(data$ch_sex) ==F] <- ifelse(hcircm2zscore < (-2),1,
+                                                          ifelse(hcircm2zscore >= -2 & hcircm2zscore != 999, 0,NA))
+
+data$fet_micro_new<-NA
+data$fet_micro_new<-ifelse(data$fet_us_micro_tri1==1 | data$fet_us_micro_tri2==1 | data$fet_us_micro_tri3==1 |
+                                data$fet_micro==1 | data$microcephaly_bin2==1,1,NA)
+data$temp<-NA
+data$temp<-ifelse(data$fet_us_micro_tri1==0 | data$fet_us_micro_tri2==0 | data$fet_us_micro_tri3==0 |
+                    data$fet_micro==0 | data$microcephaly_bin2==0,0,NA)
+data$fet_micro_new<-ifelse(is.na(data$fet_micro_new) & data$temp==0,0,data$fet_micro_new)
+
+
 #czs new
 #child microcephaly
+
+
+#Postnatal microcephaly
 
 #Neuroimaging abnormalities other than microcephaly
 data$neuroabnormality<-NA
@@ -156,13 +187,15 @@ data$comorbid_preg<-ifelse(is.na(data$comorbid_preg) & data$temp==0,0,data$comor
 #muscle_pain, arthritis, vomiting, abd_pain, bleed, fatigue, sorethroat
 
 
-data2<-subset(data, select=c(zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_weight, ch_craniofac_abn_bin,
+data2<-subset(data, select=c(studycode,
+                             zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_weight, ch_craniofac_abn_bin,
                              neuroabnormality, ocularabnormality, contractures, nonneurologic,
                              age, educ, maritalstat,ethnicity, bmi, ses, tobacco, drugs_bin, alcohol,
                              vaccination, gen_anomalies, zikv_pcr_vl_1, denv_preg_ever, chikv_preg_ever,
                              comorbid_bin, comorbid_preg, storch_bin, arb_symp, fever, rash, arthralgia, headache,
                              muscle_pain, arthritis, vomiting, abd_pain, bleed, fatigue, sorethroat))
 #Change to numeric
+data2$studycode<-as.factor(data2$studycode)
 data2<-data2 %>% mutate_if(is.character,as.numeric)
 #sapply(data2, class)
 
