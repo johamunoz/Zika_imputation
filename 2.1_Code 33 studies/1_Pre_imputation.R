@@ -13,6 +13,9 @@ rm(list=ls()) # clean environment
 # Load dataset and dependencies ----
   data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
   source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
+  
+  data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) 
+  ###RUN PREIMPUTATION FUNCTIONS SCRIPT
 
 
   
@@ -27,6 +30,7 @@ rm(list=ls()) # clean environment
   data[data==9999] <-  NA
   data[data==999] <-  NA
 # TODO  @Anneke could you please check if there is any valuable information on 777 among your selected variables :) 
+  #@Johanna: I checked it and fortunately there are none that we currently use, so we can leave the line in!
   data[data==777] <-  NA 
 
 # 0.2 Check variables class
@@ -36,6 +40,7 @@ rm(list=ls()) # clean environment
 
 # Check columns classes
 #TODO @Anneke Can we include on the required list the variables classes so we can check all them here?  
+  #@Johanna: yes of course! Can you let me know which variable class you prefer for e.g. categorical variables (with 0 and 1)? Do you want them as numeric?
   # Check ga variables 
   var_ga<-grep(pattern="._ga",x=names(data),value=TRUE)
   type_ga<-sapply(data[,..var_ga], class)
@@ -59,10 +64,11 @@ rm(list=ls()) # clean environment
 # 1.1. Add miscarriage, loss, loss_etiology, birth in one variable fet_death and fet_death_ga
   
 # TODO @ Anneke given we did not have a lot of end dates I used for NA cases the maximum ga of the specified ch_term
-  data[,maxbirth_ga:=fcase(ch_term==1,42,ch_term==2,28,ch_term==3,21,ch_term==4,33,ch_term==5,36,ch_term==6,44,default=NA)] #max ga according to ch_term
+  #Johanna, that is ok, but I think for the first category, better to take 40 weeks instead of 42. I changed that.
+  data[,maxbirth_ga:=fcase(ch_term==1,40,ch_term==2,28,ch_term==3,21,ch_term==4,33,ch_term==5,36,ch_term==6,44,default=NA)] #max ga according to ch_term
   data[,birth_ga:=ifelse(is.na(birth_ga),maxbirth_ga,birth_ga)]
 
-# TODO @ Anneke following Mabel's new notation i defined bdeath as fet_death..
+# TODO @ Anneke following Mabel's new notation i defined bdeath as fet_death.. @Johanna, fine!!
   data[,birth:=ifelse(!is.na(birth_ga)|!is.na(ch_term),1,NA)] #birth indicator
   data[,fet_death:=ifelse(inducedabort==1,1,ifelse(birth==1,0,NA))]
   data[,fet_death_ga:=ifelse(!is.na(endga),endga,ifelse(!is.na(loss_ga),loss_ga,ifelse(!is.na(miscarriage_ga),miscarriage_ga,ifelse(!is.na(inducedabort_ga),inducedabort_ga,NA))))]
@@ -86,6 +92,7 @@ rm(list=ls()) # clean environment
 
 #1.3. Check whether is coherent with inf_alive_birth 0=alive, induce abort 0=No
 #TODO @Anneke Could you please ask what is loss_etiology=4?
+  #@Johanna it is "Stillbirth or Intrapartum death (death during labor)" 
   checktable<-data.table(table(miss=data$miscarriage,loss=data$loss,et=data$loss_etiology,birth=data$birth,fet_death=data$fet_death,vst=data$ch_vital_status,iabo=data$inducedabort,inft=!is.na(data$ch_term), useNA="always")) #V1 is miscarriage, V2 is loss and N the number of observations
   checktable[N!=0,]
 
@@ -155,11 +162,14 @@ rm(list=ls()) # clean environment
   
 
 # 5. CZS variable according to WHO definition ----
-#TODO@ Anneke how we will calcualte the CZS i mean we will use the zikv_test_ev variable somewhere?
+#TODO@ Anneke how we will calcualte the CZS i mean we will use the zikv_test_ev variable somewhere? 
+  #@Johanna YES! I have changed the following lines so we are using it.
   
   #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND presence of severe microcephaly at birth AND presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.)
-  data[,czs2:=ifelse((data$zikv_preg==1 | data$fet_zikv==1) & (data$microcephaly==2) & (data$anyabnormality_czs==1),1,
-                     ifelse(data$zikv_preg==0&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
+  #Johanna, note that the WHO definition is changed:
+  #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
+  data[,czs2:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
+                     ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
   data[,czsn:=ifelse(is.na(ch_czs),czs2,ch_czs)]  
 
   
@@ -222,6 +232,8 @@ rm(list=ls()) # clean environment
 #TODO @ Anneke no idea what is this,, but thanks God i work with you :), please check it.  
   data[,drug_tera:=ifelse(is.na(med_oth),NA,
                     ifelse(med_oth%in%c("ortho-cyclen","norethindrone (Micronor) 0.35 mg tablet"),1,0))]
+  
+  #@Johanna can you add another category (number 2) for the following values: "Propiltiouracil" "Neozine" "Povidone-iodine 10% topical solution pyxis"
 
 # 8. Preganancy comorbidities ----
   corcol<-c("pregcomp_bin","gestdiab","eclampsia","preeclampsia")
