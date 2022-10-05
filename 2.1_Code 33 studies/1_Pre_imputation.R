@@ -150,7 +150,7 @@ rm(list=ls()) # clean environment
   
 
 # 4. Zika related test and load
-  
+# TODO @ Anneke what about the dengue cases? should we include them into the zika evidence??  
   #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
   data_zik_test_ev <- ziktest_ml(data)  
   data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
