@@ -39,6 +39,8 @@ rm(list=ls()) # clean environment
 # Check columns classes
 #TODO @Anneke Can we include on the required list the variables classes so we can check all them here?  
   #@Johanna: yes of course! Can you let me know which variable class you prefer for e.g. categorical variables (with 0 and 1)? Do you want them as numeric?
+  #@Anneke: not necessary I just wonder if we can add a column in the file excel where you specified the selected variables if variable is continuous, binary or categorical, character(date). 
+  # Also here in this excel file we can add min, max and unit for continuous variables to create the the plausibility values table, I think we refer in that time to infoexp.xlsx  file.
   # Check ga variables 
   var_ga<-grep(pattern="._ga",x=names(data),value=TRUE)
   type_ga<-sapply(data[,..var_ga], class)
