@@ -94,45 +94,45 @@ ziktest_ml <- function(data){
     data_test_m[, prnt_titer_20:=ifelse(prnt_titer>=20,1,0)]
     data_test_m[, prnt_titer_100:=ifelse(prnt_titer>=100,1,0)]
     data_test_m[, prnt_titer_1000:=ifelse(prnt_titer>=1000,1,0)]
-    data_test_m[, endga:=as.numeric(endga)]
+    data_test_m[, end_ga:=as.numeric(end_ga)]
     
     data_test_m[, preg0:=0]
-    data_test_m[, post1:=endga+4]
-    data_test_m[, post2:=endga+8]
-    data_test_m[, post3:=endga+13]
-    data_test_m[, post6:=endga+26]
+    data_test_m[, post1:=end_ga+4]
+    data_test_m[, post2:=end_ga+8]
+    data_test_m[, post3:=end_ga+13]
+    data_test_m[, post6:=end_ga+26]
     
     # Robust
-    robs1<-ziktest_sum(datav=data_test_m,respv="pcr_res1",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_pos_any_preg",func="any",diff=FALSE)
-    robs2<-ziktest_sum(datav=robs1,respv="igmz",timev="elisa_ga",minv="preg0", maxv="endga",name="igm_zero_any_preg",func="any",diff=TRUE)
-    robs3<-ziktest_sum(datav=robs2,respv="prntz",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt_zero_any_preg",func="any",diff=TRUE)
-    robs40<-ziktest_sum(datav=robs3,respv="igmz",timev="elisa_ga",minv="preg0", maxv="endga",name="igm_pos_any_preg",func="any",diff=FALSE)
-    robs41<-ziktest_sum(datav=robs40,respv="prnt_titer_20",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt20_any_preg",func="any",diff=FALSE)
-    robs42<-ziktest_sum(datav=robs41,respv="prntz",timev="elisa_ga",minv="endga", maxv="post6",name="prnt_zero_any_post6",func="any",diff=TRUE)
-    robs43<-ziktest_sum(datav=robs42,respv="prnt_titer_20",timev="elisa_ga",minv="endga", maxv="post6",name="prnt20_any_post6",func="any",diff=FALSE)
+    robs1<-ziktest_sum(datav=data_test_m,respv="pcr_res1",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_pos_any_preg",func="any",diff=FALSE)
+    robs2<-ziktest_sum(datav=robs1,respv="igmz",timev="elisa_ga",minv="preg0", maxv="end_ga",name="igm_zero_any_preg",func="any",diff=TRUE)
+    robs3<-ziktest_sum(datav=robs2,respv="prntz",timev="elisa_ga",minv="preg0", maxv="end_ga",name="prnt_zero_any_preg",func="any",diff=TRUE)
+    robs40<-ziktest_sum(datav=robs3,respv="igmz",timev="elisa_ga",minv="preg0", maxv="end_ga",name="igm_pos_any_preg",func="any",diff=FALSE)
+    robs41<-ziktest_sum(datav=robs40,respv="prnt_titer_20",timev="elisa_ga",minv="preg0", maxv="end_ga",name="prnt20_any_preg",func="any",diff=FALSE)
+    robs42<-ziktest_sum(datav=robs41,respv="prntz",timev="elisa_ga",minv="end_ga", maxv="post6",name="prnt_zero_any_post6",func="any",diff=TRUE)
+    robs43<-ziktest_sum(datav=robs42,respv="prnt_titer_20",timev="elisa_ga",minv="end_ga", maxv="post6",name="prnt20_any_post6",func="any",diff=FALSE)
     robs43[,robs:=pcr_pos_any_preg|igm_zero_any_preg|prnt_zero_any_preg|(igm_pos_any_preg&(prnt20_any_preg|prnt_zero_any_post6|prnt20_any_post6))]
     
     # Moderated
-    mod20<-ziktest_sum(datav=robs43,respv="prnt_titer_1000",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt1000_any_preg",func="any",diff=FALSE)
-    mod21a<-ziktest_sum(datav=mod20,respv="prnt_titer",timev="elisa_ga",minv="preg0", maxv="endga",name="prnt_max_preg",func="max",diff=FALSE)
-    mod21b<-ziktest_sum(datav=mod21a,respv="prnt_titer",timev="elisa_ga",minv="endga", maxv="post2",name="prnt_max_post2",func="max",diff=FALSE)
+    mod20<-ziktest_sum(datav=robs43,respv="prnt_titer_1000",timev="elisa_ga",minv="preg0", maxv="end_ga",name="prnt1000_any_preg",func="any",diff=FALSE)
+    mod21a<-ziktest_sum(datav=mod20,respv="prnt_titer",timev="elisa_ga",minv="preg0", maxv="end_ga",name="prnt_max_preg",func="max",diff=FALSE)
+    mod21b<-ziktest_sum(datav=mod21a,respv="prnt_titer",timev="elisa_ga",minv="end_ga", maxv="post2",name="prnt_max_post2",func="max",diff=FALSE)
     mod21b[,prnt_rise_post2:=prnt_max_post2>prnt_max_preg]
     mod21b[,prnt_4rise_post2:=prnt_max_post2>4*prnt_max_preg]
     
-    mod40a<-ziktest_sum(datav=mod21b,respv="pcr_res2",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_eq_any_preg",func="any",diff=FALSE)
-    mod40b<-ziktest_sum(datav=mod40a,respv="igm_res2",timev="elisa_ga",minv="preg0", maxv="endga",name="igm_eq_any_preg",func="any",diff=FALSE)
-    mod41 <-ziktest_sum(datav=mod40b,respv="prnt_titer_100",timev="elisa_ga",minv="endga", maxv="post3",name="prnt100_any_post3",func="any",diff=FALSE)
+    mod40a<-ziktest_sum(datav=mod21b,respv="pcr_res2",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_eq_any_preg",func="any",diff=FALSE)
+    mod40b<-ziktest_sum(datav=mod40a,respv="igm_res2",timev="elisa_ga",minv="preg0", maxv="end_ga",name="igm_eq_any_preg",func="any",diff=FALSE)
+    mod41 <-ziktest_sum(datav=mod40b,respv="prnt_titer_100",timev="elisa_ga",minv="end_ga", maxv="post3",name="prnt100_any_post3",func="any",diff=FALSE)
     mod41[,mod:=igm_pos_any_preg|(prnt1000_any_preg&prnt_rise_post2)|prnt_4rise_post2|(prnt100_any_post3&(pcr_eq_any_preg|igm_eq_any_preg))]
     
     # Limited
     lim1<-ziktest_sum(datav=mod41,respv="prnt_titer_100",timev="elisa_ga",minv="preg0", maxv="post6",name="prnt100_any",func="any",diff=FALSE)
-    lim2<-ziktest_sum(datav=lim1,respv="prntz",timev="elisa_ga",minv="endga", maxv="post3",name="prnt_zero_any_post3",func="any",diff=TRUE)
+    lim2<-ziktest_sum(datav=lim1,respv="prntz",timev="elisa_ga",minv="end_ga", maxv="post3",name="prnt_zero_any_post3",func="any",diff=TRUE)
     lim2[,lim:=prnt100_any| prnt_zero_any_post3]
     
     # Negative
-    neg1<-ziktest_sum(datav=lim2,respv="pcr_res0",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_neg_any_preg",func="any",diff=FALSE)
-    neg2<-ziktest_sum(datav=neg1,respv="igm_res0",timev="pcr_ga",minv="preg0", maxv="endga",name="igm_neg_any_preg",func="any",diff=FALSE)
-    finaltest<-ziktest_sum(datav=neg2,respv="pcr_resNA",timev="pcr_ga",minv="preg0", maxv="endga",name="pcr_na_all_preg",func="all",diff=FALSE)
+    neg1<-ziktest_sum(datav=lim2,respv="pcr_res0",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_neg_any_preg",func="any",diff=FALSE)
+    neg2<-ziktest_sum(datav=neg1,respv="igm_res0",timev="pcr_ga",minv="preg0", maxv="end_ga",name="igm_neg_any_preg",func="any",diff=FALSE)
+    finaltest<-ziktest_sum(datav=neg2,respv="pcr_resNA",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_na_all_preg",func="all",diff=FALSE)
     finaltest[,neg:=pcr_neg_any_preg&igm_neg_any_preg|igm_neg_any_preg&pcr_na_all_preg]
     
     #Colapse all conditions in one variable zikv_test_ev
