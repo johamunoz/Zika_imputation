@@ -229,6 +229,7 @@ rm(list=ls()) # clean environment
   data[,drug_tera:=ifelse(is.na(med_oth),NA,
                     ifelse(med_oth%in%c("ortho-cyclen","norethindrone (Micronor) 0.35 mg tablet"),1,
                     ifelse(med_oth%in%c("Propiltiouracil","Neozine","Povidone-iodine 10% topical solution pyxis"),2,0)))]
+  #@Johanna: can you add the following: If med_anticonvuls_bin=1 -> drug_tera=1?
   
  
 # 8. Preganancy comorbidities ----
