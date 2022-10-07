@@ -63,9 +63,6 @@ rm(list=ls()) # clean environment
 
 # 1.1. Add miscarriage, loss, loss_etiology, birth in one variable fet_death and fet_death_ga
   
-# TODO @ Anneke given we did not have a lot of end dates I used for NA cases the maximum ga of the specified ch_term
-  #Johanna, that is ok, but I think for the first category, better to take 40 weeks instead of 42. I changed that.
-  #@Anneke I added the 42 on the chm_term=1  because it is according to the way they defined the level on the master book
   data[,maxbirth_ga:=fcase(ch_term==1,42,ch_term==2,28,ch_term==3,21,ch_term==4,33,ch_term==5,36,ch_term==6,44,default=NA)] #max ga according to ch_term
   data[,birth_ga:=ifelse(is.na(birth_ga),maxbirth_ga,birth_ga)]
 
@@ -96,16 +93,23 @@ rm(list=ls()) # clean environment
   checktable[N!=0,]
 
 # 2. Microcephaly ----
+#TODO @JOHA check consistency
+  # micro_bin_fet
+  #fet_micro
+  #fet_us_micro  
   
+
 # 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin, microcephayly_ga)
+ 
   
+  
+   
   #igb_hcircm2zscore : function (gagebrth, hcircm, sex = "Female")  # birth measurements 
 
   data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
   data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
   data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we priorized the result given by circunference
   data[, microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
-# TODO @Anneke ask about fet_micro_diag_ga definition (diagnosis!=assessment) and inconsistences with fet_micro_diag_tri I mean can we used us_diagnosis term to aprox the micro_diag_ga?
   data[,  microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                 ifelse(fet_micro_diag_tri==0,13,
                                 ifelse(fet_micro_diag_tri==1,27,
@@ -113,6 +117,7 @@ rm(list=ls()) # clean environment
 
 
 # 2.2. Postnatal microcephaly ----
+# TDOD microcephaly_bin_birth  
   data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
   table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin)  
   
@@ -150,7 +155,7 @@ rm(list=ls()) # clean environment
   
 
 # 4. Zika related test and load
-# TODO @ Anneke what about the dengue cases? should we include them into the zika evidence??  
+# TODO @ Johanna what about the dengue cases? should we include them into the zika evidence??  
   #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
   data_zik_test_ev <- ziktest_ml(data)  
   data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
@@ -165,9 +170,6 @@ rm(list=ls()) # clean environment
   data[,czs:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
                      ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
   data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
-#TODO @Anneke  Could you check the prevalence micro vs prevalence CZS?
-  #i dont remember weel what they expect to find in the prevalence of CZS compared with the microcephaly one.
-  # I think they want P_micro>P_csz but with the WHO defininiton we got the opposite, could this explained by the fact that we have more negative confirmed microcephaly cases?
   table(czs=data$czs,micro=data$microcephaly_bin,useNA = "always")
   table(data$czs,useNA = "always")    #0.052 but in numbers 0=7175  1=396 NA=6421 
   table(data$microcephaly_bin,useNA = "always")   #0.044 but in numbers 0=11150   1=525  NA=2317 
@@ -227,10 +229,9 @@ rm(list=ls()) # clean environment
   #7.3. Maternal  teratogenic drug use
   #Category X is teratogenic.
   data[,drug_tera:=ifelse(is.na(med_oth),NA,
-                    ifelse(med_oth%in%c("ortho-cyclen","norethindrone (Micronor) 0.35 mg tablet"),1,
+                    ifelse(med_oth%in%c("ortho-cyclen","norethindrone (Micronor) 0.35 mg tablet")|med_anticonvuls_bin==1,1,
                     ifelse(med_oth%in%c("Propiltiouracil","Neozine","Povidone-iodine 10% topical solution pyxis"),2,0)))]
-  #@Johanna: can you add the following: If med_anticonvuls_bin=1 -> drug_tera=1?
-  
+
  
 # 8. Preganancy comorbidities ----
   corcol<-c("pregcomp_bin","gestdiab","eclampsia","preeclampsia")
