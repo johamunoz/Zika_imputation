@@ -217,3 +217,11 @@ data2<-data2 %>% mutate_if(is.numeric,as.factor)
 data2<-subset(data2,select=-c(zikv_ga,ch_weight,age,bmi,zikv_pcr_vl_1))
 
 summary(data2)
+
+as.data.frame(cbind(summary(data2[,2]),summary(data2[,2])/length(data2$studycode),colnames(data2[,2])))
+
+label(data2$zikv_preg)<-"Maternal zika"
+label(data2$fet_zikv)<-"Fetal zika"
+
+mytable<-table1(~ zikv_preg + fet_zikv,data=data2,excel=1)
+#write.xlsx(mytable,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/test.xlsx")
