@@ -37,11 +37,8 @@ rm(list=ls()) # clean environment
   length(unique(data$childid))# one childID per observation
 
 # Check columns classes
-#TODO @Anneke Can we include on the required list the variables classes so we can check all them here?  
-  #@Johanna: yes of course! Can you let me know which variable class you prefer for e.g. categorical variables (with 0 and 1)? Do you want them as numeric?
-  #@Anneke: not necessary I just wonder if we can add a column in the file excel where you specified the selected variables if variable is continuous, binary or categorical, character(date). 
-  # Also here in this excel file we can add min, max and unit for continuous variables to create the the plausibility values table, I think we refer in that time to infoexp.xlsx  file.
-  # Check ga variables 
+#TODO @Anneke Finish the excel list
+   # Check ga variables 
   var_ga<-grep(pattern="._ga",x=names(data),value=TRUE)
   type_ga<-sapply(data[,..var_ga], class)
   var_ga<-c("miscarriage_ga","inducedabort_ga","loss_ga","fet_zikv_ga","fet_micro_diag_ga")
@@ -93,23 +90,18 @@ rm(list=ls()) # clean environment
   checktable[N!=0,]
 
 # 2. Microcephaly ----
-#TODO @JOHA check consistency
-  # micro_bin_fet
-  #fet_micro
-  #fet_us_micro  
-  
+#TODO@Anneke check if the microchepaly_bin variables..
+  data[ microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
+                                     ifelse(!is.na(fet_micro_diag_tri)|fet_us_micro_tri1==1|fet_us_micro_tri2==1|fet_us_micro_tri3==1,1,NA))]
 
-# 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin, microcephayly_ga)
+# 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
  
-  
-  
-   
   #igb_hcircm2zscore : function (gagebrth, hcircm, sex = "Female")  # birth measurements 
 
   data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
   data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
   data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we priorized the result given by circunference
-  data[, microcephaly_bin:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
+  data[, microcephaly_bin_birth:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
   data[,  microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                 ifelse(fet_micro_diag_tri==0,13,
                                 ifelse(fet_micro_diag_tri==1,27,
@@ -117,7 +109,7 @@ rm(list=ls()) # clean environment
 
 
 # 2.2. Postnatal microcephaly ----
-# TDOD microcephaly_bin_birth  
+
   data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
   table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin)  
   
@@ -155,7 +147,7 @@ rm(list=ls()) # clean environment
   
 
 # 4. Zika related test and load
-# TODO @ Johanna what about the dengue cases? should we include them into the zika evidence??  
+
   #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
   data_zik_test_ev <- ziktest_ml(data)  
   data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)

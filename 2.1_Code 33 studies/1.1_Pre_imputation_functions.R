@@ -69,6 +69,7 @@ ziktest_ml <- function(data){
     colF = paste("zikv_prnt_titer_", 1:2, sep = "")
     colG = paste("zikv_prnt_", 1:10, sep = "")
     colH = paste("zikv_elisa_ga_", 1:10, sep = "")
+  
     
     data_test_m = melt(data_test, measure = list(colA, colB,colC,colD,colE,colF,colG,colH), 
                        value.name = c("pcr_ga", "pcr_res","pcr_tri","pcr_date","igm_res","prnt_titer","prnt","elisa_ga"),
@@ -120,17 +121,17 @@ ziktest_ml <- function(data){
     mod21b[,prnt_4rise_post2:=prnt_max_post2>4*prnt_max_preg]
     
     mod40a<-ziktest_sum(datav=mod21b,respv="pcr_res2",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_eq_any_preg",func="any",diff=FALSE)
-  # @JOHAmodify this
     mod40b<-ziktest_sum(datav=mod40a,respv="igm_res2",timev="elisa_ga",minv="preg0", maxv="end_ga",name="igm_eq_any_preg",func="any",diff=FALSE)
     mod41 <-ziktest_sum(datav=mod40b,respv="prnt_titer_100",timev="elisa_ga",minv="end_ga", maxv="post3",name="prnt100_any_post3",func="any",diff=FALSE)
-    mod41[,mod:=igm_pos_any_preg|(prnt1000_any_preg&prnt_rise_post2)|prnt_4rise_post2|(prnt100_any_post3&(pcr_eq_any_preg|igm_eq_any_preg))]
-    
+#TODO @Anneke check if this is correct    
+    # Last condition is not specified in the paper and is related to dengue test results interaction. 
+    mod41[,mod:=igm_pos_any_preg|(prnt1000_any_preg&prnt_rise_post2)|prnt_4rise_post2|(prnt100_any_post3&(pcr_eq_any_preg|(igm_eq_any_preg&(denv_igm_titer_1!=1|is.na(denv_igm_titer_1)))))]
+   
     # Limited
-    
-  #ADD lim_flavi  
     lim1<-ziktest_sum(datav=mod41,respv="prnt_titer_100",timev="elisa_ga",minv="preg0", maxv="post6",name="prnt100_any",func="any",diff=FALSE)
     lim2<-ziktest_sum(datav=lim1,respv="prntz",timev="elisa_ga",minv="end_ga", maxv="post3",name="prnt_zero_any_post3",func="any",diff=TRUE)
-    lim2[,lim:=prnt100_any| prnt_zero_any_post3]
+    # Last condition is not specified in the paper and is related to dengue test results interaction. 
+    lim2[,lim:=prnt100_any| prnt_zero_any_post3|(igm_eq_any_preg&denv_igm_titer_1==0)]
     
     # Negative
     neg1<-ziktest_sum(datav=lim2,respv="pcr_res0",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_neg_any_preg",func="any",diff=FALSE)
@@ -144,7 +145,7 @@ ziktest_ml <- function(data){
     finaltest[,lim:=as.factor(ifelse(is.na(lim),"NA",lim))]
     finaltest[,neg:=as.factor(ifelse(is.na(neg),"NA",neg))]
     finaltest[,zikv_test_ev:=ifelse(robs=="TRUE","Robust",ifelse(mod=="TRUE","Moderate",ifelse(lim=="TRUE","Limited",ifelse(neg=="TRUE","Negative",NA))))]
-    nrow(finaltest)
+    
     childtest<-finaltest[, .SD[c(1)]$zikv_test_ev, by ="childid"]
     colnames(childtest)<-c("childid","zikv_test_ev")
     childtest[,zikv_test_ev:=as.factor(zikv_test_ev)]
@@ -195,7 +196,7 @@ micro_postnatal<-function(data){
   data_micr_m[!is.na(sex),zscorepreterm:=igprepost_hcircm2zscore(pmagedays=days, hcircm=circ, sex =sex)]
   data_micr_m[!is.na(sex),zscorenorm:=who_hcircm2zscore(agedays=days, hcircm=circ, sex =sex)]
   data_micr_m[,zscore:=ifelse(end_ga<=36,zscorepreterm,zscorenorm)]
-#TODO do it separately for preterm.. 
+
   data_micr_m[,zscore:=ifelse(is.infinite(zscore),NA,zscore)]
   data_micr_m[,micro:= ifelse(zscore<=-3,2,ifelse(zscore<=-2,1,ifelse(zscore<=2,0,ifelse(!is.na(zscore),3,NA))))]
   data_micr_m[,micro_bin:=ifelse(micro%in%c(0,3),0,ifelse(micro%in%c(1,2),1,NA))]
