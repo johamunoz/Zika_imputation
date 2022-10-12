@@ -53,7 +53,7 @@ ziktest_ml <- function(data){
   
 
     # Set dataset with only the zika related variables 
-    var_test<-c("childid","end_ga",paste0("zikv_pcr_ga_",1:10),paste0("zikv_pcr_res_",1:10),
+    var_test<-c("childid","end_ga","denv_igm_res_1",paste0("zikv_pcr_ga_",1:10),paste0("zikv_pcr_res_",1:10),
                 paste0("zikv_pcr_tri_",1:10),paste0("zikv_pcr_date_",1:10), 
                 paste0("zikv_igm_res_",1:10),paste0("zikv_elisa_ga_",1:10),
                 paste0("zikv_prnt_titer_",1:2),
@@ -125,13 +125,13 @@ ziktest_ml <- function(data){
     mod41 <-ziktest_sum(datav=mod40b,respv="prnt_titer_100",timev="elisa_ga",minv="end_ga", maxv="post3",name="prnt100_any_post3",func="any",diff=FALSE)
 #TODO @Anneke check if this is correct    
     # Last condition is not specified in the paper and is related to dengue test results interaction. 
-    mod41[,mod:=igm_pos_any_preg|(prnt1000_any_preg&prnt_rise_post2)|prnt_4rise_post2|(prnt100_any_post3&(pcr_eq_any_preg|(igm_eq_any_preg&(denv_igm_titer_1!=1|is.na(denv_igm_titer_1)))))]
+    mod41[,mod:=igm_pos_any_preg|(prnt1000_any_preg&prnt_rise_post2)|prnt_4rise_post2|(prnt100_any_post3&(pcr_eq_any_preg|(igm_eq_any_preg&(denv_igm_res_1!=1|is.na(denv_igm_res_1)))))]
    
     # Limited
     lim1<-ziktest_sum(datav=mod41,respv="prnt_titer_100",timev="elisa_ga",minv="preg0", maxv="post6",name="prnt100_any",func="any",diff=FALSE)
     lim2<-ziktest_sum(datav=lim1,respv="prntz",timev="elisa_ga",minv="end_ga", maxv="post3",name="prnt_zero_any_post3",func="any",diff=TRUE)
     # Last condition is not specified in the paper and is related to dengue test results interaction. 
-    lim2[,lim:=prnt100_any| prnt_zero_any_post3|(igm_eq_any_preg&denv_igm_titer_1==0)]
+    lim2[,lim:=prnt100_any| prnt_zero_any_post3|(igm_eq_any_preg&denv_igm_res_1==1)]
     
     # Negative
     neg1<-ziktest_sum(datav=lim2,respv="pcr_res0",timev="pcr_ga",minv="preg0", maxv="end_ga",name="pcr_neg_any_preg",func="any",diff=FALSE)

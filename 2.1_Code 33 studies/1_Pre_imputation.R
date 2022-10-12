@@ -91,9 +91,10 @@ rm(list=ls()) # clean environment
 
 # 2. Microcephaly ----
 #TODO@Anneke check if the microchepaly_bin variables..
-  data[ microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
+  data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
                                      ifelse(!is.na(fet_micro_diag_tri)|fet_us_micro_tri1==1|fet_us_micro_tri2==1|fet_us_micro_tri3==1,1,NA))]
 
+  table(data$microcephaly_bin_fet,useNA = "always")
 # 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
  
   #igb_hcircm2zscore : function (gagebrth, hcircm, sex = "Female")  # birth measurements 
@@ -111,39 +112,39 @@ rm(list=ls()) # clean environment
 # 2.2. Postnatal microcephaly ----
 
   data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
-  table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin)  
+  table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin_fet)  
   
 # 3. Abnormalities ----
-  
+#TODO@ Anneke please check if the new names are according to your names, and also check the values.   
   ncol<-c("fet_us_cns_tri2","fet_us_cns_tri3","ch_hydrocephaly","ch_corticalatrophy","ch_calcifications","ch_ventriculomegaly")
-  data[,neuro_abnormality:=checkcon(data=data,setcol=ncol)]  # Neuroimaging abnormalities
+  data[,neuroabnormality:=checkcon(data=data,setcol=ncol)]  # Neuroimaging abnormalities
   
   ccol<-c("fet_us_msk_tri2","fet_us_msk_tri3")
   data[,contractures:=checkcon(data=data,setcol=ccol)] # Congenital contractures
   
   cacol<-c("fet_us_cardio_tri2","fet_us_cardio_tri3")
-  data[,cardio_abnormality:=checkcon(data=data,setcol=cacol)] # Cardio abnormalities
+  data[,cardioabnormality:=checkcon(data=data,setcol=cacol)] # Cardio abnormalities
   
   gacol<-c("fet_us_gastro_tri2","fet_us_gastro_tri3")
-  data[,gastro_abnormality:=checkcon(data=data,setcol=gacol)] # Gastrointestinal abnormalities
+  data[,gastroabnormality:=checkcon(data=data,setcol=gacol)] # Gastrointestinal abnormalities
   
   orcol<-c("fet_us_orofac_tri2","fet_us_orofac_tri3")
-  data[,oro_abnormality:=checkcon(data=data,setcol=orcol)] # Orofacialintestinal abnormalities
+  data[,oroabnormality:=checkcon(data=data,setcol=orcol)] # Orofacialintestinal abnormalities
   
   eycol<-c("fet_us_eyeear_tri2","fet_us_eyeear_tri3")
-  data[,ocular_abnormality:=checkcon(data=data,setcol=eycol)] # Ocular abnormalities
+  data[,ocularabnormality:=checkcon(data=data,setcol=eycol)] # Ocular abnormalities
   
   gecol<-c("fet_us_genur_tri2","fet_us_genur_tri3")
-  data[,genur_abnormality:=checkcon(data=data,setcol=gecol)] # Genitourinaly abnormalities
+  data[,genurabnormality:=checkcon(data=data,setcol=gecol)] # Genitourinaly abnormalities
  
-  noncol<-c("cardio_abnormality","gastro_abnormality","oro_abnormality","genur_abnormality")
-  data[,nonneuro_abnormality:=checkcon(data=data,setcol=noncol)] # Non neurological abnormalities
+  noncol<-c("cardioabnormality","gastroabnormality","oroabnormality","genurabnormality")
+  data[,nonneurologic:=checkcon(data=data,setcol=noncol)] # Non neurological abnormalities
  
-  anycol<-c("neuro_abnormality","contractures","cardio_abnormality","gastro_abnormality","oro_abnormality","ocular_abnormality","genur_abnormality","ch_othabnorm","fet_us_bin_tri1","fet_us_bin_tri2","fet_us_bin_tri3")
+  anycol<-c("neuroabnormality","contractures","cardioabnormality","gastroabnormality","oroabnormality","ocularabnormality","genurabnormality","ch_othabnorm","fet_us_bin_tri1","fet_us_bin_tri2","fet_us_bin_tri3")
   data[,any_abnormality_czs:=checkcon(data=data,setcol=anycol)]  # Any congenital abnormality excluding microcephaly
 
   gencol<-c("chromoabn_dx","ch_chromoabn")
-  data[,gen_abnormality:=checkcon(data=data,setcol=gencol)]  # Any congenital abnormality excluding microcephaly
+  data[,gen_anomalies:=checkcon(data=data,setcol=gencol)]  # Any congenital abnormality excluding microcephaly
   
 
 # 4. Zika related test and load
@@ -151,20 +152,22 @@ rm(list=ls()) # clean environment
   #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
   data_zik_test_ev <- ziktest_ml(data)  
   data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
-  
+  table( data$zikv_test_ev)
   
   #Viral load
   data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
-  
+  summary(data$zikv_pcr_vl_1)
 
 # 5. CZS variable according to WHO definition ----
+#TODO @Anneke here i dont know which kind of microcephaly_bin you ned to compare and use. 
   #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
   data[,czs:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
                      ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
   data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
-  table(czs=data$czs,micro=data$microcephaly_bin,useNA = "always")
+ 
+  table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
   table(data$czs,useNA = "always")    #0.052 but in numbers 0=7175  1=396 NA=6421 
-  table(data$microcephaly_bin,useNA = "always")   #0.044 but in numbers 0=11150   1=525  NA=2317 
+  table(data$microcephaly_bin_fet,useNA = "always")   #0.044 but in numbers 0=11150   1=525  NA=2317 
 
 # 6. Exposure to virus or pathogeneus----
   
