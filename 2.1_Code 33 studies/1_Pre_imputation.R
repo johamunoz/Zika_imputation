@@ -90,7 +90,7 @@ checktable<-data.table(table(miss=data$miscarriage,loss=data$loss,et=data$loss_e
 checktable[N!=0,]
 
 # 2. Microcephaly ----
-#TODO@Anneke check if the microchepaly_bin variables..
+#TODO@Anneke check if the microcephaly_bin variables..
 data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
                                    ifelse(!is.na(fet_micro_diag_tri)|fet_us_micro_tri1==1|fet_us_micro_tri2==1|fet_us_micro_tri3==1,1,NA))]
 
@@ -101,7 +101,7 @@ table(data$microcephaly_bin_fet,useNA = "always")
 
 data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
 data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
-data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we priorized the result given by circunference
+data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we prioritized the result given by circumference
 data[, microcephaly_bin_birth:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
 data[,  microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                 ifelse(fet_micro_diag_tri==0,13,
@@ -115,7 +115,6 @@ data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
 table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin_fet)  
 
 # 3. Abnormalities ----
-#TODO@ Anneke please check if the new names are according to your names, and also check the values.   
 ncol<-c("fet_us_cns_tri2","fet_us_cns_tri3","ch_hydrocephaly","ch_corticalatrophy","ch_calcifications","ch_ventriculomegaly")
 data[,neuroabnormality:=checkcon(data=data,setcol=ncol)]  # Neuroimaging abnormalities
 
@@ -160,6 +159,7 @@ summary(data$zikv_pcr_vl_1)
 
 # 5. CZS variable according to WHO definition ----
 #TODO @Anneke here i dont know which kind of microcephaly_bin you ned to compare and use. 
+#@Johanna we can keep it as it is: microcephaly==2
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
 data[,czs:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
                   ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
@@ -233,3 +233,5 @@ corcol<-c("pregcomp_bin","gestdiab","eclampsia","preeclampsia")
 data[,comorbid_preg:=checkcon(data=data,setcol=corcol)]
 
 
+#BMI
+data$bmi<-data$pre_pregweight/((data$height/100)**2)
