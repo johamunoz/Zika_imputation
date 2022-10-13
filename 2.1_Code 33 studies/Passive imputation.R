@@ -195,13 +195,50 @@ data$comorbid_preg<-ifelse(is.na(data$comorbid_preg) & data$temp==0,0,data$comor
 
 data2<-subset(data, select=c(studycode,
                              zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_microcephaly, ch_weight, ch_craniofac_abn_bin,
-                             neuroabnormality, ocularabnormality, contractures, nonneurologic,
+                             ocularabnormality, nonneurologic,
                              age, educ, maritalstat,ethnicity, bmi, ses, tobacco, drugs_bin, alcohol, drug_tera,
-                             vaccination, gen_anomalies, zikv_pcr_vl_1, denv_preg_ever, chikv_preg_ever,
-                             comorbid_bin, comorbid_preg, storch_bin, arb_symp, fever, rash, arthralgia, headache,
-                             muscle_pain, arthritis, vomiting, abd_pain, bleed, fatigue, sorethroat))
-#Change to numeric
-#data2$studycode<-as.factor(data2$studycode)
+                             zikv_pcr_vl_1, denv_preg_ever, chikv_preg_ever,
+                             comorbid_bin, storch_bin, arb_symp, fever, rash, arthralgia, headache,
+                             muscle_pain, arthritis, vomiting, abd_pain, bleed, fatigue, sorethroat,
+                             maxbirth_ga,birth,fet_death,fet_death_ga,end_ga,hcircm2zscore,microcephaly_hc,
+                             microcephaly,microcephaly_bin_birth,microcephaly_ga,microcephaly_bin_postnatal,
+                             neuroabnormality,contractures,cardioabnormality,gastroabnormality,oroabnormality,
+                             genurabnormality,any_abnormality_czs,
+                             gen_anomalies,zikv_test_ev,czs,flavi_alpha_virus,storch_patho,arb_ever,arb_preg,
+                             arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
+
+
+data2<-data2 %>% mutate_if(is.character,as.factor)
+data2$zikv_preg<-as.factor(data2$zikv_preg)
+data2$ocularabnormality<-as.factor(data2$ocularabnormality)
+data2$nonneurologic<-as.factor(data2$nonneurologic)
+data2$tobacco<-as.factor(data2$tobacco)
+data2$drug_tera<-as.factor(data2$drug_tera)
+data2$denv_preg_ever<-as.factor(data2$denv_preg_ever)
+data2$chikv_preg_ever<-as.factor(data2$chikv_preg_ever)
+data2$storch_bin<-as.factor(data2$storch_bin)
+data2$birth<-as.factor(data2$birth)
+data2$fet_death<-as.factor(data2$fet_death)
+data2$microcephaly_hc<-as.factor(data2$microcephaly_hc)
+data2$microcephaly_bin_postnatal<-as.factor(data2$microcephaly_bin_postnatal)
+data2$neuroabnormality<-as.factor(data2$neuroabnormality)
+data2$contractures<-as.factor(data2$contractures)
+data2$cardioabnormality<-as.factor(data2$cardioabnormality)
+data2$gastroabnormality<-as.factor(data2$gastroabnormality)
+data2$oroabnormality<-as.factor(data2$oroabnormality)
+data2$genurabnormality<-as.factor(data2$genurabnormality)
+data2$any_abnormality_czs<-as.factor(data2$any_abnormality_czs)
+data2$gen_anomalies<-as.factor(data2$gen_anomalies)
+data2$flavi_alpha_virus<-as.factor(data2$flavi_alpha_virus)
+data2$storch_patho<-as.factor(data2$storch_patho)
+data2$arb_ever<-as.factor(data2$arb_ever)
+data2$arb_preg<-as.factor(data2$arb_preg)
+data2$arb_preg_nz<-as.factor(data2$arb_preg_nz)
+data2$drugs_prescr<-as.factor(data2$drugs_prescr)
+data2$vaccination<-as.factor(data2$vaccination)
+data2$comorbid_preg<-as.factor(data2$comorbid_preg)
+
+
 #data2<-data2 %>% mutate_if(is.character,as.numeric)
 #sapply(data2, class)
 
@@ -210,7 +247,7 @@ data2<-subset(data, select=c(studycode,
 #
 
 #Descriptives categorical variables
-data2<-data2 %>% mutate_if(is.character,as.factor)
+
 data2<-data2 %>% mutate_if(is.numeric,as.factor)
 
 #Drop continuous variables
