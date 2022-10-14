@@ -158,8 +158,9 @@ data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
 summary(data$zikv_pcr_vl_1)
 
 # 5. CZS variable according to WHO definition ----
-#TODO @Anneke here i dont know which kind of microcephaly_bin you ned to compare and use. 
-#@Johanna we can keep it as it is: microcephaly==2
+#TODO @Anneke here i don't know which kind of microcephaly_bin you need to compare and use. 
+#@Johanna we can keep it as it is: microcephaly==2 
+#@Anneke, i mean we calculated three types of microcephaly binary... at fetus, at birth and postbirth so my question is which of them will you use here?
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
 data[,czs:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
                   ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
@@ -233,5 +234,7 @@ corcol<-c("pregcomp_bin","gestdiab","eclampsia","preeclampsia")
 data[,comorbid_preg:=checkcon(data=data,setcol=corcol)]
 
 
-#BMI
-data$bmi<-data$pre_pregweight/((data$height/100)**2)
+#9. Additional variables
+#9.1. BMI
+data[, bmi:= pre_pregweight/((height/100)^2)]
+
