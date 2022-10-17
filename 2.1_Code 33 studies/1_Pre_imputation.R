@@ -23,6 +23,9 @@ data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 #data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) 
+#add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
+#source(here('Documents','GitHub','Zika_imputation','2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
+
 
 # 0. Initial checks ----
 # 0.1 Missing data observations----
