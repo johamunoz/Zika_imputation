@@ -109,7 +109,7 @@ data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_
 data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
 data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we prioritized the result given by circumference
 data[, microcephaly_bin_birth:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
-data[,  microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
+data[, microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                 ifelse(fet_micro_diag_tri==0,13,
                                        ifelse(fet_micro_diag_tri==1,27,
                                               ifelse(fet_micro_diag_tri==2,40,NA))))] 
@@ -241,12 +241,23 @@ data[,comorbid_preg:=checkcon(data=data,setcol=corcol)]
 #8.1. BMI
 data[, bmi:= pre_pregweight/((height/100)^2)]
 
+
 #9 % Missing data Plot
 #TODO @ Anneke here we included all the variables in the excel file, however i think we should remove those 
 #with repeated meaning (e.g., micro and derivatives) and those without any meaning like (date1, date2....), still you 
 # can show the plot today emphasizing the variables at the top that are the ones you created. 
 
-var_incl<-add_info$'WHO variable name'
+var_incl<-c("studycode","birth_ga","zikv_preg","fet_zikv","zikv_ga", "ch_czs","igr_curr_prg",
+             "ch_microcephaly", "ch_weight", "ch_craniofac_abn_bin","ocularabnormality", "nonneurologic",
+              "age", "educ", "maritalstat","ethnicity", "bmi", "ses", "tobacco", "drugs_bin", "alcohol", "drug_tera",
+              "zikv_pcr_vl_1", "denv_preg_ever", "chikv_preg_ever","comorbid_bin", "storch_bin", "arb_symp",
+             "fever", "rash", "arthralgia", "headache","muscle_pain", "arthritis", "vomiting", "abd_pain",
+             "bleed", "fatigue", "sorethroat","maxbirth_ga","birth","fet_death","fet_death_ga","end_ga",
+             "hcircm2zscore","microcephaly_hc","microcephaly","microcephaly_bin_birth","microcephaly_ga",
+              "microcephaly_bin_postnatal","neuroabnormality","contractures","cardioabnormality",
+              "gastroabnormality","oroabnormality","genurabnormality","any_abnormality_czs",
+              "gen_anomalies","zikv_test_ev","czs","flavi_alpha_virus","storch_patho","arb_ever","arb_preg",
+              "arb_preg_nz","drugs_prescr","vaccination","comorbid_preg")
 dataf<-data[,..var_incl]
 totalval<-as.data.table(table(dataf$studycode))
 colnames(totalval)<-c("studycode","N")
@@ -268,19 +279,12 @@ p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
 
 ggplotly(p, tooltip="text")
 
-p2<- ggplot(dmatrix2, aes(x=name, y=variable,fill=tmiss,text=text)) +
-  geom_tile() +
-  scale_fill_manual(values=c("green","red")) +
-  theme(axis.text.x = element_text(angle = 45,vjust=0.5,size=8),
-        axis.text.y = element_text(size=8))+xlab("Study name")+ylab("Variable")+
-  labs(fill='Type of missing') 
-
-ggplotly(p2, tooltip="text")
 
 # 10. Flux plot ----
-#TODO @Anneke we need to see which of the total variables include the outlist are the ones selected by the graph. 
+#TODO @Anneke we need to see which of the total variables include the outlist because for isntance we got 27 variables to include
+#but there are two complementary like "ch_microcephaly", "microcephaly","microcephaly_bin_birth" and very few exposures.
 fx<-flux(dataf)
 fluxplot(dataf)
 outlist<-row.names(fx)[fx$outflux>=0.5]
-infoexp[,outflux2:=ifelse(Variable%in%outlist,1,0)]
+i
 
