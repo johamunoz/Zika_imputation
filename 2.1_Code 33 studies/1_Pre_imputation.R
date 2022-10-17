@@ -1,3 +1,5 @@
+###Aim: To clean up and to filter out the variables that will be included in the imputation model
+
 rm(list=ls()) # clean environment
 
 # Load packages ---
@@ -9,18 +11,20 @@ library(rio)   # import STATA file
 # Field specific package
 library(growthstandards)
 
+# Graphic packages
+library(ggplot2)
+library(plotly)
+
+#Imputation packages
+library(mice)
 
 # Load dataset and dependencies ----
 data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
+add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
-
 #data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) 
-###RUN PREIMPUTATION FUNCTIONS SCRIPT
-
-
 
 # 0. Initial checks ----
-
 # 0.1 Missing data observations----
 data[data==""] <- NA
 data[data==555] <-  NA
@@ -32,17 +36,21 @@ data[data==999] <-  NA
 data[data==777] <-  NA 
 
 # 0.2 Check variables class
-# Number of observations
-nrow(data) #13992
-length(unique(data$childid))# one childID per observation
+# Number of observations= # one childID per observation
+nrow(data)==length(unique(data$childid))
 
 # Check columns classes
-#TODO @Anneke Finish the excel list
-# Check ga variables 
-var_ga<-grep(pattern="._ga",x=names(data),value=TRUE)
-type_ga<-sapply(data[,..var_ga], class)
-var_ga<-c("miscarriage_ga","inducedabort_ga","loss_ga","fet_zikv_ga","fet_micro_diag_ga")
+
+# Check continuous variables
+#TODO @Anneke check the FALSE consistent variables.
+cont_var<-add_info[Type_var == "Continuous",]$`WHO variable name`
+type_ga<-sapply(data[,..cont_var], class)
+var_ga<-c("miscarriage_ga","inducedabort_ga","loss_ga","fet_zikv_ga","fet_micro_diag_ga",
+          "zikv_symp_ga","zikv_symp_test_1","zikv_pcr_vl_1","zikv_prnt_1","zikvdenv_prnt_titerdiff_res_1",
+          "denv_igm_res_1","denv_igg_res_1","denv_pcr_res_1","denv_ns1_res_1","chikv_igm_res_1",
+          "chikv_igg_res_1")
 data[, (var_ga) := lapply(.SD, as.numeric), .SDcols = var_ga]
+cont_bound <- cont_bound(add_info,data)
 
 
 # Study code 
@@ -53,8 +61,6 @@ data[, studycode:= fcase(file=="001","001-BRA",file=="002","002-BRA",file=="003"
                          file=="017","017-USA",file=="018","018-COL",file=="019","019-BRA",file=="020","020-BRA",
                          file=="021","021-PRI",file=="022","022-BRA",file=="023","023-BRA",file=="024","024-BRA",
                          file=="025","025-BRA",file=="026","026-BRA",file=="027","027-BRA")]
-
-
 
 # 1. Fet_death (fetus death variable) and fet_death_ga (time of fetus death) -----
 
@@ -90,11 +96,11 @@ checktable<-data.table(table(miss=data$miscarriage,loss=data$loss,et=data$loss_e
 checktable[N!=0,]
 
 # 2. Microcephaly ----
-#TODO@Anneke check if the microcephaly_bin variables..
 data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
                                    ifelse(!is.na(fet_micro_diag_tri)|fet_us_micro_tri1==1|fet_us_micro_tri2==1|fet_us_micro_tri3==1,1,NA))]
 
 table(data$microcephaly_bin_fet,useNA = "always")
+
 # 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
 
 #igb_hcircm2zscore : function (gagebrth, hcircm, sex = "Female")  # birth measurements 
@@ -158,10 +164,6 @@ data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
 summary(data$zikv_pcr_vl_1)
 
 # 5. CZS variable according to WHO definition ----
-#TODO @Anneke here i don't know which kind of microcephaly_bin you need to compare and use. 
-#@Johanna we can keep it as it is: microcephaly==2 
-#@Anneke, i mean we calculated three types of microcephaly binary... at fetus, at birth and postbirth so my question is which of them will you use here?
-#@Johanna we can use at birth! :-)
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
 data[,czs:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
                   ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
@@ -230,12 +232,55 @@ data[,drug_tera:=ifelse(is.na(med_oth),NA,
                                ifelse(med_oth%in%c("Propiltiouracil","Neozine","Povidone-iodine 10% topical solution pyxis"),2,0)))]
 
 
-# 8. Preganancy comorbidities ----
+#7.4 Preganancy comorbidities ----
 corcol<-c("pregcomp_bin","gestdiab","eclampsia","preeclampsia")
 data[,comorbid_preg:=checkcon(data=data,setcol=corcol)]
 
 
-#9. Additional variables
-#9.1. BMI
+#8. Additional variables
+#8.1. BMI
 data[, bmi:= pre_pregweight/((height/100)^2)]
+
+#9 % Missing data Plot
+#TODO @ Anneke here we included all the variables in the excel file, however i think we should remove those 
+#with repeated meaning (e.g., micro and derivatives) and those without any meaning like (date1, date2....), still you 
+# can show the plot today emphasizing the variables at the top that are the ones you created. 
+
+var_incl<-add_info$'WHO variable name'
+dataf<-data[,..var_incl]
+totalval<-as.data.table(table(dataf$studycode))
+colnames(totalval)<-c("studycode","N")
+dmatrix<-dataf[, lapply(.SD, function(x) sum(is.na(x))/.N), studycode] #matrix of % of missingness
+dmatrix2<-as.data.table(melt(dmatrix,id.vars="studycode"))
+dmatrix2<-merge(dmatrix2,totalval,by="studycode")
+
+dmatrix2[,name:=paste0(studycode,"\nN=",N)]
+dmatrix2[,miss:=round(value*100,1)]
+dmatrix2[,text:=paste0("study: ", studycode, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
+dmatrix2[,tmiss:=ifelse(miss==100,"Systematical","Sporadical")]
+
+p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
+  geom_tile() +
+  scale_fill_gradientn(colours=c("green","yellow","red")) +
+  theme(axis.text.x = element_text(angle = 45,vjust=0.5,size=8),
+        axis.text.y = element_text(size=8))+xlab("Study name")+ylab("Variable")+
+  labs(fill='%missing') 
+
+ggplotly(p, tooltip="text")
+
+p2<- ggplot(dmatrix2, aes(x=name, y=variable,fill=tmiss,text=text)) +
+  geom_tile() +
+  scale_fill_manual(values=c("green","red")) +
+  theme(axis.text.x = element_text(angle = 45,vjust=0.5,size=8),
+        axis.text.y = element_text(size=8))+xlab("Study name")+ylab("Variable")+
+  labs(fill='Type of missing') 
+
+ggplotly(p2, tooltip="text")
+
+# 10. Flux plot ----
+#TODO @Anneke we need to see which of the total variables include the outlist are the ones selected by the graph. 
+fx<-flux(dataf)
+fluxplot(dataf)
+outlist<-row.names(fx)[fx$outflux>=0.5]
+infoexp[,outflux2:=ifelse(Variable%in%outlist,1,0)]
 

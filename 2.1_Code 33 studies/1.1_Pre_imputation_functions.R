@@ -3,7 +3,19 @@ library(here)
 library(data.table)
 library(rio)
 
-
+#Boundaries of continuous variables
+cont_bound<-function(add_info,data){
+    Boundaries<-add_info[Type_var%in%c("Continuous"),c('WHO variable name','Units','Min','Max')]
+    Boundaries[,Max:=ifelse(is.na(Max),"Inf",as.numeric(Max))]
+    Boundaries[,Min:=ifelse(is.na(Min),"-Inf",as.numeric(Min))]
+    boundvar=Boundaries$'WHO variable name'
+    cont_minmax<-data[,.(min_data=lapply(.SD,min,na.rm=TRUE),max_data=lapply(.SD,max,na.rm=TRUE)),.SDcols=boundvar]
+    cont_minmax$'WHO variable name'=boundvar
+    cont_minmax<-merge(Boundaries[,c('WHO variable name','Units','Min','Max')],cont_minmax,by='WHO variable name',all.y = TRUE)
+    cont_minmax[,Consistent_min:=ifelse(min_data>=Min,TRUE,FALSE)]
+    cont_minmax[,Consistent_max:=ifelse(max_data<=Max,TRUE,FALSE)]
+    return(cont_minmax)
+}
 # ZIKV Test according to Ricardo's paper ---
 
 ziktest_sum<-function(datav,respv,timev, minv, maxv,name,diff,func){
