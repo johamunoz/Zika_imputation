@@ -51,24 +51,6 @@ data2$drugs_prescr<-as.factor(data2$drugs_prescr)
 data2$vaccination<-as.factor(data2$vaccination)
 data2$comorbid_preg<-as.factor(data2$comorbid_preg)
 
-
-#data2<-data2 %>% mutate_if(is.character,as.numeric)
-#sapply(data2, class)
-
-#Not yet included in subset: zikv_test_ev, bdeath, bdeath_ga,fet_micro, czsn, ch_microcephaly_bin
-
-#
-
-#Descriptives categorical variables
-#data2<-data2 %>% mutate_if(is.numeric,as.factor)
-
-#Drop continuous variables
-#data2<-subset(data2,select=-c(zikv_ga,ch_weight,age,bmi,zikv_pcr_vl_1))
-
-summary(data2)
-
-as.data.frame(cbind(summary(data2[,2]),summary(data2[,2])/length(data2$studycode),colnames(data2[,2])))
-
 #Exposures
 label(data2$zikv_preg)<-"Maternal zika - study definition"
 label(data2$fet_zikv)<-"Fetal zika"
@@ -110,13 +92,29 @@ label(data2$sorethroat)<-"Sore throat"
 #label(data2$)<-""
 
 
-mytable.exp<-table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
-mytable.cov<-table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
-                      gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
-                      comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
-                      vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
+#mytable.exp<-table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
+#mytable.cov<-table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
+#                      gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+#                      comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+#                      vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 #write.xlsx(mytable.exp,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 exposures.xlsx")
 #write.xlsx(mytable.cov,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 covariates.xlsx")
 
-
+#Tables: cmd+a -> paste in Word or paste in Excel
+#Exposures
+#Overall
+table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
+#Per study
+table1(~ zikv_preg + fet_zikv + zikv_test_ev | studycode,data=data2,excel=1)
+#Covariates
+#Overall
+table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
+         gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+         comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+         vomiting + abd_pain + bleed + fatigue + sorethroat,data=data2,excel=1)
+#Per study
+table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
+         gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+         comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+         vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 
