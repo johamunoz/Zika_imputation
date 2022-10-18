@@ -22,19 +22,26 @@ library(mice)
 data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
+
+data$ziv
+
 #data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) 
 #add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 #source(here('Documents','GitHub','Zika_imputation','2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 
+<<<<<<< Updated upstream
+=======
+unique(data$studyname)
+>>>>>>> Stashed changes
 
 # 0. Initial checks ----
 # 0.1 Missing data observations----
-data[data==""] <- NA
+data[data==""] <-   NA
 data[data==555] <-  NA
 data[data==666] <-  NA
 data[data==888] <-  NA
 data[data==999] <-  NA
-data[data==9999] <-  NA
+data[data==9999] <- NA
 data[data==999] <-  NA
 data[data==777] <-  NA 
 
@@ -42,6 +49,7 @@ data[data==777] <-  NA
 # Number of observations= # one childID per observation
 nrow(data)==length(unique(data$childid))
 
+data$fet
 # Check columns classes
 
 # Check continuous variables
@@ -149,7 +157,7 @@ noncol<-c("cardioabnormality","gastroabnormality","oroabnormality","genurabnorma
 data[,nonneurologic:=checkcon(data=data,setcol=noncol)] # Non neurological abnormalities
 
 anycol<-c("neuroabnormality","contractures","cardioabnormality","gastroabnormality","oroabnormality","ocularabnormality","genurabnormality","ch_othabnorm","fet_us_bin_tri1","fet_us_bin_tri2","fet_us_bin_tri3")
-data[,any_abnormality_czs:=checkcon(data=data,setcol=anycol)]  # Any congenital abnormality excluding microcephaly
+data[,anyabnormality_czs:=checkcon(data=data,setcol=anycol)]  # Any congenital abnormality excluding microcephaly
 
 gencol<-c("chromoabn_dx","ch_chromoabn")
 data[,gen_anomalies:=checkcon(data=data,setcol=gencol)]  # Any congenital abnormality excluding microcephaly
@@ -162,14 +170,17 @@ data_zik_test_ev <- ziktest_ml(data)
 data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
 table( data$zikv_test_ev)
 
+# Include maternal zika test in robust count
+data[,zikv_test_ev:=ifelse(zikv_preg==1,"Robust",zikv_test_ev)]
+
+
 #Viral load
 data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
-summary(data$zikv_pcr_vl_1)
 
 # 5. CZS variable according to WHO definition ----
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
-data[,czs:=ifelse((data$zikv_test_ev=="Robust" | data$zikv_test_ev=="Moderate" | data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)),1,
-                  ifelse(data$zikv_test_ev=="Negative"&data$fet_zikv==0 & data$microcephaly!=2&data$anyabnormality_czs==0,0,NA))] 
+data[,czs:=as.numeric((data$zikv_test_ev %in% c("Robust","Moderate")| data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)))] 
+table(data$czs,data$ch_czs)
 data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
 
 table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
@@ -261,6 +272,7 @@ var_incl<-c("studycode","birth_ga","zikv_preg","fet_zikv","zikv_ga", "ch_czs","i
               "gastroabnormality","oroabnormality","genurabnormality","any_abnormality_czs",
               "gen_anomalies","zikv_test_ev","czs","flavi_alpha_virus","storch_patho","arb_ever","arb_preg",
               "arb_preg_nz","drugs_prescr","vaccination","comorbid_preg")
+
 dataf<-data[,..var_incl]
 totalval<-as.data.table(table(dataf$studycode))
 colnames(totalval)<-c("studycode","N")
