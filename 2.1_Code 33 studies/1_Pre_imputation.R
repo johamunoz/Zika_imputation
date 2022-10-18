@@ -184,8 +184,8 @@ table(data$czs,data$ch_czs)
 data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
 
 table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
-table(data$czs,useNA = "always")    #0.052 but in numbers 0=7175  1=396 NA=6421 
-table(data$microcephaly_bin_fet,useNA = "always")   #0.044 but in numbers 0=11150   1=525  NA=2317 
+table(data$czs,useNA = "always")    #0.054 but in numbers 0=8875  1=487 NA=4630 
+table(data$microcephaly_bin_fet,useNA = "always")   #0.08 but in numbers 0= 2500  1= 202 NA=11290  
 
 # 6. Exposure to virus or pathogeneus----
 
