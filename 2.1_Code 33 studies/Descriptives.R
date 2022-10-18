@@ -16,7 +16,7 @@ data2<-subset(data, select=c(studycode,birth_ga,
                              maxbirth_ga,birth,fet_death,fet_death_ga,end_ga,hcircm2zscore,microcephaly_hc,
                              microcephaly,microcephaly_bin_birth,microcephaly_ga,microcephaly_bin_postnatal,
                              neuroabnormality,contractures,cardioabnormality,gastroabnormality,oroabnormality,
-                             genurabnormality,any_abnormality_czs,
+                             genurabnormality,any_abnormality_czs,fet_micro,
                              gen_anomalies,zikv_test_ev,czs,flavi_alpha_virus,storch_patho,arb_ever,arb_preg,
                              arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
 
@@ -32,6 +32,7 @@ data2$chikv_preg_ever<-as.factor(data2$chikv_preg_ever)
 data2$storch_bin<-as.factor(data2$storch_bin)
 data2$birth<-as.factor(data2$birth)
 data2$fet_death<-as.factor(data2$fet_death)
+data2$fet_micro<-as.factor(data2$fet_micro)
 data2$microcephaly_hc<-as.factor(data2$microcephaly_hc)
 data2$microcephaly_bin_postnatal<-as.factor(data2$microcephaly_bin_postnatal)
 data2$neuroabnormality<-as.factor(data2$neuroabnormality)
@@ -57,7 +58,7 @@ label(data2$fet_zikv)<-"Fetal zika"
 label(data2$zikv_test_ev)<-"Maternal zika - Ximenes definition"
 
 #Covariates
-label(data2$age)<-"Age"
+label(data2$age)<-"Age (years)"
 label(data2$educ)<-"Education"
 label(data2$maritalstat)<-"Marital status"
 label(data2$ethnicity)<-"Ethnicity"
@@ -69,14 +70,14 @@ label(data2$alcohol)<-"Alcohol use"
 label(data2$drug_tera)<-"Teratogenic drug use"
 label(data2$vaccination)<-"Maternal vaccination"
 label(data2$gen_anomalies)<-"Genetic anomalies"
-label(data2$birth_ga)<-"Gestational age at birth"
-label(data2$zikv_ga)<-"Gestational age at zika infection"
+label(data2$birth_ga)<-"Gestational age at birth (weeks)"
+label(data2$zikv_ga)<-"Gestational age at zika infection (weeks)"
 label(data2$zikv_pcr_vl_1)<-"Viral load for PCR"
 label(data2$denv_preg_ever)<-"Concurrent or prior denv"
 label(data2$chikv_preg_ever)<-"Concurrent or prior chikv"
 label(data2$comorbid_bin)<-"Comorbidities before pregnancy"
 label(data2$comorbid_preg)<-"Pregnancy-related comorbidities"
-label(data2$storch_bin)<-"STORCH pathogen infection"
+label(data2$storch_patho)<-"STORCH pathogen infection"
 label(data2$arb_symp)<-"Arbovirus-related symptoms"
 label(data2$fever)<-"Fever"
 label(data2$rash)<-"Rash"
@@ -91,11 +92,36 @@ label(data2$fatigue)<-"Fatigue"
 label(data2$sorethroat)<-"Sore throat"
 #label(data2$)<-""
 
+#Outcomes
+label(data2$fet_death)<-"Fetus died during pregnancy"
+label(data2$fet_death_ga)<-"Gestational age the fetus died (weeks)"
+label(data2$fet_micro)<-"Fetal microcephaly"
+label(data2$ch_czs)<-"Congenital zika syndrome - study definition"
+label(data2$czs)<-"Congential zika syndrome - WHO definition"
+label(data2$igr_curr_prg)<-"Intrauterine growth restriction"
+label(data2$microcephaly)<-"Microcephaly at birth"
+label(data2$microcephaly_bin_postnatal)<-"Microcephaly after birth"
+label(data2$birth)<-"Birth"
+label(data2$birth_ga)<-"Gestational age at birth (weeks)"
+label(data2$ch_weight)<-"Birth weight"
+label(data2$ch_craniofac_abn_bin)<-"Craniofacial disproportion"
+label(data2$neuroabnormality)<-"Neuroimaging abnormality"
+label(data2$contractures)<-"Congenital contractures"
+label(data2$cardioabnormality)<-"Cardiovascular abnormality"
+label(data2$gastroabnormality)<-"Gastrointestinal abnormality"
+label(data2$oroabnormality)<-"Oro-facial abnormality"
+label(data2$ocularabnormality)<-"Ocular abnormality, congenital deafness or hearing loss"
+label(data2$genurabnormality)<-"Genitourinary system abnormality"
+label(data2$nonneurologic)<-"Any non-neurologic abnormality"
+label(data2$any_abnormality_czs)<-"Any congenital abnormality"
+label(data2$end_ga)<-"Gestational age at which the baby was born or died (weeks)"
+
+
 
 #mytable.exp<-table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
 #mytable.cov<-table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
 #                      gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
-#                      comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+#                      comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
 #                      vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 #write.xlsx(mytable.exp,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 exposures.xlsx")
 #write.xlsx(mytable.cov,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 covariates.xlsx")
@@ -106,15 +132,38 @@ label(data2$sorethroat)<-"Sore throat"
 table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
 #Per study
 table1(~ zikv_preg + fet_zikv + zikv_test_ev | studycode,data=data2,excel=1)
+
+#Outcomes
+#Overall
+table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
+         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
+         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
+         any_abnormality_czs + end_ga,data=data2,excel=1)
+#Per study
+table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
+         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
+         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
+         any_abnormality_czs + end_ga | studycode,data=data2,excel=1)
+#By ZIKA status study definition
+table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
+         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
+         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
+         any_abnormality_czs + end_ga | zikv_preg,data=data2,excel=1)
+#By ZIKA status Ricardo definition
+table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
+         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
+         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
+         any_abnormality_czs + end_ga | zikv_test_ev,data=data2,excel=1)
+
 #Covariates
 #Overall
 table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
          gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
-         comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+         comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
          vomiting + abd_pain + bleed + fatigue + sorethroat,data=data2,excel=1)
 #Per study
 table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
          gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
-         comorbid_preg + storch_bin + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+         comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
          vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 
