@@ -16,8 +16,7 @@ library(growthstandards)
 library(ggplot2)
 library(plotly)
 
-#Imputation packages
-library(mice)
+
 
 # Load dataset and dependencies ----
 data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
@@ -316,7 +315,7 @@ sort(outlist)
 
 # 11. Final selected variables ----
 # Refer to the MasterCodebook_Final_June2022
-head(add_infoi)
+
 add_infoi<-add_info[order(Orderimp)]
 var_imp<-add_infoi[Final_imputation=="yes"]$who_name
 fdata<-data[,..var_imp]
