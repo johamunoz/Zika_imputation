@@ -284,7 +284,6 @@ data[, bmi:= ifelse(bmi<0|bmi>50,NA,bmi)]
 
 
 #9 % Missing data Plot
-head(add_info)
 var_incl <- add_info[Essential=="Yes",]$who_name
 var_incl<-var_incl[!var_incl%in% c( "childid","childid_original","fetid_original","fetid","mid","mid_original")]
 dataf<-data[,..var_incl]
@@ -317,9 +316,10 @@ sort(outlist)
 
 # 11. Final selected variables ----
 # Refer to the MasterCodebook_Final_June2022
-head(add_info)
-add_info[order()]
+head(add_infoi)
+add_infoi<-add_info[order(Orderimp)]
+var_imp<-add_infoi[Final_imputation=="yes"]$who_name
+fdata<-data[,..var_imp]
+save(fdata, file =here('3_Output_data','finaldata33.RData'))
 
-fdata<-data[,..selecvar]
-save(fdata, file = "3_Output_data/finaldata.RData")
 
