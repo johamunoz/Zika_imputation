@@ -23,8 +23,6 @@ library(mice)
 data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="StudyID")) #CSV file with the
-unique(data_origin$file)
-unique(study_info$file)
 data<- merge(data_origin,study_info,by="file")
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 
@@ -32,7 +30,6 @@ source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 #add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 #source(here('Documents','GitHub','Zika_imputation','2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 
-setnames(add_info, 'WHO variable name', "who_name")
 
 # 0. Initial checks ----
 # 0.1 Missing data observations----
@@ -83,13 +80,14 @@ date_concep<-function(var_ga,var_date){
   min<-ifelse(min>0&min<42,min,NA)
   value<-ifelse(is.na(data[,get(var_ga)]),min,data[,get(var_ga)])
 }
-data[, zikv_symp_ga:=date_concep(var_ga="zikv_symp_ga",var_date="zikv_symp_date")]
+data[, zikv_symp_ga:=ifelse(!is.na(zikv_symp_ga),zikv_symp_ga,ifelse(zikv_symp_tri==0,13,ifelse(zikv_symp_tri==1,27,ifelse(zikv_symp_tri==2,42,NA))))] # we aprox NA to the max boundary of the trimester
+data[, zikv_symp_ga:=date_concep(var_ga="zikv_symp_ga",var_date="zikv_symp_date")] # we further approx with date
 data[, zikv_assay_ga_1:=date_concep(var_ga="zikv_assay_ga_1",var_date="zikv_assay_date_1")]
 data[, zikv_pcr_ga_1:=date_concep(var_ga="zikv_pcr_ga_1",var_date="zikv_pcr_date_1")]
 data[, zikv_elisa_ga_1:=date_concep(var_ga="zikv_elisa_ga_1",var_date="zikv_elisa_date_1")]
 data$date_t1_ga<-NA
-data[, date_t1_ga:=date_concep(var_ga="date_t1_ga",var_date="date_t1")]
-
+data[, date_t1_ga:=date_concep(var_ga="date_t1_ga",var_date="date_t1")] #variable of first time visit on ga.
+data[, zikv_ga:=ifelse(!is.na(zikv_ga),zikv_ga,ifelse(zikv_tri==0,13,ifelse(zikv_tri==1,27,ifelse(zikv_tri==2,42,NA))))] # we aprox NA to the max boundary of the trimester
 
 # Create additional variables ----
 # 1. Fet_death (fetus death variable) and fet_death_ga (time of fetus death) -----
@@ -174,7 +172,7 @@ noncol<-c("cardioabnormality","gastroabnormality","oroabnormality","genurabnorma
 data[,nonneurologic:=checkcon(data=data,setcol=noncol)] # Non neurological abnormalities
 
 anycol<-c("neuroabnormality","contractures","cardioabnormality","gastroabnormality","oroabnormality","ocularabnormality","genurabnormality","ch_othabnorm","fet_us_bin_tri1","fet_us_bin_tri2","fet_us_bin_tri3")
-data[,anyabnormality_czs:=checkcon(data=data,setcol=anycol)]  # Any congenital abnormality excluding microcephaly
+data[,any_abnormality_czs:=checkcon(data=data,setcol=anycol)]  # Any congenital abnormality excluding microcephaly
 
 gencol<-c("chromoabn_dx","ch_chromoabn")
 data[,gen_anomalies:=checkcon(data=data,setcol=gencol)]  # Any congenital abnormality excluding microcephaly
@@ -216,8 +214,8 @@ table(data$czs,data$ch_czs,useNA = "always")
 data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
 
 table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
-table(data$czs,useNA = "always")    #0.054
-table(data$microcephaly_bin_fet,useNA = "always")   #0.08  higher than CZS prevalence 
+table(data$czs,useNA = "always")    #0.047 
+table(data$microcephaly_bin_fet,useNA = "always")   #0.074  higher than CZS prevalence 
 
 # 6. Exposure to virus or pathogeneus----
 
@@ -286,28 +284,13 @@ data[,comorbid_preg:=checkcon(data=data,setcol=corcol)]
 #8. Additional variables
 #8.1. BMI
 data[, bmi:= pre_pregweight/((height/100)^2)]
+data[, bmi:= ifelse(bmi<0|bmi>50,NA,bmi)]
 
 
 #9 % Missing data Plot
-var_incl<-c("mid_original","mid","date_t1","age","ethnicity","maritalstat","educ","occupation","ses","travel","facongendisord_mat_bin",
-            "facongendisord_mat","facongendisord_mat_oth","comorbid_bin","comorbid_type","cc_hiv","denv_ever","chikv_ever","gravidity",
-            "parity","prev_pregloss","prev_pretermlabor","prev_gestdiabet","prev_eclampsia","prev_preeclampsia","prev_pregcomp_oth_bin",
-            "prev_pregcomp_oth_spec","prev_birthdef_bin","med_bin","med","med_preg_bin","med_preg","med_anticonvuls_bin","med_anticonvuls",
-            "vac_rub","vac_vari","vac_yf","med_fertil_bin","treat_fertil","weight","pre_pregweight","height","mat_headcirc","pregcomp_bin",
-            "pregcomp","pregcomp_oth","pretermlabor","pretermlabor_ga","uti","uti_n","gestdiab","eclampsia","preeclampsia","storch_bin",
-            "storch","toxo","toxo_treat","syphilis","syphilis_treat","syphilis_treat_type","varicella","parvo","rubella","cmv","herpes",
-            "listeria","chlamydia","gonorrhea","genitalwarts","alcohol","drugs_bin","tobacco","arb_symp","arb_symp_dur","zikv_symp_date",
-            "zikv_symp_ga","zikv_symp_tri","zikv_symp_sampcol_1","zikv_symp_test_1","fever","fever_n","fever_meas_1","fever_dur_1","rash",
-            "rash_n","rash_dur_1","rash_type_1","muscle_pain","muscle_pain_n","arthralgia","arthralgia_n","arthritis","vomiting","headache",
-            "abd_pain","bleed","fatigue","sorethroat","arb_clindiag","arb_clindiag_plus","arb_clindiag_ga","arb_clindiag_tri","zikv_assay_date_1",
-            "zikv_assay_ga_1","zikv_assay_tri_1","zikv_pcr_date_1","zikv_pcr_ga_1","zikv_pcr_tri_1","zikv_pcr_res_1","zikv_pcr_vl_1",
-            "zikv_pcr_everpos","zikv_elisa_ga_1","zikv_elisa_date_1","zikv_elisa_tri_1","zikv_elisa_res_studydef_1","zikv_elisa_res_1",
-            "zikv_elisa_everpos","zikv_igm_res_1","zikv_igm_titer_1","zikv_igg_res_1","zikv_igg_titer_1","zikv_prnt_1","zikv_prnt_studydef_1",
-            "zikv_prnt_titer_1","zikvdenv_prnt_titerdiff_1","zikvdenv_prnt_titerdiff_res_1","zikv_prnt_everpos","zikv_prnt_everpos_studydef",
-            "zikv_ga","zikv_tri","zikv_preg","zikv_confirmtest","denv_preg","denv_igm_res_1","denv_igg_res_1","denv_pcr_res_1","denv_ns1_res_1",
-            "chikv_preg","chikv_igm_res_1","chikv_igg_res_1","chikv_pcr_res_1","fetid_original","fetid","multiplegest","childid_original",
-            "childid","ch_head_circ_birth","ch_head_circ_1","ch_head_circ_age_1","studycode")
-
+head(add_info)
+var_incl <- add_info[Essential=="Yes",]$who_name
+var_incl<-var_incl[!var_incl%in% c( "childid","childid_original","fetid_original","fetid","mid","mid_original")]
 dataf<-data[,..var_incl]
 totalval<-as.data.table(table(dataf$studycode))
 colnames(totalval)<-c("studycode","N")
@@ -331,31 +314,14 @@ ggplotly(p, tooltip="text")
 
 
 # 10. Flux plot ----
-#TODO @Anneke we need to see which of the total variables include the outlist because for isntance we got 27 variables to include
-#but there are two complementary like "ch_microcephaly", "microcephaly","microcephaly_bin_birth" and very few exposures.
 fx<-flux(dataf)
 fluxplot(dataf)
 outlist<-row.names(fx)[fx$outflux>=0.5]
+sort(outlist)
 
+# 11. Final selected variables ----
+# Refer to the MasterCodebook_Final_June2022
 
+fdata<-data[,..selecvar]
+save(fdata, file = "3_Output_data/finaldata.RData")
 
-unique(data$zikv_assay_date_1)
-data[]
-
-(unique(data$zikv_symp_date))
-table(!is.na(data$zikv_elisa_ga_1),!is.na(data$zikv_elisa_date_1))
-
-table(!is.na(data$zikv_symp_ga))
-table(!is.na(data$zikv_symp_date))
-table(!is.na(data$zikv_assay_ga_1))
-table(!is.na(data$zikv_elisa_date_1))
-zikv_assay_ga_1
-zikv_elisa_ga_1
-
-gato<-data[,c("zikv_pcr_ga_1","zikv_assay_ga_1","zikv_pcr_date_1")]
-zikv_pcr_date_1
-View(gato)
-table(ga=is.na(data$zikv_elisa_ga_1))
-table(ga=is.na(data$zikv_pcr_tri_1))
-
-table(ga=is.na(data$zikv_assay_ga_1),tri=is.na(data$zikv_assay_tri_1))
