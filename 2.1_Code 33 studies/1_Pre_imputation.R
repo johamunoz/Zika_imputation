@@ -21,8 +21,8 @@ library(mice)
 
 # Load dataset and dependencies ----
 data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
-add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
-study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="StudyID")) #CSV file with the
+add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
+study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
 data<- merge(data_origin,study_info,by="file")
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 
@@ -52,13 +52,9 @@ nrow(data)==length(unique(data$childid))
 # Check columns classes
 
 # Check continuous variables
-
-cont_var<-add_info[Type_var == "Continuous",]$who_name
+cont_var<-add_info[Type_var == "Continuous" & key_237_variable!="new",]$who_name
 type_ga<-sapply(data[,..cont_var], class)
-var_ga<-c("miscarriage_ga","inducedabort_ga","loss_ga","fet_zikv_ga","fet_micro_diag_ga",
-          "zikv_symp_ga","zikv_symp_test_1","zikv_pcr_vl_1","zikv_prnt_1","zikvdenv_prnt_titerdiff_res_1",
-          "denv_igm_res_1","denv_igg_res_1","denv_pcr_res_1","denv_ns1_res_1","chikv_igm_res_1",
-          "chikv_igg_res_1")
+var_ga<-names(type_ga[type_ga=="character"]) # Continuous variables missclasiffied as character
 data[, (var_ga) := lapply(.SD, as.numeric), .SDcols = var_ga]
 cont_bound <- cont_bound(add_info,data)
 biz_var <- setDT(cont_bound)[Consistent==FALSE,]$who_name  # variables outside the boundaries we set bizarre values as NA
@@ -321,6 +317,8 @@ sort(outlist)
 
 # 11. Final selected variables ----
 # Refer to the MasterCodebook_Final_June2022
+head(add_info)
+add_info[order()]
 
 fdata<-data[,..selecvar]
 save(fdata, file = "3_Output_data/finaldata.RData")

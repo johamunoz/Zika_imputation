@@ -5,7 +5,7 @@ library(rio)
 
 #Boundaries of continuous variables ----
 cont_bound<-function(add_info,data){
-    Boundaries<-add_info[Type_var%in%c("Continuous"),c('who_name','Units','Min','Max')]
+    Boundaries<-add_info[Type_var%in%c("Continuous")&key_237_variable!="new",c('who_name','Units','Min','Max')]
     Boundaries[,Max:=ifelse(is.na(Max),"Inf",as.numeric(Max))]
     Boundaries[,Min:=ifelse(is.na(Min),"-Inf",as.numeric(Min))]
     boundvar=Boundaries$who_name
