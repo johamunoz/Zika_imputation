@@ -7,6 +7,7 @@ rm(list=ls()) # clean environment
 library(data.table) 
 library(here)  # define folder paths
 library(rio)   # import STATA file
+library(stringr)
 
 # Field specific package
 library(growthstandards)
@@ -19,20 +20,19 @@ library(plotly)
 library(mice)
 
 # Load dataset and dependencies ----
-data <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
+data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')))
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
+study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="StudyID")) #CSV file with the
+unique(data_origin$file)
+unique(study_info$file)
+data<- merge(data_origin,study_info,by="file")
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
-
-data$ziv
 
 #data <- as.data.table(import(here('Documents','Julius','ZIKV analyses','2. Data','zikv_033_datasets.dta'))) 
 #add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_Final_June2022 ALL (Repaired).xlsx'),sheet="237 key")) #CSV file with the
 #source(here('Documents','GitHub','Zika_imputation','2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 
-<<<<<<< Updated upstream
-=======
-unique(data$studyname)
->>>>>>> Stashed changes
+setnames(add_info, 'WHO variable name', "who_name")
 
 # 0. Initial checks ----
 # 0.1 Missing data observations----
@@ -44,17 +44,19 @@ data[data==999] <-  NA
 data[data==9999] <- NA
 data[data==999] <-  NA
 data[data==777] <-  NA 
+data[data=="99/99/9999"]<-NA
+data[data=="NA"]<-NA
 
 # 0.2 Check variables class
 # Number of observations= # one childID per observation
 nrow(data)==length(unique(data$childid))
 
-data$fet
+
 # Check columns classes
 
 # Check continuous variables
-#TODO @Anneke check the FALSE consistent variables.
-cont_var<-add_info[Type_var == "Continuous",]$`WHO variable name`
+
+cont_var<-add_info[Type_var == "Continuous",]$who_name
 type_ga<-sapply(data[,..cont_var], class)
 var_ga<-c("miscarriage_ga","inducedabort_ga","loss_ga","fet_zikv_ga","fet_micro_diag_ga",
           "zikv_symp_ga","zikv_symp_test_1","zikv_pcr_vl_1","zikv_prnt_1","zikvdenv_prnt_titerdiff_res_1",
@@ -62,17 +64,34 @@ var_ga<-c("miscarriage_ga","inducedabort_ga","loss_ga","fet_zikv_ga","fet_micro_
           "chikv_igg_res_1")
 data[, (var_ga) := lapply(.SD, as.numeric), .SDcols = var_ga]
 cont_bound <- cont_bound(add_info,data)
+biz_var <- setDT(cont_bound)[Consistent==FALSE,]$who_name  # variables outside the boundaries we set bizarre values as NA
+for (var in biz_var){corrvar = correctbiz(var); data[,(var):=corrvar]} # correct bizzare values
 
 
-# Study code 
-data[, studycode:= fcase(file=="001","001-BRA",file=="002","002-BRA",file=="003","003-GUF",file=="004","004-ESP",
-                         file=="005","005-ESP",file=="006","006-COL",file=="007","007-COL",file=="008","008-USA",
-                         file=="009","009-GRD",file=="010","010-BRA",file=="011","011-BRA",file=="012","012-TTO",
-                         file=="013","013-BRA",file=="014","014-BRA",file=="015","015-BRA",file=="016","016-HND",
-                         file=="017","017-USA",file=="018","018-COL",file=="019","019-BRA",file=="020","020-BRA",
-                         file=="021","021-PRI",file=="022","022-BRA",file=="023","023-BRA",file=="024","024-BRA",
-                         file=="025","025-BRA",file=="026","026-BRA",file=="027","027-BRA")]
 
+# Convert dates into gestational age (weeks) if it is possible
+date_var<-add_info[Type_var == "Date",]$who_name
+data[, (date_var) := lapply(.SD, as.Date, format="%d %b %Y"), .SDcols = date_var]
+data[,conc_symp:=zikv_symp_date-zikv_symp_ga*7]
+data[,conc_assay:=zikv_assay_date_1-zikv_assay_ga_1*7]
+data[,conc_pcr:=zikv_pcr_date_1-zikv_pcr_ga_1*7]
+data[,conc_elisa:=zikv_elisa_date_1-zikv_elisa_ga_1*7]
+data[,conc_date:=apply(data[,c("conc_symp","conc_assay","conc_pcr","conc_elisa")], 1, min, na.rm = TRUE)] #get the min as date of conception
+
+date_concep<-function(var_ga,var_date){
+  min<-difftime(data[,get(var_date)],data[,conc_date],units="weeks")
+  min<-ifelse(min>0&min<42,min,NA)
+  value<-ifelse(is.na(data[,get(var_ga)]),min,data[,get(var_ga)])
+}
+data[, zikv_symp_ga:=date_concep(var_ga="zikv_symp_ga",var_date="zikv_symp_date")]
+data[, zikv_assay_ga_1:=date_concep(var_ga="zikv_assay_ga_1",var_date="zikv_assay_date_1")]
+data[, zikv_pcr_ga_1:=date_concep(var_ga="zikv_pcr_ga_1",var_date="zikv_pcr_date_1")]
+data[, zikv_elisa_ga_1:=date_concep(var_ga="zikv_elisa_ga_1",var_date="zikv_elisa_date_1")]
+data$date_t1_ga<-NA
+data[, date_t1_ga:=date_concep(var_ga="date_t1_ga",var_date="date_t1")]
+
+
+# Create additional variables ----
 # 1. Fet_death (fetus death variable) and fet_death_ga (time of fetus death) -----
 
 # 1.1. Add miscarriage, loss, loss_etiology, birth in one variable fet_death and fet_death_ga
@@ -113,8 +132,6 @@ data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
 table(data$microcephaly_bin_fet,useNA = "always")
 
 # 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
-
-#igb_hcircm2zscore : function (gagebrth, hcircm, sex = "Female")  # birth measurements 
 
 data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
 data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
@@ -168,10 +185,25 @@ data[,gen_anomalies:=checkcon(data=data,setcol=gencol)]  # Any congenital abnorm
 #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
 data_zik_test_ev <- ziktest_ml(data)  
 data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
-table( data$zikv_test_ev)
+table( data$zikv_test_ev,useNA = "always")
+#Limited Moderate Negative   Robust     <NA> 
+#1     2818      804     2863     7505 
+
+# Include maternal PCR test in robust count
+data[,zikv_test_ev_Ricardo_MPCR:=as.factor(ifelse(Maternal_PCR=="Yes","Robust",as.character(zikv_test_ev)))]
+table(data$zikv_test_ev_Ricardo_MPCR,useNA = "always") # every cases turns to be robust
+# Robust   <NA> 
+# 13523    468 
 
 # Include maternal zika test in robust count
-data[,zikv_test_ev:=ifelse(zikv_preg==1,"Robust",zikv_test_ev)]
+data[,zikv_test_ev_Ricardo_zivk:=as.factor(ifelse(zikv_preg==1,"Robust",as.character(zikv_test_ev)))]
+table(data$zikv_test_ev_Ricardo_zivk,useNA = "always") #minimize the number of NA's # but more cases are assigned to Robust
+
+#Limited Moderate Negative   Robust     <NA> 
+#  1       15      741     7631     5603 
+
+# So we opt for retain this option
+data[,zikv_test_ev:=as.factor(ifelse(zikv_preg==1,"Robust",as.character(zikv_test_ev)))]
 
 
 #Viral load
@@ -180,12 +212,12 @@ data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
 # 5. CZS variable according to WHO definition ----
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
 data[,czs:=as.numeric((data$zikv_test_ev %in% c("Robust","Moderate")| data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)))] 
-table(data$czs,data$ch_czs)
+table(data$czs,data$ch_czs,useNA = "always")
 data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
 
 table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
-table(data$czs,useNA = "always")    #0.054 but in numbers 0=8875  1=487 NA=4630 
-table(data$microcephaly_bin_fet,useNA = "always")   #0.08 but in numbers 0= 2500  1= 202 NA=11290  
+table(data$czs,useNA = "always")    #0.054
+table(data$microcephaly_bin_fet,useNA = "always")   #0.08  higher than CZS prevalence 
 
 # 6. Exposure to virus or pathogeneus----
 
@@ -257,21 +289,24 @@ data[, bmi:= pre_pregweight/((height/100)^2)]
 
 
 #9 % Missing data Plot
-#TODO @ Anneke here we included all the variables in the excel file, however i think we should remove those 
-#with repeated meaning (e.g., micro and derivatives) and those without any meaning like (date1, date2....), still you 
-# can show the plot today emphasizing the variables at the top that are the ones you created. 
-
-var_incl<-c("studycode","birth_ga","zikv_preg","fet_zikv","zikv_ga", "ch_czs","igr_curr_prg",
-             "ch_microcephaly", "ch_weight", "ch_craniofac_abn_bin","ocularabnormality", "nonneurologic",
-              "age", "educ", "maritalstat","ethnicity", "bmi", "ses", "tobacco", "drugs_bin", "alcohol", "drug_tera",
-              "zikv_pcr_vl_1", "denv_preg_ever", "chikv_preg_ever","comorbid_bin", "storch_bin", "arb_symp",
-             "fever", "rash", "arthralgia", "headache","muscle_pain", "arthritis", "vomiting", "abd_pain",
-             "bleed", "fatigue", "sorethroat","maxbirth_ga","birth","fet_death","fet_death_ga","end_ga",
-             "hcircm2zscore","microcephaly_hc","microcephaly","microcephaly_bin_birth","microcephaly_ga",
-              "microcephaly_bin_postnatal","neuroabnormality","contractures","cardioabnormality",
-              "gastroabnormality","oroabnormality","genurabnormality","any_abnormality_czs",
-              "gen_anomalies","zikv_test_ev","czs","flavi_alpha_virus","storch_patho","arb_ever","arb_preg",
-              "arb_preg_nz","drugs_prescr","vaccination","comorbid_preg")
+var_incl<-c("mid_original","mid","date_t1","age","ethnicity","maritalstat","educ","occupation","ses","travel","facongendisord_mat_bin",
+            "facongendisord_mat","facongendisord_mat_oth","comorbid_bin","comorbid_type","cc_hiv","denv_ever","chikv_ever","gravidity",
+            "parity","prev_pregloss","prev_pretermlabor","prev_gestdiabet","prev_eclampsia","prev_preeclampsia","prev_pregcomp_oth_bin",
+            "prev_pregcomp_oth_spec","prev_birthdef_bin","med_bin","med","med_preg_bin","med_preg","med_anticonvuls_bin","med_anticonvuls",
+            "vac_rub","vac_vari","vac_yf","med_fertil_bin","treat_fertil","weight","pre_pregweight","height","mat_headcirc","pregcomp_bin",
+            "pregcomp","pregcomp_oth","pretermlabor","pretermlabor_ga","uti","uti_n","gestdiab","eclampsia","preeclampsia","storch_bin",
+            "storch","toxo","toxo_treat","syphilis","syphilis_treat","syphilis_treat_type","varicella","parvo","rubella","cmv","herpes",
+            "listeria","chlamydia","gonorrhea","genitalwarts","alcohol","drugs_bin","tobacco","arb_symp","arb_symp_dur","zikv_symp_date",
+            "zikv_symp_ga","zikv_symp_tri","zikv_symp_sampcol_1","zikv_symp_test_1","fever","fever_n","fever_meas_1","fever_dur_1","rash",
+            "rash_n","rash_dur_1","rash_type_1","muscle_pain","muscle_pain_n","arthralgia","arthralgia_n","arthritis","vomiting","headache",
+            "abd_pain","bleed","fatigue","sorethroat","arb_clindiag","arb_clindiag_plus","arb_clindiag_ga","arb_clindiag_tri","zikv_assay_date_1",
+            "zikv_assay_ga_1","zikv_assay_tri_1","zikv_pcr_date_1","zikv_pcr_ga_1","zikv_pcr_tri_1","zikv_pcr_res_1","zikv_pcr_vl_1",
+            "zikv_pcr_everpos","zikv_elisa_ga_1","zikv_elisa_date_1","zikv_elisa_tri_1","zikv_elisa_res_studydef_1","zikv_elisa_res_1",
+            "zikv_elisa_everpos","zikv_igm_res_1","zikv_igm_titer_1","zikv_igg_res_1","zikv_igg_titer_1","zikv_prnt_1","zikv_prnt_studydef_1",
+            "zikv_prnt_titer_1","zikvdenv_prnt_titerdiff_1","zikvdenv_prnt_titerdiff_res_1","zikv_prnt_everpos","zikv_prnt_everpos_studydef",
+            "zikv_ga","zikv_tri","zikv_preg","zikv_confirmtest","denv_preg","denv_igm_res_1","denv_igg_res_1","denv_pcr_res_1","denv_ns1_res_1",
+            "chikv_preg","chikv_igm_res_1","chikv_igg_res_1","chikv_pcr_res_1","fetid_original","fetid","multiplegest","childid_original",
+            "childid","ch_head_circ_birth","ch_head_circ_1","ch_head_circ_age_1","studycode")
 
 dataf<-data[,..var_incl]
 totalval<-as.data.table(table(dataf$studycode))
@@ -301,5 +336,26 @@ ggplotly(p, tooltip="text")
 fx<-flux(dataf)
 fluxplot(dataf)
 outlist<-row.names(fx)[fx$outflux>=0.5]
-i
 
+
+
+unique(data$zikv_assay_date_1)
+data[]
+
+(unique(data$zikv_symp_date))
+table(!is.na(data$zikv_elisa_ga_1),!is.na(data$zikv_elisa_date_1))
+
+table(!is.na(data$zikv_symp_ga))
+table(!is.na(data$zikv_symp_date))
+table(!is.na(data$zikv_assay_ga_1))
+table(!is.na(data$zikv_elisa_date_1))
+zikv_assay_ga_1
+zikv_elisa_ga_1
+
+gato<-data[,c("zikv_pcr_ga_1","zikv_assay_ga_1","zikv_pcr_date_1")]
+zikv_pcr_date_1
+View(gato)
+table(ga=is.na(data$zikv_elisa_ga_1))
+table(ga=is.na(data$zikv_pcr_tri_1))
+
+table(ga=is.na(data$zikv_assay_ga_1),tri=is.na(data$zikv_assay_tri_1))

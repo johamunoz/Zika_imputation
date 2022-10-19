@@ -3,20 +3,32 @@ library(here)
 library(data.table)
 library(rio)
 
-#Boundaries of continuous variables
+#Boundaries of continuous variables ----
 cont_bound<-function(add_info,data){
-    Boundaries<-add_info[Type_var%in%c("Continuous"),c('WHO variable name','Units','Min','Max')]
+    Boundaries<-add_info[Type_var%in%c("Continuous"),c('who_name','Units','Min','Max')]
     Boundaries[,Max:=ifelse(is.na(Max),"Inf",as.numeric(Max))]
     Boundaries[,Min:=ifelse(is.na(Min),"-Inf",as.numeric(Min))]
-    boundvar=Boundaries$'WHO variable name'
+    boundvar=Boundaries$who_name
     cont_minmax<-data[,.(min_data=lapply(.SD,min,na.rm=TRUE),max_data=lapply(.SD,max,na.rm=TRUE)),.SDcols=boundvar]
-    cont_minmax$'WHO variable name'=boundvar
-    cont_minmax<-merge(Boundaries[,c('WHO variable name','Units','Min','Max')],cont_minmax,by='WHO variable name',all.y = TRUE)
-    cont_minmax[,Consistent_min:=ifelse(min_data>=Min,TRUE,FALSE)]
-    cont_minmax[,Consistent_max:=ifelse(max_data<=Max,TRUE,FALSE)]
+    cont_minmax$who_name=boundvar
+    cont_minmax<-merge(Boundaries[,c('who_name','Units','Min','Max')],cont_minmax,by='who_name',all.y = TRUE)
+    cont_minmax[,Consistent:=ifelse(min_data>=Min&max_data<=Max,TRUE,FALSE)]
     return(cont_minmax)
 }
-# ZIKV Test according to Ricardo's paper ---
+
+
+# Function to correct variables outside the plausible variables ----
+correctbiz <- function(var_name){
+  bmin=as.numeric(add_info[who_name== var_name,Min])
+  bmin=ifelse(is.na(bmin),"-Inf",bmin)
+  bmax=as.numeric(add_info[who_name== var_name,Max])
+  bmax=ifelse(is.na(bmax),"Inf",bmax)
+  var_value=as.numeric(data[,get(var_name)])
+  var_value=ifelse(var_value<bmin|var_value>bmax,NA,var_value)
+}
+
+
+# ZIKV Test according to Ricardo's paper ----
 
 ziktest_sum<-function(datav,respv,timev, minv, maxv,name,diff,func){
   
@@ -166,7 +178,7 @@ ziktest_ml <- function(data){
 }
 
 
-# Functions related to CZN correction---
+# Functions related to CZN correction ----
 
 checkcon<-function(data,setcol){ 
   #' Function that summarize if there is any abnormality in a set of variables for a given child
@@ -174,7 +186,7 @@ checkcon<-function(data,setcol){
   #'         0: no abnormality detected across the set of variables.
   #'         NA: no information available on any variable.
   #' @param data original data set 
-  #' @param col1 set of variables across which the detection is summarized
+  #' @param setcol set of variables across which the detection is summarized
   #' @return detection of abnormality in set of variables. 
   
   data[,(setcol):= lapply(.SD, as.numeric), .SDcols = setcol]
