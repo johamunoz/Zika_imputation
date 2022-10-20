@@ -41,7 +41,7 @@ zikv2<-zikv[, which(colMeans(is.na(zikv)) < 1)]
 #[56] "zikv_igm_res_6"            "zikv_igm_res_7"            "zikv_igm_res_8"            "zikv_igm_res_9"            "zikv_igm_res_10"          
 #[61] "zikv_igg_titer_2"          "zikv_prnt_9"               "zikv_prnt_10" 
 
-#write.csv(missings,file="/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/20220706 Percentage missings.csv")
+#write.csv(missings,file="/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/20221018 Percentage missings.csv")
 
 names(zikv2)
 names(zikv2[ , grepl( "zikv_" , names(zikv2) ) ]) #Overview of variables related to exposure
