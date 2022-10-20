@@ -14,6 +14,7 @@ library(miceadds)
 
 # Load dataset and dependencies ----
 
+#load(here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
 load(here('3_Output_data','finaldata33.RData'))
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 imp_info<-add_info[Final_imputation=="yes"]
@@ -69,7 +70,7 @@ pred["childid",] <- 0
 pred[,"childid"] <- 0
 pred[,"studyimp"] <- -2 # define the cluster for imputation models at study level.
 pred[,npred]<-0 #not assign variables without prediction power into the imputation model
-write.csv(pred,file=here('3_Output_data','predmatrix33.csv'))
+write.csv(pred,file=here('Documents','GitHub','Zika_imputation','3_Output_data','predmatrix33.csv'))
 
 
 fun_run<-function(imp,data,pred,meth,post,maxit){
@@ -100,17 +101,17 @@ fun_run<-function(imp,data,pred,meth,post,maxit){
 #save(mice5,file=here('3_Output_data','mice5.Rdata'))
 
 mice6<-fun_run(imp=6,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice6,file=here('3_Output_data','mice6.Rdata'))
+save(mice6,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice6.Rdata'))
 
 mice7<-fun_run(imp=7,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice7,file=here('3_Output_data','mice7.Rdata'))
+save(mice7,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice7.Rdata'))
 
 mice8<-fun_run(imp=8,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice8,file=here('3_Output_data','mice8.Rdata'))
+save(mice8,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice8.Rdata'))
 
 mice9<-fun_run(imp=9,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice9,file=here('3_Output_data','mice9.Rdata'))
+save(mice9,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice9.Rdata'))
 
 mice10<-fun_run(imp=10,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice10,file=here('3_Output_data','mice10.Rdata'))
+save(mice10,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice10.Rdata'))
 
