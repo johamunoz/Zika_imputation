@@ -8,21 +8,23 @@ cont_bound<-function(add_info,data){
     Boundaries<-add_info[Type_var%in%c("Continuous")&key_237_variable!="new",c('who_name','Units','Min','Max')]
     Boundaries[,Max:=ifelse(is.na(Max),"Inf",as.numeric(Max))]
     Boundaries[,Min:=ifelse(is.na(Min),"-Inf",as.numeric(Min))]
+    Boundaries[,Min:=as.numeric(Min)]
+    Boundaries[,Max:=as.numeric(Max)]
     boundvar=Boundaries$who_name
     cont_minmax<-data[,.(min_data=lapply(.SD,min,na.rm=TRUE),max_data=lapply(.SD,max,na.rm=TRUE)),.SDcols=boundvar]
     cont_minmax$who_name=boundvar
-    cont_minmax<-merge(Boundaries[,c('who_name','Units','Min','Max')],cont_minmax,by='who_name',all.y = TRUE)
-    cont_minmax[,Consistent:=ifelse(min_data>=Min&max_data<=Max,TRUE,FALSE)]
+    cont_minmax<-as.data.table(merge(Boundaries[,c('who_name','Units','Min','Max')],cont_minmax,by='who_name',all.y = TRUE))
+    cont_minmax[,Consistent:=(min_data>=Min)&(max_data<=Max)]
     return(cont_minmax)
 }
 
 
 # Function to correct variables outside the plausible variables ----
 correctbiz <- function(var_name){
-  bmin=as.numeric(add_info[who_name== var_name,Min])
-  bmin=ifelse(is.na(bmin),"-Inf",bmin)
-  bmax=as.numeric(add_info[who_name== var_name,Max])
-  bmax=ifelse(is.na(bmax),"Inf",bmax)
+  bmin=add_info[who_name== var_name,Min]
+  bmin=as.numeric(ifelse(is.na(bmin),"-Inf",bmin))
+  bmax=add_info[who_name== var_name,Max]
+  bmax=as.numeric(ifelse(is.na(bmax),"Inf",bmax))
   var_value=as.numeric(data[,get(var_name)])
   var_value=ifelse(var_value<bmin|var_value>bmax,NA,var_value)
 }

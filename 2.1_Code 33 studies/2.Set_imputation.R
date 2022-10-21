@@ -1,6 +1,6 @@
 #Aim: To set up the imputation methods
 
-#rm(list=ls()) # clean environment
+rm(list=ls()) # clean environment
 
 # Load packages ---
 # Data manipulation package
@@ -34,7 +34,6 @@ npred<-imp_info[npred==1]$who_name
 
 
 # After checking the histogram we decide to impute this variables as pmm
-cat_var1<-c(cat_var1,"zikv_pcr_vl_1")
 cat_var2<-c(cat_var2,"gravidity","end_ga")
 
 
@@ -56,12 +55,12 @@ meth[cat_var2] <- "2l.pmm" # predictive mean matching at study level
 
 
 #2.2. Post-process the values to constrain normal distributed variables in the range of observable values ----
+post["zikv_assay_ga_1"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
 post["zikv_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 post["bmi"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
 post["age"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(14, 55))"
-post["zikv_assay_ga_1"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
+post["ch_weight"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(100, 6000))"
 post["ch_head_circ_birth"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(15, 55))"
-
 
 
 #3.3. Set prediction matrix -----
@@ -70,8 +69,8 @@ pred["childid",] <- 0
 pred[,"childid"] <- 0
 pred[,"studyimp"] <- -2 # define the cluster for imputation models at study level.
 pred[,npred]<-0 #not assign variables without prediction power into the imputation model
-write.csv(pred,file=here('Documents','GitHub','Zika_imputation','3_Output_data','predmatrix33.csv'))
-
+#write.csv(pred,file=here('Documents','GitHub','Zika_imputation','3_Output_data','predmatrix33.csv'))
+write.csv(pred,file=here('3_Output_data','predmatrix33.csv'))
 
 fun_run<-function(imp,data,pred,meth,post,maxit){
   seed=imp*363+253  
@@ -82,7 +81,7 @@ fun_run<-function(imp,data,pred,meth,post,maxit){
   return(list(micesurv,time))}
 
 #mice1=list(micesurv,time)
-#mice0<-list(micesurv,time)
+#mice0<-list(micesurv,time=0)
 #save(mice0,file=here('3_Output_data','mice0.Rdata'))
 
 #mice1<-fun_run(imp=1,data=data,pred=pred,meth=meth,post=post,maxit=10)

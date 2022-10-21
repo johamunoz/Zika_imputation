@@ -55,7 +55,7 @@ nrow(data)==length(unique(data$childid))
 # Check continuous variables
 cont_var<-add_info[Type_var == "Continuous" & key_237_variable!="new",]$who_name
 type_ga<-sapply(data[,..cont_var], class)
-var_ga<-names(type_ga[type_ga=="character"]) # Continuous variables missclasiffied as character
+var_ga<-names(type_ga[type_ga=="character"]) # Continuous variables misclassified as character
 data[, (var_ga) := lapply(.SD, as.numeric), .SDcols = var_ga]
 cont_bound <- cont_bound(add_info,data)
 biz_var <- setDT(cont_bound)[Consistent==FALSE,]$who_name  # variables outside the boundaries we set bizarre values as NA
@@ -182,7 +182,7 @@ data_zik_test_ev <- ziktest_ml(data)
 data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
 table( data$zikv_test_ev,useNA = "always")
 #Limited Moderate Negative   Robust     <NA> 
-#1     2818      804     2863     7505 
+#     1     2805      804     2859     7522 
 
 # Include maternal PCR test in robust count
 data[,zikv_test_ev_Ricardo_MPCR:=as.factor(ifelse(Maternal_PCR=="Yes","Robust",as.character(zikv_test_ev)))]
@@ -209,7 +209,6 @@ data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
 data[,czs:=as.numeric((data$zikv_test_ev %in% c("Robust","Moderate")| data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)))] 
 table(data$czs,data$ch_czs,useNA = "always")
 data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
-
 table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
 table(data$czs,useNA = "always")    #0.047 
 table(data$microcephaly_bin_fet,useNA = "always")   #0.074  higher than CZS prevalence 
@@ -321,6 +320,7 @@ sort(outlist)
 add_infoi<-add_info[order(Orderimp)]
 var_imp<-add_infoi[Final_imputation=="yes"]$who_name
 fdata<-data[,..var_imp]
-save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
+save(fdata, file =here('3_Output_data','finaldata33.RData'))
+#save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
 
 
