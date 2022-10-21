@@ -78,10 +78,10 @@ fun_run<-function(imp,data,pred,meth,post,maxit){
   start_time<-proc.time()
   micesurv <- mice(data, predictorMatrix = pred,method=meth,post=post, maxit =maxit, m = 1, printFlag = TRUE, seed = seed)
   end_time<-proc.time()
-  time = as.numeric(difftime(end_time, start_time, units = "mins"))
+  time = end_time-start_time
   return(list(micesurv,time))}
 
-
+#mice1=list(micesurv,time)
 #mice0<-list(micesurv,time)
 #save(mice0,file=here('3_Output_data','mice0.Rdata'))
 
