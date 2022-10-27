@@ -1,4 +1,4 @@
-###Aim: To clean up and to filter out the variables that will be included in the imputation model
+f###Aim: To clean up and to filter out the variables that will be included in the imputation model
 
 rm(list=ls()) # clean environment
 
@@ -315,7 +315,7 @@ outlist<-row.names(fx)[fx$outflux>=0.5]
 sort(outlist)
 
 # 11. Final selected variables ----
-# Refer to the MasterCodebook_Final_June2022
+# Please refer to the MasterCodebook_October.xlsx on the folder 1_Input_data
 
 add_infoi<-add_info[order(Orderimp)]
 var_imp<-add_infoi[Final_imputation=="yes"]$who_name
