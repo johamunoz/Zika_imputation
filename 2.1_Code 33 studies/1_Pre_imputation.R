@@ -19,7 +19,7 @@ library(plotly)
 
 
 # Load dataset and dependencies ----
-data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta'))) # This file you can find it on the dropbox
+data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta'))) #  This file you can find it on the dropbox
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
 data<- merge(data_origin,study_info,by="file")
