@@ -48,6 +48,7 @@ mergeMice <- function (imp) {
 }
 
 path<-file.path(here("3_Output_data"))
+#path<-file.path(here('Documents','GitHub','Zika_imputation',"3_Output_data"))
 list_files <- list.files(path,pattern="^mice*",full.names=TRUE)
 imp <- lapply(list_files, loadRData)
 merged_imp <- mergeMice(imp)
@@ -56,6 +57,5 @@ merged_imp$loggedEvents
 plot(merged_imp)
 densityplot(merged_imp)
 
-save(merged_imp, file =here('3_Output_data','merged_imp.RData'))
-data_imp<-complete(merged_imp,"long")
-write.csv(data_imp, file =here('3_Output_data','data_imp.csv'))
+#data.imp<-complete(merged_imp,action="long")
+#write.csv(data.imp,"/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/20221027 zikv_imputed.csv", row.names = FALSE)
