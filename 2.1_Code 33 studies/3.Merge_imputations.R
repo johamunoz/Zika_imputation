@@ -57,5 +57,5 @@ plot(merged_imp)
 densityplot(merged_imp)
 
 save(merged_imp, file =here('3_Output_data','merged_imp.RData'))
-data1<-complete(merged_imp,1)
-write.csv(data1, file =here('3_Output_data','data1.csv'))
+data_imp<-complete(merged_imp,"long")
+write.csv(data_imp, file =here('3_Output_data','data_imp.csv'))
