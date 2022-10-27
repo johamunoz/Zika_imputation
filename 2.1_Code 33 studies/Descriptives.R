@@ -6,6 +6,8 @@ library(dplyr)
 library(table1)
 library(xlsx)
 
+data<-read.csv("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/20221027 zikv_not_imputed.csv",header=T)
+
 data2<-subset(data, select=c(studycode,birth_ga,
                              zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_microcephaly, ch_weight, ch_craniofac_abn_bin,
                              ocularabnormality, nonneurologic,
@@ -19,7 +21,7 @@ data2<-subset(data, select=c(studycode,birth_ga,
                              genurabnormality,any_abnormality_czs,fet_micro,
                              gen_anomalies,zikv_test_ev,czs,flavi_alpha_virus,storch_patho,arb_ever,arb_preg,
                              arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
-
+rm(data)
 
 data2<-data2 %>% mutate_if(is.character,as.factor)
 data2$zikv_preg<-as.factor(data2$zikv_preg)
