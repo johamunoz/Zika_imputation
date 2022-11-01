@@ -1,14 +1,23 @@
 
 #Check https://cran.r-project.org/web/packages/table1/vignettes/table1-examples.html for examples
 
-#First run 1_Pre_imputation.R
 library(dplyr)
 library(table1)
 library(xlsx)
 
-data<-read.csv("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/20221027 zikv_not_imputed.csv",header=T)
+#Functions
+rndr <- function(x, ...) {
+  if (is.factor(x) || is.character(x)) {
+    c(render.default(x, ...), c(`Overall N`=sum(!is.na(x))))
+  } else {
+    render.default(x, ...)
+  }
+}
 
-data2<-subset(data, select=c(studycode,birth_ga,
+#Data
+data.noimp<-read.csv("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/20221027 zikv_not_imputed.csv",header=T)
+
+data2<-subset(data.noimp, select=c(studycode,birth_ga,
                              zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_microcephaly, ch_weight, ch_craniofac_abn_bin,
                              ocularabnormality, nonneurologic,
                              age, educ, maritalstat,ethnicity, bmi, ses, tobacco, drugs_bin, alcohol, drug_tera,
@@ -21,7 +30,7 @@ data2<-subset(data, select=c(studycode,birth_ga,
                              genurabnormality,any_abnormality_czs,fet_micro,
                              gen_anomalies,zikv_test_ev,czs,flavi_alpha_virus,storch_patho,arb_ever,arb_preg,
                              arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
-rm(data)
+rm(data.noimp)
 
 data2<-data2 %>% mutate_if(is.character,as.factor)
 data2$zikv_preg<-as.factor(data2$zikv_preg)
@@ -141,6 +150,12 @@ table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + mi
          birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
          gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
          any_abnormality_czs + end_ga,data=data2,excel=1)
+#Exclude missings
+table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
+         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
+         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
+         any_abnormality_czs + end_ga,data=data2,excel=1,
+       render.missing = NULL,render.categorical = "FREQ (PCTnoNA%)",render = rndr)
 #Per study
 table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
          birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 

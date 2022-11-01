@@ -1,6 +1,7 @@
 
 #Starts directly after loading imputed dataset
 m<-max(data$.imp)
+data$studyname<-data$studyimp
 studynames<-c("001-BRA","002-BRA","003-GUF","004-ESP","005-ESP","006-COL","007-COL",
               "008-USA","009-GRD","010-BRA","011-BRA","012-TTO","013-BRA","014-BRA",
               "015-BRA","016-HND","017-USA","018-COL","019-BRA","020-BRA","021-PRI",
