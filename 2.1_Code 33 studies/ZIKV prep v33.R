@@ -63,9 +63,9 @@ data$lfdeath<-0
 data$lfdeath[data$bdeath==1 & data$end_ga>=28]<-1
 data$lfdeath<-as.factor(data$lfdeath)
 #Late fetal death (after 28 weeks gestation) with microcephaly
-data$lfdeath_micro<-0
-data$lfdeath_micro[data$lfdeath==1 & data$microcephaly_bin_birth==1]<-1
-data$lfdeath_micro<-as.factor(data$lfdeath)
+#data$lfdeath_micro<-0
+#data$lfdeath_micro[data$lfdeath==1 & data$microcephaly_bin_birth==1]<-1
+#data$lfdeath_micro<-as.factor(data$lfdeath)
 
 data.zika<-data[data$zikv_preg==1,]
 data.nozika<-data[data$zikv_preg==0,]

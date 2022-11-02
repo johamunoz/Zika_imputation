@@ -32,6 +32,34 @@ data2<-subset(data.noimp, select=c(studycode,birth_ga,
                              arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
 rm(data.noimp)
 
+#Create outcome variables
+data2$bdeath<-1-data2$birth
+#miscarriage (<20 weeks gestation)
+data2$miscarriage<-NA
+data2$miscarriage[!is.na(data2$bdeath)]<-0
+data2$miscarriage[data2$bdeath==1 & data2$end_ga<20]<-1
+data2$miscarriage<-as.factor(data2$miscarriage)
+#Fetal loss (>=20 weeks gestation)
+data2$loss<-NA
+data2$loss[!is.na(data2$bdeath)]<-0
+data2$loss[data2$bdeath==1 & data2$end_ga>=20]<-1
+data2$loss<-as.factor(data2$loss)
+#Early fetal death (20-27 weeks gestation)
+data2$efdeath<-NA
+data2$efdeath[!is.na(data2$bdeath)]<-0
+data2$efdeath[data2$bdeath==1 & data2$end_ga>=20 & data2$end_ga<28]<-1
+data2$efdeath<-as.factor(data2$efdeath)
+#Late fetal death (after 28 weeks gestation)
+data2$lfdeath<-NA
+data2$lfdeath[!is.na(data2$bdeath)]<-0
+data2$lfdeath[data2$bdeath==1 & data2$end_ga>=28]<-1
+data2$lfdeath<-as.factor(data2$lfdeath)
+#Late fetal death (after 28 weeks gestation) with microcephaly
+data2$lfdeath_micro<-NA
+data2$lfdeath_micro[!is.na(data2$bdeath) & !is.na(data2$microcephaly_bin_birth)]<-0
+data2$lfdeath_micro[data2$lfdeath==1 & data2$microcephaly_bin_birth==1]<-1
+data2$lfdeath_micro<-as.factor(data2$lfdeath_micro)
+
 data2<-data2 %>% mutate_if(is.character,as.factor)
 data2$zikv_preg<-as.factor(data2$zikv_preg)
 data2$ocularabnormality<-as.factor(data2$ocularabnormality)
@@ -62,6 +90,10 @@ data2$arb_preg_nz<-as.factor(data2$arb_preg_nz)
 data2$drugs_prescr<-as.factor(data2$drugs_prescr)
 data2$vaccination<-as.factor(data2$vaccination)
 data2$comorbid_preg<-as.factor(data2$comorbid_preg)
+data2$microcephaly_bin_birth<-as.factor(data2$microcephaly_bin_birth)
+data2$czs<-as.factor(data2$czs)
+data2$igr_curr_prg<-as.factor(data2$igr_curr_prg)
+data2$ch_craniofac_abn_bin<-as.factor(data2$ch_craniofac_abn_bin)
 
 #Exposures
 label(data2$zikv_preg)<-"Maternal zika - study definition"
@@ -104,6 +136,11 @@ label(data2$sorethroat)<-"Sore throat"
 #label(data2$)<-""
 
 #Outcomes
+label(data2$miscarriage)<-"Miscarriage (<20 weeks gestation)"
+label(data2$loss)<-"Fetal loss (>=20 weeks gestation)"
+label(data2$efdeath)<-"Early fetal death (20-27 weeks gestation)"
+label(data2$lfdeath)<-"Late fetal death (>=28 weeks gestation)"
+label(data2$lfdeath_micro)<-"Late fetal death with microcephaly"
 label(data2$fet_death)<-"Fetus died during pregnancy"
 label(data2$fet_death_ga)<-"Gestational age the fetus died (weeks)"
 label(data2$fet_micro)<-"Fetal microcephaly"
@@ -126,7 +163,7 @@ label(data2$genurabnormality)<-"Genitourinary system abnormality"
 label(data2$nonneurologic)<-"Any non-neurologic abnormality"
 label(data2$any_abnormality_czs)<-"Any congenital abnormality"
 label(data2$end_ga)<-"Gestational age at which the baby was born or died (weeks)"
-
+label(data2$microcephaly_bin_birth)<-"Microcephaly"
 
 
 #mytable.exp<-table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
@@ -136,6 +173,7 @@ label(data2$end_ga)<-"Gestational age at which the baby was born or died (weeks)
 #                      vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 #write.xlsx(mytable.exp,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 exposures.xlsx")
 #write.xlsx(mytable.cov,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 covariates.xlsx")
+#write.xlsx(mytable.out,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 outcomes.xlsx")
 
 #Tables: cmd+a -> paste in Word or paste in Excel
 #Exposures
@@ -146,41 +184,36 @@ table1(~ zikv_preg + fet_zikv + zikv_test_ev | studycode,data=data2,excel=1)
 
 #Outcomes
 #Overall
-table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
-         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
-         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
-         any_abnormality_czs + end_ga,data=data2,excel=1)
+table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
+         end_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + ocularabnormality + contractures + nonneurologic + 
+         any_abnormality_czs,data=data2,excel=1)
 #Exclude missings
-table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
-         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
-         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
-         any_abnormality_czs + end_ga,data=data2,excel=1,
+table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
+         end_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + ocularabnormality + contractures + nonneurologic + 
+         any_abnormality_czs,data=data2,excel=1,
        render.missing = NULL,render.categorical = "FREQ (PCTnoNA%)",render = rndr)
 #Per study
-table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
-         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
-         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
-         any_abnormality_czs + end_ga | studycode,data=data2,excel=1)
+table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
+         end_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + ocularabnormality + contractures + nonneurologic + 
+         any_abnormality_czs | studycode,data=data2,excel=1)
 #By ZIKA status study definition
-table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
-         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
-         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
-         any_abnormality_czs + end_ga | zikv_preg,data=data2,excel=1)
+table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
+         end_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + ocularabnormality + contractures + nonneurologic + 
+         any_abnormality_czs | zikv_preg,data=data2,excel=1)
 #By ZIKA status Ricardo definition
-table1(~ fet_death + fet_death_ga + fet_micro + ch_czs + czs + igr_curr_prg + microcephaly + microcephaly_bin_postnatal + 
-         birth + birth_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + contractures + cardioabnormality + 
-         gastroabnormality + oroabnormality + ocularabnormality + genurabnormality + nonneurologic + 
-         any_abnormality_czs + end_ga | zikv_test_ev,data=data2,excel=1)
+table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
+         end_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + ocularabnormality + contractures + nonneurologic + 
+         any_abnormality_czs | zikv_test_ev,data=data2,excel=1)
 
 #Covariates
 #Overall
 table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
-         gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+         gen_anomalies + end_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
          comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
          vomiting + abd_pain + bleed + fatigue + sorethroat,data=data2,excel=1)
 #Per study
 table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
-         gen_anomalies + birth_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+         gen_anomalies + end_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
          comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
          vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 
