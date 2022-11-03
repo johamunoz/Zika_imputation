@@ -12,9 +12,9 @@ inv.logit.SE<- function(logit.se, c) {
   logit.se * (c*(1-c))
 }
 #Function for calculating absolute risk
-f.incidence <- function(variable,n.data) {
+f.incidence <- function(variable) {
   a<-summary(variable)
-  b<-prop.test(x = a[[2]], n = n.data, correct = TRUE)
+  b<-prop.test(x = a[[2]], n = sum(a), correct = TRUE)
   prop<-b$estimate[[1]]
   ci<-b$conf
   return(c(prop,ci))
@@ -46,16 +46,16 @@ PredIntLog <- function(fit.rma) {
 #Function to calculate absolute risk of an outcome per study and per imputed dataset
 f.abs.perstudy<-function(data, outcome_name) {
   
-  dataset.n<-length(data[data$.imp==1,]$studyname)
+  #dataset.n<-length(data[data$.imp==1,]$studyname)
   #Calculate absolute risk of outcome per study
   for (i in 1:length(unique(data$.imp))) {
     d<-data[data$.imp==i,]
     d$outcome <- d[, outcome_name]
     inc<-as.data.frame(d %>% 
                          group_by(studyname) %>% 
-                         summarise(p=f.incidence(outcome,dataset.n)[1],
-                                   ci.l=f.incidence(outcome,dataset.n)[2],
-                                   ci.u=f.incidence(outcome,dataset.n)[3]))
+                         summarise(p=f.incidence(outcome)[1],
+                                   ci.l=f.incidence(outcome)[2],
+                                   ci.u=f.incidence(outcome)[3]))
     if(i==1) {inc.outcome<-inc}
     if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
   }

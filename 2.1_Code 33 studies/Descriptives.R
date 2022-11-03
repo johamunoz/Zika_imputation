@@ -217,3 +217,15 @@ table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin 
          comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
          vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
 
+
+
+#Original dataset for comparison
+library(rio)
+library(here) 
+data_origin <- import("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/zikv_033_datasets.dta")
+study_info <- readxl::read_xlsx("/Users/jdamen/Documents/GitHub/Zika_imputation/1_Input_data/MasterCodebook_October.xlsx",sheet="StudyID")
+data_origin<- merge(data_origin,study_info,by="file")
+table(as.factor(data_origin$ch_microcephaly_bin),as.factor(data_origin$studycode))
+
+
+/Users/jdamen/Documents/GitHub/Zika_imputation/1_Input_data
