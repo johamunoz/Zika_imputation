@@ -67,5 +67,12 @@ data$lfdeath<-as.factor(data$lfdeath)
 #data$lfdeath_micro[data$lfdeath==1 & data$microcephaly_bin_birth==1]<-1
 #data$lfdeath_micro<-as.factor(data$lfdeath)
 
+#Trimester of zika infection
+data$zikv_tri<-NA
+data$zikv_tri[data$zikv_ga<=12]<-1
+data$zikv_tri[(data$zikv_ga>12 & data$zikv_ga<=27)]<-2
+data$zikv_tri[data$zikv_ga>27]<-3
+data$zikv_tri<-as.factor(data$zikv_tri)
+
 data.zika<-data[data$zikv_preg==1,]
 data.nozika<-data[data$zikv_preg==0,]
