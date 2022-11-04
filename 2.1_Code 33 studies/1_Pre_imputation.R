@@ -1,4 +1,4 @@
-f###Aim: To clean up and to filter out the variables that will be included in the imputation model
+###Aim: To clean up and to filter out the variables that will be included in the imputation model
 
 rm(list=ls()) # clean environment
 
@@ -15,11 +15,12 @@ library(growthstandards)
 # Graphic packages
 library(ggplot2)
 library(plotly)
-
+library(mice)
 
 
 # Load dataset and dependencies ----
 data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta'))) #  This file you can find it on the dropbox
+data_origin[,studyname:=NULL] # as studyname was not assigned to all studies
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
 data<- merge(data_origin,study_info,by="file")
@@ -284,18 +285,19 @@ data[, bmi:= ifelse(bmi<0|bmi>50,NA,bmi)]
 
 
 #9 % Missing data Plot
+
 var_incl <- add_info[Essential=="Yes",]$who_name
 var_incl<-var_incl[!var_incl%in% c( "childid","childid_original","fetid_original","fetid","mid","mid_original")]
 dataf<-data[,..var_incl]
-totalval<-as.data.table(table(dataf$studycode))
-colnames(totalval)<-c("studycode","N")
-dmatrix<-dataf[, lapply(.SD, function(x) sum(is.na(x))/.N), studycode] #matrix of % of missingness
-dmatrix2<-as.data.table(melt(dmatrix,id.vars="studycode"))
-dmatrix2<-merge(dmatrix2,totalval,by="studycode")
+totalval<-as.data.table(table(dataf$studyname))
+colnames(totalval)<-c("studyname","N")
+dmatrix<-dataf[, lapply(.SD, function(x) sum(is.na(x))/.N), studyname] #matrix of % of missingness
+dmatrix2<-as.data.table(melt(dmatrix,id.vars="studyname"))
+dmatrix2<-merge(dmatrix2,totalval,by="studyname")
 
-dmatrix2[,name:=paste0(studycode,"\nN=",N)]
+dmatrix2[,name:=paste0(studyname,"\nN=",N)]
 dmatrix2[,miss:=round(value*100,1)]
-dmatrix2[,text:=paste0("study: ", studycode, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
+dmatrix2[,text:=paste0("study: ", studyname, "\n", "variable: ", variable, "\n", "miss%: ",miss)]
 dmatrix2[,tmiss:=ifelse(miss==100,"Systematical","Sporadical")]
 
 p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
@@ -319,6 +321,13 @@ sort(outlist)
 
 add_infoi<-add_info[order(Orderimp)]
 var_imp<-add_infoi[Final_imputation=="yes"]$who_name
+
+# Raw total data pre imputation
+data_raw<-data
+save(data_raw, file =here('3_Output_data','rawfinaldata33.RData')) 
+#save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','rawfinaldata33.RData'))
+
+# Data for imputation
 fdata<-data[,..var_imp]
 save(fdata, file =here('3_Output_data','finaldata33.RData')) 
 #save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
