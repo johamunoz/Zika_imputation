@@ -228,4 +228,3 @@ data_origin<- merge(data_origin,study_info,by="file")
 table(as.factor(data_origin$ch_microcephaly_bin),as.factor(data_origin$studycode))
 
 
-/Users/jdamen/Documents/GitHub/Zika_imputation/1_Input_data

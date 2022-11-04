@@ -172,6 +172,8 @@ f.rel.poolrubin <-function(data,rr.outcome.all) {
   
   #Remove studies for which rr could not be calculated
   rr.outcome<-rr.outcome[!is.na(rr.outcome$log.rr),]
+  #Remove studies for which all participants had an event or did not have an event
+  rr.outcome<-rr.outcome[!(rr.outcome$log.rr==0 & rr.outcome$log.ci.lb==0 & rr.outcome$log.ci.ub==0),]
   
   return(rr.outcome)
 }
