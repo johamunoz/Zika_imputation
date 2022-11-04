@@ -22,6 +22,15 @@ setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2.1_Code 33 studies")
 source("Functions Objective 1.R")
 source("ZIKV prep v33.R")
 
+#Systematic missings
+#data_sys <-as.data.table(readxl::read_xlsx(here('1_Input_data','Table 1 outcomes.xlsx'),sheet="Systematic missings")) 
+#data_sys <-as.data.table(melt(setDT(data_sys), id.vars = c("variable"), variable.name = "studyname",value.name="systematic"))
+#data_sys<-data_sys[systematic==1]
+#data_alls<-copy(data_all)
+#for (i in 1:nrow(data_sys)){
+#  data_alls[studyname==data_sys[i,]$studyname,(data_sys[i,]$variable):=NA]
+#}
+
 ########################Analyses#############
 #Change directory to save plots
 setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten")

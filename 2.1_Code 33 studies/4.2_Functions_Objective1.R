@@ -4,6 +4,7 @@
 # Load packages ---
 # Data manipulation package
 library(data.table) 
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation")
 library(here)  # define folder paths
 library(metafor)
 
@@ -123,6 +124,7 @@ return(plot)}
 
 
 forest_plot_study(data=data.zika,outcome_name="czs",syst=TRUE,plottitle = "CZS remove systematical")
+forest_plot_study(data=data.zika,outcome_name="microcephaly_bin_birth",syst=TRUE,plottitle = "Microcephaly")
 
 
 
