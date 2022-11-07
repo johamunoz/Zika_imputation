@@ -203,8 +203,9 @@ f.1ma.r.int<-function(data, outcome_name) {
   for (i in 1:length(unique(data$.imp))) {
     d<-data[data$.imp==i,]
     d$outcome <- d[, outcome_name]
-    fit1 <- glmer(outcome ~ zikv_preg + (1 | studyname_fac), 
+    fit1 <- glmer(outcome ~ zikv_preg + (1 | studyname_fac),
                   data=d, family = binomial(link = "log"))
+    fit1x <<- fit1
     #Store results
     if(i==1) {fit1.coef<-summary(fit1)$coefficients[2,(1:2)]}
     if(i>1) {fit1.coef<-rbind(fit1.coef,summary(fit1)$coefficients[2,(1:2)])}
