@@ -21,6 +21,11 @@ data_sys <-as.data.table(readxl::read_xlsx(here('1_Input_data','Table 1 outcomes
 
 source(here('2.1_Code 33 studies','FunctionsObjective1mod.R'))
 
+PredInt <- function(fit.rma)
+{
+  pi <- inv.logit(fit.rma$b + qt(c(0.025, 0.975), df=(fit.rma$k-2))*sqrt(fit.rma$tau2 + fit.rma$se**2))
+  return(pi)
+}
 
 # Give format to variables----
 
