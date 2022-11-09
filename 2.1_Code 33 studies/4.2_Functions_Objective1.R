@@ -4,7 +4,7 @@
 # Load packages ---
 # Data manipulation package
 library(data.table) 
-setwd("/Users/jdamen/Documents/GitHub/Zika_imputation")
+#setwd("/Users/jdamen/Documents/GitHub/Zika_imputation")
 library(here)  # define folder paths
 library(metafor)
 
@@ -106,18 +106,25 @@ forest_plot_study<-function(data,outcome_name,syst,plottitle){
     
     # Create plot
     dataplot<-outcome[,c("studyname","source","cint","mean","lower","upper")]
+    dataplot[,source:=factor(source)]
     dotcols = c("#a6d8f0","#f9b282")
     barcols = c("#008fd5","#de6b35")
-    
-    plot<-ggplot(dataplot, aes(x=cint, y=mean, ymin=lower, ymax=upper,col=source,fill=source)) + 
+
+    dataplot[,allcint:=paste(studyname,source,cint,sep="-")] 
+    dataplot<-dataplot[order(studyname,source),]
+
+    plot<-ggplot(dataplot, aes(x=allcint, y=mean, ymin=lower, ymax=upper,col=source,fill=source)) + 
       geom_linerange(size=2,position=position_dodge(width = 0.5)) +
       geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
+      facet_grid(studyname~ ., switch = "y",scales="free")+
       scale_fill_manual(values=barcols)+
       scale_color_manual(values=dotcols)+
+      scale_y_discrete(limits=c("Imputation","Raw"))+
       xlab("Study name")+ ylab("Absolute risk")+
       ggtitle(plottitle)+
       coord_flip() +
-      facet_grid(studyname ~ ., switch = "y",scales="free")+
+      scale_x_discrete(labels = dataplot$cint)+ 
+      facet_grid(studyname~ ., switch = "y",scales="free")+
       theme(strip.placement = "outside")+
       theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
 return(plot)}
@@ -125,6 +132,7 @@ return(plot)}
 
 forest_plot_study(data=data.zika,outcome_name="czs",syst=TRUE,plottitle = "CZS remove systematical")
 forest_plot_study(data=data.zika,outcome_name="microcephaly_bin_birth",syst=TRUE,plottitle = "Microcephaly")
+
 
 
 
