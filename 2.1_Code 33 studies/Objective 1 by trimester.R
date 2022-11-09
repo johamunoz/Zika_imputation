@@ -23,6 +23,13 @@ setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2.1_Code 33 studies")
 source("Functions Objective 1.R")
 source("ZIKV prep v33.R")
 
+
+data<-as.data.table(read.csv('1_Input_data/20221027 zikv_imputed.csv', stringsAsFactors=FALSE, fileEncoding="latin1"))
+data_sys<-as.data.table(readxl::read_xlsx("1_Input_data/Table 1 outcomes.xlsx",sheet="Systematic missings")) #Table were are specified the included variables according Expert opinion, also the includes the order in which variables are imputed 
+source(here('2.1_Code 33 studies',"Functions Objective 1.R"))
+source(here('2.1_Code 33 studies',"ZIKV prep v33.R"))
+
+
 #Systematic missings
 data_sys <- read.xlsx2("/Users/jdamen/Documents/GitHub/Zika_imputation/1_Input_data/Table 1 outcomes.xlsx",sheetName="Systematic missings")
 colnames(data_sys)<-c("variable","001-BRA","002-BRA","003-GUF","004-ESP","005-ESP","006-COL","007-COL",
@@ -82,10 +89,14 @@ result$trimester<-as.factor(result$trimester)
 result<-result[order(result$studyname,result$trimester),]
 # Create plot
 #dataplot<-outcome[,c("studyname","source","cint","mean","lower","upper")]
-dotcols = c("#a6d8f0","#f9b282","green")
-barcols = c("#008fd5","#de6b35","lightgreen")
+dotcols = c("#a6d8f0","#f9b282","lightpink")
+barcols = c("#008fd5","#de6b35","red")
+result<-as.data.table(result)
+result[,allcint:=paste(studyname,trimester,cint,sep="-")] 
+result<-result[order(studyname,trimester),]
 
-ggplot(result, aes(x=cint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,fill=trimester)) + 
+
+ggplot(result, aes(x=allcint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,fill=trimester)) + 
   geom_linerange(size=2,position=position_dodge(width = 0.5)) +
   geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
   scale_fill_manual(values=barcols)+
@@ -95,6 +106,7 @@ ggplot(result, aes(x=cint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,fil
   coord_flip() +
   facet_grid(studyname ~ ., switch = "y",scales="free")+
   theme(strip.placement = "outside")+
+  scale_x_discrete(labels = result$trimester)+ 
   theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
 
 
