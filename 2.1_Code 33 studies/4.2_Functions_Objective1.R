@@ -124,7 +124,6 @@ forest_plot_study<-function(data,outcome_name,syst,plottitle){
       facet_grid(studyname~ ., switch = "y",scales="free")+
       scale_fill_manual(values=barcols)+
       scale_color_manual(values=dotcols)+
-      scale_y_discrete(limits=c("Imputation","Raw"))+
       xlab("Study name")+ ylab("Absolute risk")+
       ggtitle(plottitle)+
       coord_flip() +
