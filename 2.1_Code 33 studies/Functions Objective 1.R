@@ -199,18 +199,13 @@ f.rel.2s.ma<-function(rr.outcome) {
 }
 
 #Function to do one stage meta-analysis with log link and random intercept per study, per imputed dataset
-center_scale <- function(x) {
-  scale(x, scale = FALSE)
-}
-library(misty)
-f.1ma.r.int<-function(data, outcome_name) {
+f.1ma.r.int<-function(data, outcome_name,family.link) {
   for (i in 1:length(unique(data$.imp))) {
     d<-data[data$.imp==i,]
-    d$outcome <- d[, outcome_name]
+    d$outcome <- as.numeric(levels(d[, outcome_name]))[d[, outcome_name]]
     d$zikv_preg<-center(as.numeric(d$zikv_preg),type="CWC",cluster=d$studyname)
-    #d$zikv_preg<-center_scale(as.numeric(d$zikv_preg))
     fit1 <- glmer(outcome ~ zikv_preg + (1 | studyname_fac),
-                  data=d, family = binomial(link = "log"))
+                  data=d, family = family.link) #family.link can be binomial(link = "log"), binomial, poisson or others
     fit1x <<- fit1
     #Store results
     if(i==1) {fit1.coef<-summary(fit1)$coefficients[2,(1:2)]}

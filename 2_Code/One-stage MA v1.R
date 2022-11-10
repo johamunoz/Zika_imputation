@@ -118,7 +118,7 @@ c(exp(fit2.coef[1]),exp(fit2.coef[1]-1.96*fit2.coef[2]),exp(fit2.coef[1]+1.96*fi
 ##Fit 2 + all confounders
 #Microcephaly
 #Confounders: age, maritalstat
-fit2c<-glmer(microcephaly_bin ~ zikv_preg + age + maritalstat + (1+zikv_preg | studyname_fac), 
+fit2c<-glmer(microcephaly_bin_birth ~ zikv_preg_cent + age + maritalstat + (1+zikv_preg_cent | studyname_fac), 
             data=data, family = binomial(link = "log"))
 fit2c.coef<-as.data.frame(summary(fit2c)$coefficients[c(2:nrow(summary(fit2c)$coefficients)),c(1:2)])
 colnames(fit2c.coef)<-c("log.rr", "log.rr.se")

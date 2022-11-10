@@ -88,7 +88,6 @@ result$trimester<-as.factor(result$trimester)
 
 result<-result[order(result$studyname,result$trimester),]
 # Create plot
-#dataplot<-outcome[,c("studyname","source","cint","mean","lower","upper")]
 dotcols = c("#a6d8f0","#f9b282","lightpink")
 barcols = c("#008fd5","#de6b35","red")
 result<-as.data.table(result)
@@ -102,22 +101,9 @@ ggplot(result, aes(x=allcint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,
   scale_fill_manual(values=barcols)+
   scale_color_manual(values=dotcols)+
   xlab("Study name")+ ylab("Absolute risk")+
-  ggtitle("test")+
+  ggtitle("Microcephaly")+
   coord_flip() +
   facet_grid(studyname ~ ., switch = "y",scales="free")+
   theme(strip.placement = "outside")+
   scale_x_discrete(labels = result$trimester)+ 
   theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
-
-
-results<-pool.outcome
-
-all.results<-rbind(all.results,results)
-
-#Forest plot
-#png(file="20221031 Microcephaly zika positive.png",width=750,height=750,res=100)
-metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
-                refline = 0, slab = abs.outcome$studyname,
-                xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Microcephaly, zika-positive women",
-                digits=2L,xlim=(c(-15,85)), alim=(c(0,60)))

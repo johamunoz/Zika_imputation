@@ -1,4 +1,6 @@
 
+library(misty)
+
 #Starts directly after loading imputed dataset
 m<-max(data$.imp)
 data$studyname<-data$studyimp
@@ -77,4 +79,27 @@ data$zikv_tri[(data$zikv_ga>12 & data$zikv_ga<=27)]<-2
 data$zikv_tri[data$zikv_ga>27]<-3
 data$zikv_tri<-as.factor(data$zikv_tri)
 
-
+#Create cluster variable by study and imputation
+data$studyname.imp<-as.factor(paste0(data$studyname_fac,"-imp",data$.imp))
+#Center all covariates per study
+library(misty)
+data$zikv_preg_cent<-center(as.numeric(data$zikv_preg),type="CWC",cluster=data$studyname.imp)
+data$age_cent<-center(as.numeric(data$age),type="CWC",cluster=data$studyname.imp)
+data$educ_cent<-center(as.numeric(data$educ),type="CWC",cluster=data$studyname.imp)
+data$maritalstat_cent<-center(as.numeric(data$maritalstat),type="CWC",cluster=data$studyname.imp)
+data$bmi_cent<-center(as.numeric(data$bmi),type="CWC",cluster=data$studyname.imp)
+data$drugs_bin_cent<-center(as.numeric(data$drugs_bin),type="CWC",cluster=data$studyname.imp)
+data$alcohol_cent<-center(as.numeric(data$alcohol),type="CWC",cluster=data$studyname.imp)
+data$end_ga_cent<-center(as.numeric(data$end_ga),type="CWC",cluster=data$studyname.imp)
+data$zikv_ga_cent<-center(as.numeric(data$zikv_ga),type="CWC",cluster=data$studyname.imp)
+data$denv_preg_ever_cent<-center(as.numeric(data$denv_preg_ever),type="CWC",cluster=data$studyname.imp)
+data$chikv_preg_ever_cent<-center(as.numeric(data$chikv_preg_ever),type="CWC",cluster=data$studyname.imp)
+data$comorbid_bin_cent<-center(as.numeric(data$comorbid_bin),type="CWC",cluster=data$studyname.imp)
+data$comorbid_preg_cent<-center(as.numeric(data$comorbid_preg),type="CWC",cluster=data$studyname.imp)
+data$storch_patho_cent<-center(as.numeric(data$storch_patho),type="CWC",cluster=data$studyname.imp)
+data$arb_symp_cent<-center(as.numeric(data$arb_symp),type="CWC",cluster=data$studyname.imp)
+data$fever_cent<-center(as.numeric(data$fever),type="CWC",cluster=data$studyname.imp)
+data$rash_cent<-center(as.numeric(data$rash),type="CWC",cluster=data$studyname.imp)
+data$arthralgia_cent<-center(as.numeric(data$arthralgia),type="CWC",cluster=data$studyname.imp)
+data$headache_cent<-center(as.numeric(data$headache),type="CWC",cluster=data$studyname.imp)
+data$arthritis_cent<-center(as.numeric(data$arthritis),type="CWC",cluster=data$studyname.imp)

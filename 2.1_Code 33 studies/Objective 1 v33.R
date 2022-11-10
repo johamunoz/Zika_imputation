@@ -121,7 +121,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$microcephaly_bin_birth),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_birth"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_birth",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -226,7 +226,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$miscarriage),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"miscarriage"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"miscarriage",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -315,7 +315,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$loss),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"loss"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"loss",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -404,7 +404,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$czs),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"czs"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"czs",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data.1sma,fit1.coef)
 
@@ -494,7 +494,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$efdeath),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"efdeath"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"efdeath",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -583,7 +583,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$lfdeath),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"lfdeath"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"lfdeath",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -672,7 +672,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$microcephaly_bin_postnatal),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_postnatal"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_postnatal",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -761,7 +761,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$neuroabnormality),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"neuroabnormality"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"neuroabnormality",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
@@ -850,7 +850,7 @@ results<-cbind(results,pool.outcome.rr)
 ######One-stage meta-analysis relative risk
 data.1sma<-data[!is.na(data$nonneurologic),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"nonneurologic"))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"nonneurologic",poisson))
 #Pool with rubins rules
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
