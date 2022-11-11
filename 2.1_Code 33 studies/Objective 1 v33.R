@@ -66,7 +66,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Microcephaly zika positive.png",width=750,height=750,res=100)
+#png(file="20221111 Microcephaly zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -89,14 +89,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Microcephaly zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Microcephaly zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Microcephaly, zika-negative women",
                 digits=2L,xlim=(c(-15,85)), alim=(c(0,60)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -126,18 +126,16 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_birth",poisson)
 pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
 #Forest plot
-#png(file="20221107 Microcephaly RR.png",width=750,height=500,res=100)
+#png(file="20221111 Microcephaly RR.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Microcephaly",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
-addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
-        rows=-1, cex=1)
-
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Microcephaly",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+#        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -162,14 +160,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Miscarriage zika positive.png",width=750,height=750,res=100)
+#png(file="20221111 Miscarriage zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Miscarriage, zika-positive women",
-                digits=2L,xlim=(c(-3,9)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=8, main="Miscarriage, zika-positive women",
+                digits=2L,xlim=(c(-3,10)), alim=(c(0,7)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -185,14 +183,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Miscarriage zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Miscarriage zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Miscarriage, zika-negative women",
-                digits=2L,xlim=(c(-3,9)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=8, main="Miscarriage, zika-negative women",
+                digits=2L,xlim=(c(-3,10)), alim=(c(0,7)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -209,14 +207,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Miscarriage RR.png",width=750,height=500,res=100)
+#png(file="20221111 Miscarriage RR.png",width=750,height=400,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Miscarriage",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Miscarriage",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -251,14 +249,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Fetal loss zika positive.png",width=750,height=500,res=100)
+#png(file="20221111 Fetal loss zika positive.png",width=750,height=650,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Fetal loss, zika-positive women",
                 digits=2L,xlim=(c(-15,40)), alim=(c(0,25)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -274,14 +272,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Fetal loss zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Fetal loss zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Fetal loss, zika-negative women",
                 digits=2L,xlim=(c(-15,40)), alim=(c(0,25)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -298,14 +296,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Fetal loss RR.png",width=750,height=500,res=100)
+#png(file="20221111 Fetal loss RR.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Fetal loss",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Fetal loss",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -337,17 +335,17 @@ inc.outcome<-f.abs.perstudy(data.zika,"czs")
 #Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
 abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 #Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
-pool.outcome<-f.abs.2s.ma(abs.outcome)
+#pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 czs zika positive.png",width=750,height=750,res=100)
+#png(file="20221111 czs zika positive.png",width=750,height=650,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=10, main="Congenital zika syndrome, zika-positive women",
                 digits=2L,xlim=(c(-15,70)), alim=(c(0,45)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -363,14 +361,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 czs zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 czs zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=10, main="Congenital zika syndrome, zika-negative women",
                 digits=2L,xlim=(c(-15,70)), alim=(c(0,45)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -387,14 +385,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 czs RR.png",width=750,height=500,res=100)
+#png(file="20221111 czs RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
-                refline = 0, slab = rr.outcome$studyname,
+                refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Congenital zika syndrome",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Congenital zika syndrome",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -430,14 +428,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Early fetal death zika positive.png",width=750,height=500,res=100)
+#png(file="20221111 Early fetal death zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Early fetal death, zika-positive women",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Early fetal death, zika-positive women",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -453,14 +451,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Early fetal death zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Early fetal death zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Early fetal death, zika-negative women",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Early fetal death, zika-negative women",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -477,14 +475,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Early fetal death RR.png",width=750,height=500,res=100)
+#png(file="20221111 Early fetal death RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
-                refline = 0, slab = rr.outcome$studyname,
+                refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Early fetal death",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Early fetal death",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -519,14 +517,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Late fetal death zika positive.png",width=750,height=500,res=100)
+#png(file="20221111 Late fetal death zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Late fetal death, zika-positive women",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Late fetal death, zika-positive women",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -542,14 +540,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Late fetal death zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Late fetal death zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Late fetal death, zika-negative women",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Late fetal death, zika-negative women",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -566,14 +564,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Late fetal death RR.png",width=750,height=500,res=100)
+#png(file="20221111 Late fetal death RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
-                refline = 0, slab = rr.outcome$studyname,
+                refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Late fetal death",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Late fetal death",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -608,14 +606,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Postnatal microcephaly zika positive.png",width=750,height=750,res=100)
+#png(file="20221111 Postnatal microcephaly zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Postnatal microcephaly, zika-positive women",
                 digits=2L,xlim=(c(-3,9)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -631,14 +629,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Postnatal microcephaly zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Postnatal microcephaly zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Postnatal microcephaly, zika-negative women",
                 digits=2L,xlim=(c(-3,9)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -655,14 +653,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Postnatal microcephaly RR.png",width=750,height=500,res=100)
+#png(file="20221111 Postnatal microcephaly RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Postnatal microcephaly",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Postnatal microcephaly",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -697,14 +695,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Neuroabnormality zika positive.png",width=750,height=500,res=100)
+#png(file="20221111 Neuroabnormality zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Neuroimaging abnormalities, zika-positive women",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Neuroimaging abnormalities, zika-positive women",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -720,14 +718,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Neuroabnormality zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Neuroabnormality zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Neuroimaging abnormalities, zika-negative women",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Neuroimaging abnormalities, zika-negative women",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -744,14 +742,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Neuroabnormality RR.png",width=750,height=500,res=100)
+#png(file="20221111 Neuroabnormality RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Neuroimaging abnormalities",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Neuroimaging abnormalities",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -786,14 +784,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Non-neurologic abnormalities zika positive.png",width=750,height=750,res=100)
+#png(file="20221111 Non-neurologic abnormalities zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Non-neurologic abnormalities, zika-positive women",
                 digits=2L,xlim=(c(-3,9)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -809,14 +807,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221107 Non-neurologic abnormalities zika negative.png",width=750,height=500,res=100)
+#png(file="20221111 Non-neurologic abnormalities zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Non-neurologic abnormalities, zika-negative women",
                 digits=2L,xlim=(c(-3,9)), alim=(c(0,6)))
-addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-        rows=0, cex=1)#Add pooled
+#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -833,14 +831,14 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
 #Forest plot
-#png(file="20221107 Non-neurologic abnormalities RR.png",width=750,height=500,res=100)
+#png(file="20221111 Non-neurologic abnormalities RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=7, main="Non-neurologic abnormalities",
-                digits=2L,xlim=(c(-9,11)), alim=(c(0,6)))
-addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Non-neurologic abnormalities",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -860,5 +858,5 @@ results$outcome<-"Non-neurologic abnormalities"
 all.results<-rbind(all.results,results)
 
 ######################
-#write.xlsx2(all.results, "20221107 Results objective 1.xls", col.names = T, row.names = F)
+#write.xlsx2(all.results, "20221111 Results objective 1.xls", col.names = T, row.names = F)
 

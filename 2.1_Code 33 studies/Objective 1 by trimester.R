@@ -11,6 +11,8 @@ library("lme4")
 library("logistf")
 library(data.table) 
 library(ggplot2)
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation")
+library(here)
 
 
 ######################################################################################
@@ -23,7 +25,7 @@ setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2.1_Code 33 studies")
 source("Functions Objective 1.R")
 source("ZIKV prep v33.R")
 
-
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation")
 data<-as.data.table(read.csv('1_Input_data/20221027 zikv_imputed.csv', stringsAsFactors=FALSE, fileEncoding="latin1"))
 data_sys<-as.data.table(readxl::read_xlsx("1_Input_data/Table 1 outcomes.xlsx",sheet="Systematic missings")) #Table were are specified the included variables according Expert opinion, also the includes the order in which variables are imputed 
 source(here('2.1_Code 33 studies',"Functions Objective 1.R"))
@@ -68,6 +70,9 @@ data.zika1<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & data.zi
 data.zika2<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & data.zika.all$zikv_tri==2,]
 data.zika3<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & data.zika.all$zikv_tri==3,]
 
+data.zika1$studyname<-droplevels(data.zika1$studyname)
+data.zika2$studyname<-droplevels(data.zika2$studyname)
+data.zika3$studyname<-droplevels(data.zika3$studyname)
 
 #Zika-positive women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
