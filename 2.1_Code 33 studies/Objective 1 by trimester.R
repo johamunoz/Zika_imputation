@@ -70,10 +70,6 @@ data.zika1<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & data.zi
 data.zika2<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & data.zika.all$zikv_tri==2,]
 data.zika3<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & data.zika.all$zikv_tri==3,]
 
-data.zika1$studyname<-droplevels(data.zika1$studyname)
-data.zika2$studyname<-droplevels(data.zika2$studyname)
-data.zika3$studyname<-droplevels(data.zika3$studyname)
-
 #Zika-positive women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
 inc.outcome<-f.abs.perstudy(data.zika1,"microcephaly_bin_birth")
@@ -90,6 +86,7 @@ result<-rbind(abs.outcome1,abs.outcome2,abs.outcome3)
 result$cint<-paste0(sprintf("%.2f",result$incidence),"(",sprintf("%.2f",result$ci.lb),",",sprintf("%.2f",result$ci.ub),")")
 result[is.nan(result$logit.var),]$cint<-NA
 result$trimester<-as.factor(result$trimester)
+result<-result[!is.nan(result$logit.abs),]
 
 result<-result[order(result$studyname,result$trimester),]
 # Create plot
@@ -100,15 +97,69 @@ result[,allcint:=paste(studyname,trimester,cint,sep="-")]
 result<-result[order(studyname,trimester),]
 
 
-ggplot(result, aes(x=allcint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,fill=trimester)) + 
+p1<-ggplot(result, aes(x=allcint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,fill=trimester)) + 
   geom_linerange(size=2,position=position_dodge(width = 0.5)) +
   geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
   scale_fill_manual(values=barcols)+
   scale_color_manual(values=dotcols)+
-  xlab("Study name")+ ylab("Absolute risk")+
+  xlab("Studyname")+ ylab("Absolute risk")+
   ggtitle("Microcephaly")+
   coord_flip() +
   facet_grid(studyname ~ ., switch = "y",scales="free")+
   theme(strip.placement = "outside")+
   scale_x_discrete(labels = result$trimester)+ 
   theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
+#png(file="20221115 Microcephaly by trimester.png",width=700,height=850,res=110)
+p1
+#dev.off()
+
+##################################################################################
+###########################Congenital zika syndrome###############################
+##################################################################################
+
+data.zika1<-data.zika.all[!is.na(data.zika.all$czs) & data.zika.all$zikv_tri==1,]
+data.zika2<-data.zika.all[!is.na(data.zika.all$czs) & data.zika.all$zikv_tri==2,]
+data.zika3<-data.zika.all[!is.na(data.zika.all$czs) & data.zika.all$zikv_tri==3,]
+
+#Zika-positive women
+#Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
+inc.outcome<-f.abs.perstudy(data.zika1,"czs")
+abs.outcome1<-f.abs.poolrubin(data.zika1,inc.outcome)
+abs.outcome1$trimester<-"First trimester"
+inc.outcome<-f.abs.perstudy(data.zika2,"czs")
+abs.outcome2<-f.abs.poolrubin(data.zika2,inc.outcome)
+abs.outcome2$trimester<-"Second trimester"
+inc.outcome<-f.abs.perstudy(data.zika3,"czs")
+abs.outcome3<-f.abs.poolrubin(data.zika3,inc.outcome)
+abs.outcome3$trimester<-"Third trimester"
+
+result<-rbind(abs.outcome1,abs.outcome2,abs.outcome3)
+result$cint<-paste0(sprintf("%.2f",result$incidence),"(",sprintf("%.2f",result$ci.lb),",",sprintf("%.2f",result$ci.ub),")")
+result[is.nan(result$logit.var),]$cint<-NA
+result$trimester<-as.factor(result$trimester)
+result<-result[!is.nan(result$logit.abs),]
+
+result<-result[order(result$studyname,result$trimester),]
+# Create plot
+dotcols = c("#a6d8f0","#f9b282","lightpink")
+barcols = c("#008fd5","#de6b35","red")
+result<-as.data.table(result)
+result[,allcint:=paste(studyname,trimester,cint,sep="-")] 
+result<-result[order(studyname,trimester),]
+
+
+p1<-ggplot(result, aes(x=allcint, y=incidence, ymin=ci.lb, ymax=ci.ub,col=trimester,fill=trimester)) + 
+  geom_linerange(size=2,position=position_dodge(width = 0.5)) +
+  geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
+  scale_fill_manual(values=barcols)+
+  scale_color_manual(values=dotcols)+
+  xlab("Studyname")+ ylab("Absolute risk")+
+  ggtitle("Congenital zika syndrome")+
+  coord_flip() +
+  facet_grid(studyname ~ ., switch = "y",scales="free")+
+  theme(strip.placement = "outside")+
+  scale_x_discrete(labels = result$trimester)+ 
+  theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
+png(file="20221115 CZS by trimester.png",width=700,height=850,res=110)
+p1
+dev.off()

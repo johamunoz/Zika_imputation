@@ -94,6 +94,27 @@ data2$microcephaly_bin_birth<-as.factor(data2$microcephaly_bin_birth)
 data2$czs<-as.factor(data2$czs)
 data2$igr_curr_prg<-as.factor(data2$igr_curr_prg)
 data2$ch_craniofac_abn_bin<-as.factor(data2$ch_craniofac_abn_bin)
+data2$educ<-as.factor(data2$educ)
+data2$maritalstat<-as.factor(data2$maritalstat)
+data2$ethnicity<-as.factor(data2$ethnicity)
+data2$ses<-as.factor(data2$ses)
+data2$drugs_bin<-as.factor(data2$drugs_bin)
+data2$alcohol<-as.factor(data2$alcohol)
+data2$comorbid_bin<-as.factor(data2$comorbid_bin)
+data2$arb_symp<-as.factor(data2$arb_symp)
+data2$fever<-as.factor(data2$fever)
+data2$rash<-as.factor(data2$rash)
+data2$arthralgia<-as.factor(data2$arthralgia)
+data2$headache<-as.factor(data2$headache)
+data2$muscle_pain<-as.factor(data2$muscle_pain)
+data2$arthritis<-as.factor(data2$arthritis)
+data2$vomiting<-as.factor(data2$vomiting)
+data2$abd_pain<-as.factor(data2$abd_pain)
+data2$bleed<-as.factor(data2$bleed)
+data2$fatigue<-as.factor(data2$fatigue)
+data2$sorethroat<-as.factor(data2$sorethroat)
+data2$fet_zikv<-as.factor(data2$fet_zikv)
+
 
 #Exposures
 label(data2$zikv_preg)<-"Maternal zika - study definition"
@@ -145,7 +166,7 @@ label(data2$fet_death)<-"Fetus died during pregnancy"
 label(data2$fet_death_ga)<-"Gestational age the fetus died (weeks)"
 label(data2$fet_micro)<-"Fetal microcephaly"
 label(data2$ch_czs)<-"Congenital zika syndrome - study definition"
-label(data2$czs)<-"Congential zika syndrome - WHO definition"
+label(data2$czs)<-"Congenital zika syndrome - WHO definition"
 label(data2$igr_curr_prg)<-"Intrauterine growth restriction"
 label(data2$microcephaly)<-"Microcephaly at birth"
 label(data2$microcephaly_bin_postnatal)<-"Microcephaly after birth"
@@ -165,6 +186,9 @@ label(data2$any_abnormality_czs)<-"Any congenital abnormality"
 label(data2$end_ga)<-"Gestational age at which the baby was born or died (weeks)"
 label(data2$microcephaly_bin_birth)<-"Microcephaly"
 
+
+gato<-as.data.table(data.noimp)[,.(numchild=length(unique(childid))) ,by=.(studycode,mid_original)]
+gato[,.(max=max(numchild)),by=.(studycode)]
 
 #mytable.exp<-table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
 #mytable.cov<-table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
@@ -190,7 +214,7 @@ table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath +
 #Exclude missings
 table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
          end_ga + ch_weight + ch_craniofac_abn_bin + neuroabnormality + ocularabnormality + contractures + nonneurologic + 
-         any_abnormality_czs,data=data2,excel=1,
+         any_abnormality_czs | studycode,data=data2,excel=1,
        render.missing = NULL,render.categorical = "FREQ (PCTnoNA%)",render = rndr)
 #Per study
 table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + lfdeath_micro + igr_curr_prg + microcephaly_bin_postnatal + 
