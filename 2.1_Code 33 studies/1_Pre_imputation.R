@@ -284,9 +284,23 @@ data[, bmi:= pre_pregweight/((height/100)^2)]
 data[, bmi:= ifelse(bmi<0|bmi>50,NA,bmi)]
 
 
+#8.2. Interaction terms
+data[,zikv_preg.end_ga:=I(zikv_preg*(end_ga-38))]
+data[,zikv_preg.zikv_ga:=I(zikv_preg*(zikv_ga-20))]
+varinter=c("denv_preg_ever","chikv_preg_ever","comorbid_bin","comorbid_preg","storch_patho","arb_symp","fever","rash","arthralgia","headache","arthritis")
+data[,(varinter):= lapply(.SD, as.numeric), .SDcols = varinter]
+
+for(i in varinter) {
+  cn<-paste0("zikv_preg.",i)
+  exp<-paste0("I(zikv_preg*",i,")")
+  expr <- parse(text = paste0(cn, ":=",exp))
+  data[,eval(expr)]
+}
+
+
 #9 % Missing data Plot
 
-var_incl <- add_info[Essential=="Yes",]$who_name
+var_incl <- add_info[Essential=="yes",]$who_name
 var_incl<-var_incl[!var_incl%in% c( "childid","childid_original","fetid_original","fetid","mid","mid_original")]
 dataf<-data[,..var_incl]
 totalval<-as.data.table(table(dataf$studyname))
@@ -309,7 +323,6 @@ p<-ggplot(dmatrix2, aes(x=name, y=variable,fill=miss,text=text)) +
 
 ggplotly(p, tooltip="text")
 
-
 # 10. Flux plot ----
 fx<-flux(dataf)
 fluxplot(dataf)
@@ -321,14 +334,17 @@ sort(outlist)
 
 add_infoi<-add_info[order(Orderimp)]
 var_imp<-add_infoi[Final_imputation=="yes"]$who_name
+finc<-study_info[Included==1]$file #included studies
 
 # Raw total data pre imputation
+colnames(data)
 data_raw<-data
 save(data_raw, file =here('3_Output_data','rawfinaldata33.RData')) 
 #save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','rawfinaldata33.RData'))
 
+
 # Data for imputation
-fdata<-data[,..var_imp]
+fdata<-data[file%in%finc,..var_imp]
 save(fdata, file =here('3_Output_data','finaldata33.RData')) 
 #save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
 

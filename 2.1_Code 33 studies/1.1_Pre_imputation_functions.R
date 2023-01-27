@@ -87,6 +87,9 @@ ziktest_ml <- function(data){
   
   
   data_test <- as.data.table(data[,..var_test])
+  data_test[,zikv_pcr_tri_1:=as.numeric(ifelse(!zikv_pcr_tri_1%in%c(0,1,2,3),NA,zikv_pcr_tri_1))]
+  data_test[,zikv_igm_res_1:=as.numeric(ifelse(!zikv_igm_res_1%in%c(0,1,2,3),NA,zikv_igm_res_1))]
+
   colA = paste("zikv_pcr_ga_", 1:10, sep = "")
   colB = paste("zikv_pcr_res_", 1:10, sep = "")
   colC = paste("zikv_pcr_tri_", 1:10, sep = "")
