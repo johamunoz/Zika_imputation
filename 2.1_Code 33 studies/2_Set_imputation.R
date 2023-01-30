@@ -129,19 +129,19 @@ fun_run<-function(imp,data,pred,meth,post,maxit){
 ###END CODE##
 
 mice1<-fun_run(imp=1,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice1,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice1.Rdata'))
+save(mice1,file=here('3_Output_data','mice1.Rdata'))
 # 
 mice2<-fun_run(imp=2,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice2,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice2.Rdata'))
+save(mice2,file=here('3_Output_data','mice2.Rdata'))
 # 
 mice3<-fun_run(imp=3,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice3,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice3.Rdata'))
+save(mice3,file=here('3_Output_data','mice3.Rdata'))
 # 
 mice4<-fun_run(imp=4,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice4,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice4.Rdata'))
+save(mice4,file=here('3_Output_data','mice4.Rdata'))
 
 mice5<-fun_run(imp=5,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice5,file=here('Documents','GitHub','Zika_imputation','3_Output_data','mice5.Rdata'))
+save(mice5,file=here('3_Output_data','mice5.Rdata'))
 # # 
 # mice6<-fun_run(imp=6,data=data,pred=pred,meth=meth,post=post,maxit=10)
 # save(mice6,file=here('3_Output_data','mice6.Rdata'))
