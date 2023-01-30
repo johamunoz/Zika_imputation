@@ -2,6 +2,8 @@
 
 rm(list=ls()) # clean environment
 
+#setwd("/Users/jdamen/Documents/GitHub/Zika_imputation") ###Anneke only
+
 # Load packages ---
 # Data manipulation package
 library(data.table) 
@@ -14,7 +16,6 @@ library(miceadds)
 
 # Load dataset and dependencies ----
 
-#load(here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
 load(here('3_Output_data','finaldata33.RData'))
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 imp_info<-add_info[Final_imputation=="yes"]
