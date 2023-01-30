@@ -2,6 +2,8 @@
 
 rm(list=ls()) # clean environment
 
+#setwd("/Users/jdamen/Documents/GitHub/Zika_imputation") ###Anneke only
+
 # Load packages ---
 # Data manipulation package
 library(data.table) 
@@ -25,13 +27,6 @@ add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
 data<- merge(data_origin,study_info,by="file")
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
-
-#data_origin <- as.data.table(import(here('Documents','GitHub','Zika_imputation','1_Input_data','zikv_033_datasets.dta')))
-#add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
-#study_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
-#data<- merge(data_origin,study_info,by="file")
-#source(here('Documents','GitHub','Zika_imputation','2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
-
 
 # 0. Initial checks ----
 # 0.1 Missing data observations----
@@ -340,12 +335,10 @@ finc<-study_info[Included==1]$file #included studies
 colnames(data)
 data_raw<-data
 save(data_raw, file =here('3_Output_data','rawfinaldata33.RData')) 
-#save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','rawfinaldata33.RData'))
 
 
 # Data for imputation
 fdata<-data[file%in%finc,..var_imp]
 save(fdata, file =here('3_Output_data','finaldata33.RData')) 
-#save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
 
 
