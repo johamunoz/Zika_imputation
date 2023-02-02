@@ -5,6 +5,7 @@ library(dplyr)
 library(table1)
 library(xlsx)
 
+
 #Functions
 rndr <- function(x, ...) {
   if (is.factor(x) || is.character(x)) {
@@ -15,7 +16,7 @@ rndr <- function(x, ...) {
 }
 
 #Data
-data.noimp<-read.csv("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data/20221027 zikv_not_imputed.csv",header=T)
+data.noimp<-read.csv("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/20221027 zikv_not_imputed.csv",header=T)
 
 data2<-subset(data.noimp, select=c(studycode,birth_ga,
                              zikv_preg,fet_zikv, zikv_ga, ch_czs,igr_curr_prg, ch_microcephaly, ch_weight, ch_craniofac_abn_bin,
@@ -30,7 +31,11 @@ data2<-subset(data.noimp, select=c(studycode,birth_ga,
                              genurabnormality,any_abnormality_czs,fet_micro,
                              gen_anomalies,zikv_test_ev,czs,flavi_alpha_virus,storch_patho,arb_ever,arb_preg,
                              arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
+#Exclude studies with selection bias
+data2<-data2[data2$studycode!="001-BRA" & data2$studycode!="019-BRA" & data2$studycode!="022-BRA" & data2$studycode!="023-BRA",]
 rm(data.noimp)
+data2$maritalstat[data2$maritalstat==4]<-NA
+data2$ses[data2$ses==3]<-NA
 
 #Create outcome variables
 data2$bdeath<-1-data2$birth
@@ -61,60 +66,72 @@ data2$lfdeath_micro[data2$lfdeath==1 & data2$microcephaly_bin_birth==1]<-1
 data2$lfdeath_micro<-as.factor(data2$lfdeath_micro)
 
 data2<-data2 %>% mutate_if(is.character,as.factor)
-data2$zikv_preg<-as.factor(data2$zikv_preg)
-data2$ocularabnormality<-as.factor(data2$ocularabnormality)
-data2$nonneurologic<-as.factor(data2$nonneurologic)
-data2$tobacco<-as.factor(data2$tobacco)
-data2$drug_tera<-as.factor(data2$drug_tera)
-data2$denv_preg_ever<-as.factor(data2$denv_preg_ever)
-data2$chikv_preg_ever<-as.factor(data2$chikv_preg_ever)
-data2$storch_bin<-as.factor(data2$storch_bin)
+#Exposures
+data2$zikv_preg<-factor(as.factor(data2$zikv_preg), levels=c(1,0),labels=c("Positive","Negative"))
+data2$fet_zikv<-factor(as.factor(data2$fet_zikv), levels=c(1,0),labels=c("Positive","Negative"))
+data2$zikv_test_ev <- factor(data2$zikv_test_ev, levels = c("Negative", "Limited", "Moderate","Robust"))
+
+#Outcomes
+data2$miscarriage <- factor(data2$miscarriage, levels=c(1,0),labels=c("Yes","No"))
+data2$loss <- factor(data2$loss, levels=c(1,0),labels=c("Yes","No"))
+data2$microcephaly_bin_birth<-factor(as.factor(data2$microcephaly_bin_birth), levels=c(1,0),labels=c("Yes","No"))
+data2$czs<-factor(as.factor(data2$czs), levels=c(1,0),labels=c("Yes","No"))
+data2$efdeath <- factor(data2$efdeath, levels=c(1,0),labels=c("Yes","No"))
+data2$lfdeath <- factor(data2$lfdeath, levels=c(1,0),labels=c("Yes","No"))
+data2$lfdeath_micro <- factor(data2$lfdeath_micro, levels=c(1,0),labels=c("Yes","No"))
+data2$igr_curr_prg<-factor(as.factor(data2$igr_curr_prg), levels=c(1,0),labels=c("Yes","No"))
+data2$microcephaly_bin_postnatal<-factor(as.factor(data2$microcephaly_bin_postnatal), levels=c(1,0),labels=c("Yes","No"))
+data2$ch_craniofac_abn_bin<-factor(as.factor(data2$ch_craniofac_abn_bin), levels=c(1,0),labels=c("Yes","No"))
+data2$neuroabnormality<-factor(as.factor(data2$neuroabnormality), levels=c(1,0),labels=c("Yes","No"))
+data2$ocularabnormality<-factor(as.factor(data2$ocularabnormality), levels=c(1,0),labels=c("Yes","No"))
+data2$contractures<-factor(as.factor(data2$contractures), levels=c(1,0),labels=c("Yes","No"))
+data2$nonneurologic<-factor(as.factor(data2$nonneurologic), levels=c(1,0),labels=c("Yes","No"))
+data2$any_abnormality_czs<-factor(as.factor(data2$any_abnormality_czs), levels=c(1,0),labels=c("Yes","No"))
+#Other outcomes not in table
 data2$birth<-as.factor(data2$birth)
 data2$fet_death<-as.factor(data2$fet_death)
 data2$fet_micro<-as.factor(data2$fet_micro)
 data2$microcephaly_hc<-as.factor(data2$microcephaly_hc)
-data2$microcephaly_bin_postnatal<-as.factor(data2$microcephaly_bin_postnatal)
-data2$neuroabnormality<-as.factor(data2$neuroabnormality)
-data2$contractures<-as.factor(data2$contractures)
 data2$cardioabnormality<-as.factor(data2$cardioabnormality)
 data2$gastroabnormality<-as.factor(data2$gastroabnormality)
 data2$oroabnormality<-as.factor(data2$oroabnormality)
 data2$genurabnormality<-as.factor(data2$genurabnormality)
-data2$any_abnormality_czs<-as.factor(data2$any_abnormality_czs)
-data2$gen_anomalies<-as.factor(data2$gen_anomalies)
+
+#Covariates
+data2$educ<-factor(as.factor(data2$educ),levels=c(0,1,2,3,4,5),labels=c("No education","Primary school","Secondary school","Some college","Bachelor's degree","Graduate or Professional degree"))
+data2$maritalstat<-factor(as.factor(data2$maritalstat), levels=c(0,1,2,3),labels=c("Single","Married/Living as married/Cohabitating","Divorced/Separated","Widowed"))
+data2$ethnicity<-factor(as.factor(data2$ethnicity), levels=c(0,1,2,3,4,5),labels=c("Caucasian descent","African descent","East Asian descent","South Asian descent","Indigenous descent","Mixed"))
+data2$ses<-factor(as.factor(data2$ses), levels=c(0,1,2),labels=c("Low","Medium","High"))
+data2$tobacco<-factor(as.factor(data2$tobacco), levels=c(1,0),labels=c("Yes","No"))
+data2$drugs_bin<-factor(as.factor(data2$drugs_bin), levels=c(1,0),labels=c("Yes","No"))
+data2$alcohol<-factor(as.factor(data2$alcohol), levels=c(1,0),labels=c("Yes","No"))
+data2$drug_tera<-factor(as.factor(data2$drug_tera), levels=c(1,2,0),labels=c("Teratogenic","Risk of teratogenic","Not teratogenic"))
+data2$vaccination<-factor(as.factor(data2$vaccination), levels=c(1,0),labels=c("Yes","No"))
+data2$gen_anomalies<-factor(as.factor(data2$gen_anomalies), levels=c(1,0),labels=c("Yes","No"))
+data2$denv_preg_ever<-factor(as.factor(data2$denv_preg_ever), levels=c(1,0),labels=c("Yes","No"))
+data2$chikv_preg_ever<-factor(as.factor(data2$chikv_preg_ever), levels=c(1,0),labels=c("Yes","No"))
+data2$comorbid_bin<-factor(as.factor(data2$comorbid_bin), levels=c(1,0),labels=c("Yes","No"))
+data2$comorbid_preg<-factor(as.factor(data2$comorbid_preg), levels=c(1,0),labels=c("Yes","No"))
+data2$storch_patho<-factor(as.factor(data2$storch_patho), levels=c(1,0),labels=c("Yes","No"))
+data2$arb_symp<-factor(as.factor(data2$arb_symp), levels=c(1,0),labels=c("Yes","No"))
+data2$fever<-factor(as.factor(data2$fever), levels=c(1,0),labels=c("Yes","No"))
+data2$rash<-factor(as.factor(data2$rash), levels=c(1,0),labels=c("Yes","No"))
+data2$arthralgia<-factor(as.factor(data2$arthralgia), levels=c(1,0),labels=c("Yes","No"))
+data2$headache<-factor(as.factor(data2$headache), levels=c(1,0),labels=c("Yes","No"))
+data2$muscle_pain<-factor(as.factor(data2$muscle_pain), levels=c(1,0),labels=c("Yes","No"))
+data2$arthritis<-factor(as.factor(data2$arthritis), levels=c(1,0),labels=c("Yes","No"))
+data2$vomiting<-factor(as.factor(data2$vomiting), levels=c(1,0),labels=c("Yes","No"))
+data2$abd_pain<-factor(as.factor(data2$abd_pain), levels=c(1,0),labels=c("Yes","No"))
+data2$bleed<-factor(as.factor(data2$bleed), levels=c(1,0),labels=c("Yes","No"))
+data2$fatigue<-factor(as.factor(data2$fatigue), levels=c(1,0),labels=c("Yes","No"))
+data2$sorethroat<-factor(as.factor(data2$sorethroat), levels=c(1,0),labels=c("Yes","No"))
+#Other covariates not in table
+data2$storch_bin<-as.factor(data2$storch_bin)
 data2$flavi_alpha_virus<-as.factor(data2$flavi_alpha_virus)
-data2$storch_patho<-as.factor(data2$storch_patho)
 data2$arb_ever<-as.factor(data2$arb_ever)
 data2$arb_preg<-as.factor(data2$arb_preg)
 data2$arb_preg_nz<-as.factor(data2$arb_preg_nz)
 data2$drugs_prescr<-as.factor(data2$drugs_prescr)
-data2$vaccination<-as.factor(data2$vaccination)
-data2$comorbid_preg<-as.factor(data2$comorbid_preg)
-data2$microcephaly_bin_birth<-as.factor(data2$microcephaly_bin_birth)
-data2$czs<-as.factor(data2$czs)
-data2$igr_curr_prg<-as.factor(data2$igr_curr_prg)
-data2$ch_craniofac_abn_bin<-as.factor(data2$ch_craniofac_abn_bin)
-data2$educ<-as.factor(data2$educ)
-data2$maritalstat<-as.factor(data2$maritalstat)
-data2$ethnicity<-as.factor(data2$ethnicity)
-data2$ses<-as.factor(data2$ses)
-data2$drugs_bin<-as.factor(data2$drugs_bin)
-data2$alcohol<-as.factor(data2$alcohol)
-data2$comorbid_bin<-as.factor(data2$comorbid_bin)
-data2$arb_symp<-as.factor(data2$arb_symp)
-data2$fever<-as.factor(data2$fever)
-data2$rash<-as.factor(data2$rash)
-data2$arthralgia<-as.factor(data2$arthralgia)
-data2$headache<-as.factor(data2$headache)
-data2$muscle_pain<-as.factor(data2$muscle_pain)
-data2$arthritis<-as.factor(data2$arthritis)
-data2$vomiting<-as.factor(data2$vomiting)
-data2$abd_pain<-as.factor(data2$abd_pain)
-data2$bleed<-as.factor(data2$bleed)
-data2$fatigue<-as.factor(data2$fatigue)
-data2$sorethroat<-as.factor(data2$sorethroat)
-data2$fet_zikv<-as.factor(data2$fet_zikv)
-
 
 #Exposures
 label(data2$zikv_preg)<-"Maternal zika - study definition"
@@ -136,9 +153,9 @@ label(data2$vaccination)<-"Maternal vaccination"
 label(data2$gen_anomalies)<-"Genetic anomalies"
 label(data2$birth_ga)<-"Gestational age at birth (weeks)"
 label(data2$zikv_ga)<-"Gestational age at zika infection (weeks)"
-label(data2$zikv_pcr_vl_1)<-"Viral load for PCR"
-label(data2$denv_preg_ever)<-"Concurrent or prior denv"
-label(data2$chikv_preg_ever)<-"Concurrent or prior chikv"
+label(data2$zikv_pcr_vl_1)<-"Viral load for PCR (copies/µL)"
+label(data2$denv_preg_ever)<-"Concurrent or prior Dengue virus infection"
+label(data2$chikv_preg_ever)<-"Concurrent or prior Chikungunya virus infection"
 label(data2$comorbid_bin)<-"Comorbidities before pregnancy"
 label(data2$comorbid_preg)<-"Pregnancy-related comorbidities"
 label(data2$storch_patho)<-"STORCH pathogen infection"
@@ -172,7 +189,7 @@ label(data2$microcephaly)<-"Microcephaly at birth"
 label(data2$microcephaly_bin_postnatal)<-"Microcephaly after birth"
 label(data2$birth)<-"Birth"
 label(data2$birth_ga)<-"Gestational age at birth (weeks)"
-label(data2$ch_weight)<-"Birth weight"
+label(data2$ch_weight)<-"Birth weight (gram)"
 label(data2$ch_craniofac_abn_bin)<-"Craniofacial disproportion"
 label(data2$neuroabnormality)<-"Neuroimaging abnormality"
 label(data2$contractures)<-"Congenital contractures"
@@ -187,8 +204,8 @@ label(data2$end_ga)<-"Gestational age at which the baby was born or died (weeks)
 label(data2$microcephaly_bin_birth)<-"Microcephaly"
 
 
-gato<-as.data.table(data.noimp)[,.(numchild=length(unique(childid))) ,by=.(studycode,mid_original)]
-gato[,.(max=max(numchild)),by=.(studycode)]
+#gato<-as.data.table(data.noimp)[,.(numchild=length(unique(childid))) ,by=.(studycode,mid_original)]
+#gato[,.(max=max(numchild)),by=.(studycode)]
 
 #mytable.exp<-table1(~ zikv_preg + fet_zikv + zikv_test_ev,data=data2,excel=1)
 #mytable.cov<-table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
