@@ -274,3 +274,16 @@ data_origin<- merge(data_origin,study_info,by="file")
 table(as.factor(data_origin$ch_microcephaly_bin),as.factor(data_origin$studycode))
 
 
+#Explore imputed data
+setwd("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data")
+data<-read.csv("20230202 zikv_imputed.csv",header=T)
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2.1_Code 33 studies")
+source("Functions Objective 1.R")
+source("ZIKV prep v33.R")
+
+data$.imp2<-as.factor(data$.imp)
+table1(~ zikv_preg + zikv_test_ev| .imp2,data=data ,excel=1)
+table1(~ miscarriage + loss + microcephaly_bin_birth + czs + efdeath + lfdeath + microcephaly_bin_postnatal + 
+         end_ga + ch_weight + neuroabnormality + nonneurologic + any_abnormality_czs| .imp2,data=data ,excel=1)
+table1(~ age + educ + maritalstat + bmi + drugs_bin + alcohol + end_ga + zikv_ga + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+         comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + arthritis | .imp2,data=data ,excel=1)
