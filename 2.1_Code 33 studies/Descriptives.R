@@ -33,6 +33,7 @@ data2<-subset(data.noimp, select=c(studycode,birth_ga,
                              arb_preg_nz,drugs_prescr,vaccination,comorbid_preg))
 #Exclude studies with selection bias
 data2<-data2[data2$studycode!="001-BRA" & data2$studycode!="019-BRA" & data2$studycode!="022-BRA" & data2$studycode!="023-BRA",]
+
 rm(data.noimp)
 data2$maritalstat[data2$maritalstat==4]<-NA
 data2$ses[data2$ses==3]<-NA
@@ -133,6 +134,9 @@ data2$arb_preg<-as.factor(data2$arb_preg)
 data2$arb_preg_nz<-as.factor(data2$arb_preg_nz)
 data2$drugs_prescr<-as.factor(data2$drugs_prescr)
 
+#Exclude studies that are only part of sensitivity analyses
+#data2<-data2[data2$studycode!="002-BRA" & data2$studycode!="008-USA" & data2$studycode!="011-BRA" & data2$studycode!="013-BRA" & data2$studycode!="018-COL",]
+
 #Exposures
 label(data2$zikv_preg)<-"Maternal zika - study definition"
 label(data2$fet_zikv)<-"Fetal zika"
@@ -215,6 +219,7 @@ label(data2$microcephaly_bin_birth)<-"Microcephaly"
 #write.xlsx(mytable.exp,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 exposures.xlsx")
 #write.xlsx(mytable.cov,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 covariates.xlsx")
 #write.xlsx(mytable.out,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 outcomes.xlsx")
+
 
 #Tables: cmd+a -> paste in Word or paste in Excel
 #Exposures
