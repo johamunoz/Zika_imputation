@@ -16,8 +16,8 @@ library(data.table)
 #################################Load and prepare data################################
 ######################################################################################
 
-setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/2. Data")
-data<-read.csv("20221027 zikv_imputed.csv",header=T)
+setwd("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data")
+data<-read.csv("20230202 zikv_imputed.csv",header=T)
 setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2.1_Code 33 studies")
 source("Functions Objective 1.R")
 source("ZIKV prep v33.R")
@@ -42,7 +42,7 @@ data.nozika.all<-data[data$zikv_preg==0,]
 
 ########################Analyses#############
 #Change directory to save plots
-setwd("/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten")
+setwd("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/4. Resultaten")
 
 #Data frame to store results
 all.results<-data.frame(Outcome=character(),
