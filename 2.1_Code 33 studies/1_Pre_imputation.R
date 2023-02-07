@@ -2,8 +2,6 @@
 
 rm(list=ls()) # clean environment
 
-#setwd("/Users/jdamen/Documents/GitHub/Zika_imputation") ###Anneke only
-
 # Load packages ---
 # Data manipulation package
 library(data.table) 
@@ -27,6 +25,13 @@ add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
 data<- merge(data_origin,study_info,by="file")
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
+
+#data_origin <- as.data.table(import(here('Documents','GitHub','Zika_imputation','1_Input_data','zikv_033_datasets.dta')))
+#add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
+#study_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
+#data<- merge(data_origin,study_info,by="file")
+#source(here('Documents','GitHub','Zika_imputation','2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
+
 
 # 0. Initial checks ----
 # 0.1 Missing data observations----
@@ -120,8 +125,9 @@ checktable[N!=0,]
 data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
                                    ifelse(!is.na(fet_micro_diag_tri)|fet_us_micro_tri1==1|fet_us_micro_tri2==1|fet_us_micro_tri3==1,1,NA))]
 
-table(data$microcephaly_bin_fet,useNA = "always")
 
+table(data$microcephaly_bin_fet, is.na(data$fet_micro_diag_ga),useNA = "always")
+table(data$microcephaly_bin_fet, data$fet_micro,useNA = "always")
 # 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
 
 data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
@@ -133,11 +139,9 @@ data[, microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                        ifelse(fet_micro_diag_tri==1,27,
                                               ifelse(fet_micro_diag_tri==2,40,NA))))] 
 
-
 # 2.2. Postnatal microcephaly ----
 
 data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
-table(post=data$microcephaly_bin_postnatal,pre=data$microcephaly_bin_fet)  
 
 # 3. Abnormalities ----
 ncol<-c("fet_us_cns_tri2","fet_us_cns_tri3","ch_hydrocephaly","ch_corticalatrophy","ch_calcifications","ch_ventriculomegaly")
@@ -335,10 +339,35 @@ finc<-study_info[Included==1]$file #included studies
 colnames(data)
 data_raw<-data
 save(data_raw, file =here('3_Output_data','rawfinaldata33.RData')) 
+#save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','rawfinaldata33.RData'))
 
 
 # Data for imputation
 fdata<-data[file%in%finc,..var_imp]
 save(fdata, file =here('3_Output_data','finaldata33.RData')) 
+#save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
 
+
+
+# Harlan information---
+
+  
+zikvtev<-as.data.table(unclass(table(data$file,data$zikv_test_ev)))
+colnames(zikvtev)<-c("zikv_tevL","zikv_tevM","zikv_tevN","zikv_tevR")
+
+zikv_preg<-as.data.table(unclass(table(data$file,data$zikv_preg)))
+colnames(zikv_preg)<-c("zikv_preg0","zikv_preg1")
+
+micro_bin<-data.table(unclass(table(data$file,data$microcephaly_bin_fet)))
+colnames(micro_bin)<-c("microbin0","microbin1")
+
+micro_binb<-data.table(unclass(table(data$file,data$microcephaly_bin_birth)))
+colnames(micro_binb)<-c("microbinb0","microbinb1")
+
+micro_binp<-data.table(unclass(table(data$file,data$microcephaly_bin_postnatal)))
+colnames(micro_binp)<-c("microbinp0","microbinp1")
+
+harlandata<-cbind(zikvtev,zikv_preg,micro_bin,micro_binb,micro_binp,study=c(1:27))
+harlandata[,microany1:=microbin1+microbinb1+microbinp1]
+harlandata[,zikapreg_no_diag:= ifelse(zikv_preg1<microany1,1,0)]
 
