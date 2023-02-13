@@ -91,6 +91,7 @@ pred[,"studyimp"] <- -2 # define the cluster for imputation models at study leve
 varinter=c("end_ga","zikv_ga","denv_preg_ever","chikv_preg_ever","comorbid_bin","comorbid_preg","storch_patho","arb_symp","fever","rash","arthralgia","headache","arthritis")
 colpred<-colnames(pred)
 predata<-as.data.table(pred)
+# @ Harlan: this part is where we set the restriction of including only interaction if both main factors of interaction are highly associated with the incomplete variable
 for(i in varinter) {
   cn<-paste0("zikv_preg.",i)
   exp<-paste0("ifelse(zikv_preg==1&",i,"==1,1,0)")
