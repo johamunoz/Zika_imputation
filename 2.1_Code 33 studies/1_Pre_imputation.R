@@ -23,7 +23,7 @@ data_origin <- as.data.table(import(here('1_Input_data','zikv_033_datasets.dta')
 data_origin[,studyname:=NULL] # as studyname was not assigned to all studies
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
-data<- merge(data_origin,study_info,by="file")
+data <- merge(data_origin, study_info, by="file")
 source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
 
 #data_origin <- as.data.table(import(here('Documents','GitHub','Zika_imputation','1_Input_data','zikv_033_datasets.dta')))
@@ -48,19 +48,19 @@ data[data=="NA"]<-NA
 
 # 0.2 Check variables class
 # Number of observations= # one childID per observation
-nrow(data)==length(unique(data$childid))
+nrow(data) == length(unique(data$childid))
 
 
 # Check columns classes
 
 # Check continuous variables
-cont_var<-add_info[Type_var == "Continuous" & key_237_variable!="new",]$who_name
-type_ga<-sapply(data[,..cont_var], class)
-var_ga<-names(type_ga[type_ga=="character"]) # Continuous variables misclassified as character
+cont_var <- add_info[Type_var == "Continuous" & key_237_variable!="new",]$who_name
+type_ga <- sapply(data[,..cont_var], class)
+var_ga <- names(type_ga[type_ga=="character"]) # Continuous variables misclassified as character
 data[, (var_ga) := lapply(.SD, as.numeric), .SDcols = var_ga]
 cont_bound <- cont_bound(add_info,data)
 biz_var <- setDT(cont_bound)[Consistent==FALSE,]$who_name  # variables outside the boundaries we set bizarre values as NA
-for (var in biz_var){corrvar = correctbiz(var); data[,(var):=corrvar]} # correct bizzare values
+for (var in biz_var){corrvar = correctbiz(var); data[,(var):=corrvar]} # correct bizarre values
 
 
 
@@ -122,12 +122,13 @@ checktable<-data.table(table(miss=data$miscarriage,loss=data$loss,et=data$loss_e
 checktable[N!=0,]
 
 # 2. Microcephaly ----
+
+# 2.0 Microcephaly in fetus
 data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
                                    ifelse(!is.na(fet_micro_diag_tri)|fet_us_micro_tri1==1|fet_us_micro_tri2==1|fet_us_micro_tri3==1,1,NA))]
-
-
 table(data$microcephaly_bin_fet, is.na(data$fet_micro_diag_ga),useNA = "always")
 table(data$microcephaly_bin_fet, data$fet_micro,useNA = "always")
+
 # 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
 
 data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
@@ -138,6 +139,7 @@ data[, microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                 ifelse(fet_micro_diag_tri==0,13,
                                        ifelse(fet_micro_diag_tri==1,27,
                                               ifelse(fet_micro_diag_tri==2,40,NA))))] 
+
 
 # 2.2. Postnatal microcephaly ----
 
@@ -180,7 +182,8 @@ data[,gen_anomalies:=checkcon(data=data,setcol=gencol)]  # Any congenital abnorm
 #Zika test with evidence (zikv_test_ev) according to Ricardo paper---
 data_zik_test_ev <- ziktest_ml(data)  
 data <- merge(data,data_zik_test_ev,by="childid",all.x = TRUE)
-table( data$zikv_test_ev,useNA = "always")
+table( data$zikv_test_ev,data$zikv_preg,useNA = "always")
+
 #Limited Moderate Negative   Robust     <NA> 
 #     1     2805      804     2859     7522 
 
@@ -193,7 +196,6 @@ table(data$zikv_test_ev_Ricardo_MPCR,useNA = "always") # every cases turns to be
 # Include maternal zika test in robust count
 data[,zikv_test_ev_Ricardo_zivk:=as.factor(ifelse(zikv_preg==1,"Robust",as.character(zikv_test_ev)))]
 table(data$zikv_test_ev_Ricardo_zivk,useNA = "always") #minimize the number of NA's # but more cases are assigned to Robust
-
 #Limited Moderate Negative   Robust     <NA> 
 #  1       15      741     7631     5603 
 
@@ -206,12 +208,7 @@ data$zikv_pcr_vl_1<-as.numeric(data$zikv_pcr_vl_1)
 
 # 5. CZS variable according to WHO definition ----
 #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
-data[,czs:=as.numeric((data$zikv_test_ev %in% c("Robust","Moderate")| data$fet_zikv==1) & ((data$microcephaly==2) | (data$anyabnormality_czs==1)))] 
-table(data$czs,data$ch_czs,useNA = "always")
-data[,czs:=ifelse(is.na(ch_czs),czs,ch_czs)]  
-table(czs=data$czs,micro=data$microcephaly_bin_fet,useNA = "always")
-table(data$czs,useNA = "always")    #0.047 
-table(data$microcephaly_bin_fet,useNA = "always")   #0.074  higher than CZS prevalence 
+data[,who_czs:=as.numeric((data$zikv_test_ev %in% c("Robust","Moderate")| data$microcephaly_bin_fet==1) & (data$microcephaly==2 | data$any_abnormality_czs==1))] 
 
 # 6. Exposure to virus or pathogeneus----
 
@@ -297,7 +294,7 @@ for(i in varinter) {
 }
 
 
-#9 % Missing data Plot
+#9  Missing data Plot
 
 var_incl <- add_info[Essential=="yes",]$who_name
 var_incl<-var_incl[!var_incl%in% c( "childid","childid_original","fetid_original","fetid","mid","mid_original")]
@@ -324,19 +321,20 @@ ggplotly(p, tooltip="text")
 
 # 10. Flux plot ----
 fx<-flux(dataf)
-fluxplot(dataf)
+fx$var<-rownames(fx)
 outlist<-row.names(fx)[fx$outflux>=0.5]
 sort(outlist)
+
 
 # 11. Final selected variables ----
 # Please refer to the MasterCodebook_October.xlsx on the folder 1_Input_data
 
-add_infoi<-add_info[order(Orderimp)]
-var_imp<-add_infoi[Final_imputation=="yes"]$who_name
-finc<-study_info[Included==1]$file #included studies
+add_infoi <- add_info[order(Orderimp1)]
+var_imp <- add_infoi[Imp_obj1=="yes"]$who_name
+finc <- study_info[Included==1]$file #included studies
 
 # Raw total data pre imputation
-colnames(data)
+
 data_raw<-data
 save(data_raw, file =here('3_Output_data','rawfinaldata33.RData')) 
 #save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','rawfinaldata33.RData'))
@@ -351,6 +349,7 @@ save(fdata, file =here('3_Output_data','finaldata33.RData'))
 
 # Harlan information---
 
+table(data$zikv_test_ev,data$zikv_preg,useNA = "always")
   
 zikvtev<-as.data.table(unclass(table(data$file,data$zikv_test_ev)))
 colnames(zikvtev)<-c("zikv_tevL","zikv_tevM","zikv_tevN","zikv_tevR")
@@ -371,3 +370,4 @@ harlandata<-cbind(zikvtev,zikv_preg,micro_bin,micro_binb,micro_binp,study=c(1:27
 harlandata[,microany1:=microbin1+microbinb1+microbinp1]
 harlandata[,zikapreg_no_diag:= ifelse(zikv_preg1<microany1,1,0)]
 
+table(data$ch_czs,data$czs,useNA = "always")
