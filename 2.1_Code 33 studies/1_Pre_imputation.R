@@ -87,6 +87,8 @@ data$date_t1_ga<-NA
 data[, date_t1_ga:=date_concep(var_ga="date_t1_ga",var_date="date_t1")] #variable of first time visit on ga.
 data[, zikv_ga:=ifelse(!is.na(zikv_ga),zikv_ga,ifelse(zikv_tri==0,13,ifelse(zikv_tri==1,27,ifelse(zikv_tri==2,42,NA))))] # we aprox NA to the max boundary of the trimester
 
+
+
 # Create additional variables ----
 # 1. Fet_death (fetus death variable) and fet_death_ga (time of fetus death) -----
 
@@ -134,7 +136,8 @@ table(data$microcephaly_bin_fet, data$fet_micro,useNA = "always")
 data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
 data[, microcephaly_hc  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
 data[, microcephaly := ifelse(!is.na(microcephaly_hc),microcephaly_hc,ch_microcephaly)] # ch_microcephaly given by hospital so we prioritized the result given by circumference
-data[, microcephaly_bin_birth:=ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
+data[, microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
+data[, microcephaly := ifelse(is.na(microcephaly)&microcephaly_bin_birth==0,0,microcephaly)] # assign no microcephaly based on the info given in the binary variable
 data[, microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                 ifelse(fet_micro_diag_tri==0,13,
                                        ifelse(fet_micro_diag_tri==1,27,
@@ -146,6 +149,7 @@ data[, microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
 data <- micro_postnatal(data) # returns microcephaly_bin_postnatal variable
 
 # 3. Abnormalities ----
+
 ncol<-c("fet_us_cns_tri2","fet_us_cns_tri3","ch_hydrocephaly","ch_corticalatrophy","ch_calcifications","ch_ventriculomegaly")
 data[,neuroabnormality:=checkcon(data=data,setcol=ncol)]  # Neuroimaging abnormalities
 
@@ -250,7 +254,12 @@ data[,denv_preg_ever:=checkcon(data=data,setcol=decol)]
 chcol<-c("denv_preg","denv_ever")
 data[,chikv_preg_ever:=checkcon(data=data,setcol=chcol)]
 
-
+#6.8 Parity and gravidity
+ncol<-c("prev_birthdef_bin","prev_eclampsia","prev_gestdiabet","prev_preeclampsia","prev_pregcomp_oth_bin","prev_pregcomp_oth_spec","prev_pregloss","prev_pretermlabor")
+data[,prev_comp:=checkcon(data=data,setcol=ncol)] # previous complications
+table(grav=data$gravidity,par=data$parity,useNA = "always")
+data[,gravidity:=ifelse(gravidity<parity,parity,gravidity)]
+data[,gravidity:=ifelse(is.na(gravidity)&prev_comp==1,1,gravidity)]
 
 # 7. Exposure to drugs and vaccines --- 
 
@@ -322,13 +331,25 @@ ggplotly(p, tooltip="text")
 # 10. Flux plot ----
 fx<-flux(dataf)
 fx$var<-rownames(fx)
-outlist<-row.names(fx)[fx$outflux>=0.5]
-sort(outlist)
+fx<-as.data.table(fx)
+fx[,ofluxinc:=ifelse(outflux>=0.5,"yes","no")]
+fx<-fx[order(-outflux)]
+fx[,orderimp:=1:nrow(fx)]
+fx<-fx[,c("var","outflux","ofluxinc","orderimp")]
+# install java and rJava to use xlsx package
+library(xlsx)
+path<- here('1_Input_data','MasterCodebook_October.xlsx')
+if("Outflux" %in% names(getSheets(loadWorkbook(path)))){
+  wb <- loadWorkbook(path)
+  removeSheet(wb, sheetName = "Outflux")
+  saveWorkbook(wb, path)
+}
 
+write.xlsx(fx, path, sheetName = "Outflux", append = TRUE,col.names = TRUE,row.names =FALSE)
 
 # 11. Final selected variables ----
 # Please refer to the MasterCodebook_October.xlsx on the folder 1_Input_data
-
+add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 add_infoi <- add_info[order(Orderimp1)]
 var_imp <- add_infoi[Imp_obj1=="yes"]$who_name
 finc <- study_info[Included==1]$file #included studies

@@ -25,22 +25,16 @@ data <- fdata
 nncon<-imp_info[!Type_var%in%c("Continuous","ID")]$who_name
 data[,(nncon):= lapply(.SD, as.factor), .SDcols = nncon] #convert to factors binomial and categorical variables
 
-table(data$microcephaly_bin_fet,useNA = "always")
-table(data$microcephaly_bin_postnatal,useNA = "always")
-table(data$microcephaly,useNA = "always")
-
-
 con_var1<-imp_info[Type_var=="Continuous"&Type_imp==1]$who_name
 con_var2<-imp_info[Type_var=="Continuous"&Type_imp==2]$who_name
 bin_var1<-imp_info[Type_var=="Binary"&Type_imp==1]$who_name
 bin_var2<-imp_info[Type_var=="Binary"&Type_imp==2]$who_name
 cat_var1<-imp_info[Type_var=="Categorical"&Type_imp==1]$who_name
 cat_var2<-imp_info[Type_var=="Categorical"&Type_imp==2]$who_name
-npred<-imp_info[npred==1]$who_name
 
 
 # After checking the histogram we decide to impute this variables as pmm
-cat_var2<-c(cat_var2,"gravidity","end_ga")
+cat_var2<-c(cat_var2,"end_ga")
 
 
 #2. Set methods, prediction and post arguments----
@@ -74,19 +68,19 @@ meth[cat_var2] <- "2l.pmm" # predictive mean matching at study level
 # meth["zikv_preg.arthritis"] <- "~ifelse(zikv_preg == '1'& arthritis =='1','1','0')"
 
 #2.2. Post-process the values to constrain normal distributed variables in the range of observable values ----
-# post["zikv_assay_ga_1"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
+post["age"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(14, 55))"
+#post["zikv_assay_ga_1"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 post["zikv_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
+post["ch_weight"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(100, 6000))"
+post["end_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
+post["ch_head_circ_birth"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(15, 55))"
+#post["parity"] <- "imp[[j]][, i] <- pmin(imp[[j]][, i], data[(!r[, j]) & where[, j], 'gravidity'])" # will never impute values for parity that are larger than gravidity
 # post["zikv_preg.end_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 # post["zikv_preg.zikv_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
-post["end_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 #post["bmi"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
-post["age"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(14, 55))"
-post["ch_weight"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(100, 6000))"
-post["ch_head_circ_birth"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(15, 55))"
-
 
 #3.3. Set prediction matrix -----
-pred <- quickpred(data, minpuc = 0.1) # assignation based on pairwise correlation
+pred <- quickpred(data, minpuc = 0.3) # assignation based on pairwise correlation
 pred["childid",] <- 0
 pred[,"childid"] <- 0
 pred[,"studyimp"] <- -2 # define the cluster for imputation models at study level.
@@ -133,7 +127,7 @@ fun_run<-function(imp,data,pred,meth,post,maxit){
 
 ###END CODE##
 
-# First 5 anneke
+# First 5 JOHANNA
 mice1<-fun_run(imp=1,data=data,pred=pred,meth=meth,post=post,maxit=10)
 save(mice1,file=here('3_Output_data','mice1.Rdata'))
 # 
@@ -149,7 +143,7 @@ save(mice4,file=here('3_Output_data','mice4.Rdata'))
 mice5<-fun_run(imp=5,data=data,pred=pred,meth=meth,post=post,maxit=10)
 save(mice5,file=here('3_Output_data','mice5.Rdata'))
 
-#this ones below are johanna 
+#this ones below are ANNEKE
 
 mice6<-fun_run(imp=6,data=data,pred=pred,meth=meth,post=post,maxit=10)
 save(mice6,file=here('3_Output_data','mice6.Rdata'))
