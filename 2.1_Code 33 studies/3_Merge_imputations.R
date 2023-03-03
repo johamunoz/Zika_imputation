@@ -57,5 +57,6 @@ merged_imp$loggedEvents
 plot(merged_imp)
 densityplot(merged_imp)
 
+#load("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/merged_imp.RData")
 #data.imp<-complete(merged_imp,action="long")
-#write.csv(data.imp,"/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/20230202 zikv_imputed.csv", row.names = FALSE)
+#write.csv(data.imp,"/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/20230227 zikv_imputed.csv", row.names = FALSE)
