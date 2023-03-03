@@ -13,6 +13,6 @@ if(file.exists(fname)) {
 } 
 
 # Output HPC
- output<- fun_run(imp=imp,data=data,pred=pred,meth=meth,post=post,maxit=20)
+ output<- fun_run(imp=imp,data=data,pred=pred,meth=meth,post=post,maxit=10)
  save(output, file = fname)
 

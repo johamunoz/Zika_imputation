@@ -80,7 +80,7 @@ post["ch_head_circ_birth"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(15, 55)
 #post["bmi"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
 
 #3.3. Set prediction matrix -----
-pred <- quickpred(data, minpuc = 0.3) # assignation based on pairwise correlation
+pred <- quickpred(data, minpuc = 0.1) # assignation based on pairwise correlation
 pred["childid",] <- 0
 pred[,"childid"] <- 0
 pred[,"studyimp"] <- -2 # define the cluster for imputation models at study level.
