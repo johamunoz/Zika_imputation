@@ -17,7 +17,7 @@ library(data.table)
 ######################################################################################
 
 setwd("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data")
-data<-read.csv("20230202 zikv_imputed.csv",header=T)
+data<-read.csv("20230227 zikv_imputed.csv",header=T)
 setwd("/Users/jdamen/Documents/GitHub/Zika_imputation/2.1_Code 33 studies")
 source("Functions Objective 1.R")
 source("ZIKV prep v33.R")
@@ -54,12 +54,12 @@ all.results<-data.frame(Outcome=character(),
 ###################################Microcephaly###################################
 ##################################################################################
 
-data.zika<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth),]
-data.nozika<-data.nozika.all[!is.na(data.nozika.all$microcephaly_bin_birth),]
+data.zika<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_fet),]
+data.nozika<-data.nozika.all[!is.na(data.nozika.all$microcephaly_bin_fet),]
 
 #Zika-positive women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
-inc.outcome<-f.abs.perstudy(data.zika,"microcephaly_bin_birth")
+inc.outcome<-f.abs.perstudy(data.zika,"microcephaly_bin_fet")
 #Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
 abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 #Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
