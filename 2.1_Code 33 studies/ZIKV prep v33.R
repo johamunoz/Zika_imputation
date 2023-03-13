@@ -14,9 +14,16 @@ studynames<-c("002-BRA","003-GUF","004-ESP","005-ESP","006-COL","007-COL",
               "024-GTM","025-BRA","026-KEN","027-BRA")
 data$studyname_fac<-factor(data$studyimp)
 levels(data$studyname_fac)<-studynames
+data$studyname<-as.numeric(as.factor(data$studyname))
 
 #Mortality variable
 data$bdeath<-1-data$birth
+data$microcephaly_bin_birth<-data$microcephaly
+data$microcephaly_bin_birth[data$microcephaly_bin_birth==2]<-1
+data$microcephaly_bin_birth[data$microcephaly_bin_birth==3]<-0
+data$microcephaly_bin_birth<-as.factor(data$microcephaly_bin_birth)
+#End_ga complete
+data$end_ga_compl<-data$end_ga
 
 #Create factors
 data$arb_symp<-as.factor(data$arb_symp)

@@ -36,6 +36,11 @@ for (i in 1:nrow(data_sys)){
 }
 data<-as.data.frame(data)
 
+#Exclude studies that are not selected for main analyses
+data<-data[data$studyname_fac!="002-BRA" & data$studyname_fac!="008-USA" &  
+              data$studyname_fac!="011-BRA" & data$studyname_fac!="013-BRA" & data$studyname_fac!="018-COL",]
+data$studyname_fac<-droplevels(data$studyname_fac)
+
 data.zika.all<-data[data$zikv_preg==1,]
 data.nozika.all<-data[data$zikv_preg==0,]
 
@@ -54,26 +59,27 @@ all.results<-data.frame(Outcome=character(),
 ###################################Microcephaly###################################
 ##################################################################################
 
-data.zika<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_fet),]
-data.nozika<-data.nozika.all[!is.na(data.nozika.all$microcephaly_bin_fet),]
+data.zika<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_birth) & (data.zika.all$end_ga_compl>=24 & !is.na(data.zika.all$end_ga_compl)),]
+data.nozika<-data.nozika.all[!is.na(data.nozika.all$microcephaly_bin_birth) & (data.nozika.all$end_ga_compl>=24 & !is.na(data.nozika.all$end_ga_compl)),]
 
 #Zika-positive women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
-inc.outcome<-f.abs.perstudy(data.zika,"microcephaly_bin_fet")
+inc.outcome<-f.abs.perstudy(data.zika,"microcephaly_bin_birth")
 #Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
 abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 #Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Microcephaly zika positive.png",width=750,height=750,res=100)
+#png(file="20230313 Microcephaly birth zika positive.png",width=750,height=750,res=100)
+#png(file="20230313 Microcephaly birth zika positive SENSITIVITY.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Microcephaly, zika-positive women",
-                digits=2L,xlim=(c(-15,85)), alim=(c(0,60)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Microcephaly at birth, zika-positive women",
+                digits=2L,xlim=(c(-25,130)), alim=(c(0,100)))
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -89,14 +95,15 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Microcephaly zika negative.png",width=750,height=550,res=100)
+#png(file="20230313 Microcephaly birth zika negative.png",width=750,height=550,res=100)
+#png(file="20230313 Microcephaly birth zika negative SENSITIVITY.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=7, main="Microcephaly, zika-negative women",
-                digits=2L,xlim=(c(-15,85)), alim=(c(0,60)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Microcephaly at birth, zika-negative women",
+                digits=2L,xlim=(c(-25,130)), alim=(c(0,100)))
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -119,29 +126,30 @@ pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 results<-cbind(results,pool.outcome.rr)
 
 ######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$microcephaly_bin_birth),]
+data.1sma<-data[!is.na(data$microcephaly_bin_birth) & (data$end_ga_compl>=24 & !is.na(data$end_ga_compl)),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
 fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_birth",poisson))
 #Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20221111 Microcephaly RR.png",width=750,height=600,res=100)
+#png(file="20230313 Microcephaly birth RR.png",width=750,height=600,res=100)
+#png(file="20230313 Microcephaly birth RR SENSITIVITY.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Microcephaly",
-                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
-#addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
-#        rows=-1, cex=1)
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Microcephaly at birth",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,6)))
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
-results$outcome<-"Microcephaly"
+results$outcome<-"Microcephaly at birth"
 all.results<-results
 
 ##################################################################################
@@ -160,14 +168,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Miscarriage zika positive.png",width=750,height=750,res=100)
+#png(file="20230313 Miscarriage zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=8, main="Miscarriage, zika-positive women",
                 digits=2L,xlim=(c(-3,10)), alim=(c(0,7)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -183,14 +191,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Miscarriage zika negative.png",width=750,height=550,res=100)
+#png(file="20230313 Miscarriage zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=8, main="Miscarriage, zika-negative women",
                 digits=2L,xlim=(c(-3,10)), alim=(c(0,7)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -206,18 +214,6 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
-#Forest plot
-#png(file="20221111 Miscarriage RR.png",width=750,height=400,res=100)
-metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
-                refline = 1, slab = rr.outcome$studyname,
-                xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Miscarriage",
-                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
-#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
-
 #Store results
 results<-cbind(results,pool.outcome.rr)
 
@@ -226,7 +222,21 @@ data.1sma<-data[!is.na(data$miscarriage),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
 fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"miscarriage",poisson))
 #Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
+#Forest plot
+#png(file="20230313 Miscarriage RR.png",width=750,height=400,res=100)
+metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
+                refline = 1, slab = rr.outcome$studyname,
+                xlab = "Relative risk", pch = 19, psize=1,
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Miscarriage",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
@@ -237,8 +247,8 @@ all.results<-rbind(all.results,results)
 ###################################Fetal loss#####################################
 ##################################################################################
 
-data.zika<-data.zika.all[!is.na(data.zika.all$loss),]
-data.nozika<-data.nozika.all[!is.na(data.nozika.all$loss),]
+data.zika<-data.zika.all[!is.na(data.zika.all$loss) & (data.zika.all$end_ga_compl>=20 & !is.na(data.zika.all$end_ga_compl)),]
+data.nozika<-data.nozika.all[!is.na(data.nozika.all$loss) & (data.nozika.all$end_ga_compl>=20 & !is.na(data.nozika.all$end_ga_compl)),]
 
 #Zika-positive women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
@@ -249,14 +259,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Fetal loss zika positive.png",width=750,height=650,res=100)
+#png(file="20230313 Fetal loss zika positive.png",width=750,height=650,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Fetal loss, zika-positive women",
                 digits=2L,xlim=(c(-15,40)), alim=(c(0,25)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -272,14 +282,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Fetal loss zika negative.png",width=750,height=550,res=100)
+#png(file="20230313 Fetal loss zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Fetal loss, zika-negative women",
                 digits=2L,xlim=(c(-15,40)), alim=(c(0,25)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -295,27 +305,29 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
+#Store results
+results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+data.1sma<-data[!is.na(data$loss) & (data$end_ga_compl>=20 & !is.na(data$end_ga_compl)),]
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"loss",poisson))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
 #Forest plot
-#png(file="20221111 Fetal loss RR.png",width=750,height=600,res=100)
+#png(file="20230313 Fetal loss RR.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Fetal loss",
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
-
-#Store results
-results<-cbind(results,pool.outcome.rr)
-
-######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$loss),]
-#One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"loss",poisson))
-#Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
@@ -326,26 +338,26 @@ all.results<-rbind(all.results,results)
 ########################Congenital zika syndrome##################################
 ##################################################################################
 
-data.zika<-data.zika.all[!is.na(data.zika.all$czs),]
-data.nozika<-data.nozika.all[!is.na(data.nozika.all$czs),]
+data.zika<-data.zika.all[!is.na(data.zika.all$ch_czs) & (data.zika.all$end_ga_compl>=24 & !is.na(data.zika.all$end_ga_compl)),]
+data.nozika<-data.nozika.all[!is.na(data.nozika.all$ch_czs) & (data.nozika.all$end_ga_compl>=24 & !is.na(data.nozika.all$end_ga_compl)),]
 
 #Zika-positive women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
-inc.outcome<-f.abs.perstudy(data.zika,"czs")
+inc.outcome<-f.abs.perstudy(data.zika,"ch_czs")
 #Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
 abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 #Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
-#pool.outcome<-f.abs.2s.ma(abs.outcome)
+pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 czs zika positive.png",width=750,height=650,res=100)
+#png(file="20230313 czs study zika positive.png",width=750,height=650,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=10, main="Congenital zika syndrome, zika-positive women",
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=10, main="Congenital zika syndrome - study definition, zika-positive women",
                 digits=2L,xlim=(c(-15,70)), alim=(c(0,45)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -354,21 +366,21 @@ results<-pool.outcome
 
 #Zika-negative women
 #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
-inc.outcome<-f.abs.perstudy(data.nozika,"czs")
+inc.outcome<-f.abs.perstudy(data.nozika,"ch_czs")
 #Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
 abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 #Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 czs zika negative.png",width=750,height=500,res=100)
+#png(file="20230313 czs study zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
-                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=10, main="Congenital zika syndrome, zika-negative women",
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=10, main="Congenital zika syndrome - study definition, zika-negative women",
                 digits=2L,xlim=(c(-15,70)), alim=(c(0,45)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -378,37 +390,39 @@ results<-cbind(results,pool.outcome)
 ########Relative risk########
 
 #calculate relative risk of outcome per study and per imputed dataset
-rr.outcome.all<-f.rel.perstudy(data,"czs")
+rr.outcome.all<-f.rel.perstudy(data,"ch_czs")
 #pool the relative risks per study per imputed dataset using rubins rules, resulting in RR per study
 rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
-#Forest plot
-#png(file="20221111 czs RR.png",width=750,height=500,res=100)
-metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
-                refline = 1, slab = rr.outcome$studyname,
-                xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Congenital zika syndrome",
-                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
-#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
-
 #Store results
 results<-cbind(results,pool.outcome.rr)
 
 ######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$czs),]
+data.1sma<-data[!is.na(data$ch_czs) & (data$end_ga_compl>=24 & !is.na(data$end_ga_compl)),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"czs",poisson))
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"ch_czs",poisson))
 #Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data.1sma,fit1.coef)
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
+#Forest plot
+#png(file="20230313 czs study RR.png",width=750,height=500,res=100)
+metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
+                refline = 1, slab = rr.outcome$studyname,
+                xlab = "Relative risk", pch = 19, psize=1,
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Congenital zika syndrome - study definition",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
-results$outcome<-"CZS"
+results$outcome<-"CZS study definition"
 all.results<-rbind(all.results,results)
 
 
@@ -428,14 +442,14 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Early fetal death zika positive.png",width=750,height=500,res=100)
+#png(file="20230313 Early fetal death zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Early fetal death, zika-positive women",
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -451,14 +465,14 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Early fetal death zika negative.png",width=750,height=500,res=100)
+#png(file="20230313 Early fetal death zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Early fetal death, zika-negative women",
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
 
@@ -474,8 +488,18 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
+#Store results
+results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+data.1sma<-data[!is.na(data$efdeath) & (data$end_ga_compl>=20 & !is.na(data$end_ga_compl)),]
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"efdeath",poisson))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
 #Forest plot
-#png(file="20221111 Early fetal death RR.png",width=750,height=500,res=100)
+#png(file="20230313 Early fetal death RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -483,18 +507,10 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
 #addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
 #        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
-
-#Store results
-results<-cbind(results,pool.outcome.rr)
-
-######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$efdeath),]
-#One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"efdeath",poisson))
-#Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
@@ -517,7 +533,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Late fetal death zika positive.png",width=750,height=500,res=100)
+#png(file="20230313 Late fetal death zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -540,7 +556,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Late fetal death zika negative.png",width=750,height=500,res=100)
+#png(file="20230313 Late fetal death zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -563,8 +579,18 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
+#Store results
+results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+data.1sma<-data[!is.na(data$lfdeath) & (data$end_ga_compl>=28 & !is.na(data$end_ga_compl)),]
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"lfdeath",poisson))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
 #Forest plot
-#png(file="20221111 Late fetal death RR.png",width=750,height=500,res=100)
+#png(file="20230313 Late fetal death RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -572,18 +598,10 @@ metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub,
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
 #addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
 #        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
-
-#Store results
-results<-cbind(results,pool.outcome.rr)
-
-######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$lfdeath),]
-#One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"lfdeath",poisson))
-#Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
@@ -606,7 +624,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Postnatal microcephaly zika positive.png",width=750,height=750,res=100)
+#png(file="20230313 Postnatal microcephaly zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -629,7 +647,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Postnatal microcephaly zika negative.png",width=750,height=500,res=100)
+#png(file="20230313 Postnatal microcephaly zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -652,18 +670,6 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
-#Forest plot
-#png(file="20221111 Postnatal microcephaly RR.png",width=750,height=500,res=100)
-metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
-                refline = 1, slab = rr.outcome$studyname,
-                xlab = "Relative risk", pch = 19, psize=1,
-                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Postnatal microcephaly",
-                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
-#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
-#dev.off()
-
 #Store results
 results<-cbind(results,pool.outcome.rr)
 
@@ -672,12 +678,121 @@ data.1sma<-data[!is.na(data$microcephaly_bin_postnatal),]
 #One stage meta-analysis with log link and random intercept per study, per imputed dataset
 fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_postnatal",poisson))
 #Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
+#Forest plot
+#png(file="20230313 Postnatal microcephaly RR.png",width=750,height=500,res=100)
+metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
+                refline = 1, slab = rr.outcome$studyname,
+                xlab = "Relative risk", pch = 19, psize=1,
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Postnatal microcephaly",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#dev.off()
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"Postnatal microcephaly"
 all.results<-rbind(all.results,results)
+
+##################################################################################
+#############################Fetal microcephaly###################################
+##################################################################################
+
+data.zika<-data.zika.all[!is.na(data.zika.all$microcephaly_bin_fet) & (data.zika.all$bdeath==0 & !is.na(data.zika.all$bdeath)),]
+data.nozika<-data.nozika.all[!is.na(data.nozika.all$microcephaly_bin_fet) & (data.nozika.all$bdeath==0 & !is.na(data.nozika.all$bdeath)),]
+
+#Zika-positive women
+#Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
+inc.outcome<-f.abs.perstudy(data.zika,"microcephaly_bin_fet")
+#Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
+abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
+#Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
+pool.outcome<-f.abs.2s.ma(abs.outcome)
+
+#Forest plot
+#png(file="20230313 Fetal microcephaly zika positive.png",width=750,height=750,res=100)
+metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
+                refline = 0, slab = abs.outcome$studyname,
+                xlab = "Absolute risk (%)", pch = 19, psize=1,
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Fetal microcephaly, zika-positive women",
+                digits=2L,xlim=(c(-15,130)), alim=(c(0,100)))
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#dev.off()
+
+#Store results
+results<-pool.outcome
+
+#Zika-negative women
+#Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
+inc.outcome<-f.abs.perstudy(data.nozika,"microcephaly_bin_fet")
+#Pool the absolute risks over the imputed datasets, resulting in absolute risks per study
+abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
+#Pool the absolute risks over the studies, resulting in one pooled summary absolute risk over all studies
+pool.outcome<-f.abs.2s.ma(abs.outcome)
+
+#Forest plot
+#png(file="20230313 Fetal microcephaly zika negative.png",width=750,height=550,res=100)
+metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
+                refline = 0, slab = abs.outcome$studyname,
+                xlab = "Absolute risk (%)", pch = 19, psize=1,
+                ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Fetal microcephaly, zika-negative women",
+                digits=2L,xlim=(c(-15,130)), alim=(c(0,100)))
+addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
+        rows=0, cex=1)#Add pooled
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#dev.off()
+
+#Store results
+colnames(pool.outcome)<-c("logit.abs.neg","logit.se.neg","logit.ci.lb.neg","logit.ci.ub.neg",
+                          "abs.risk.neg","ci.lb.neg","ci.ub.neg","pi.lb.neg","pi.ub.neg")
+results<-cbind(results,pool.outcome)
+
+########Relative risk########
+
+####Two-stage meta-analysis
+#calculate relative risk of outcome per study and per imputed dataset
+rr.outcome.all<-f.rel.perstudy(data,"microcephaly_bin_fet")
+#pool the relative risks per study per imputed dataset using rubins rules, resulting in RR per study
+rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
+#Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
+pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
+
+#Store results
+results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+data.1sma<-data[!is.na(data$microcephaly_bin_fet) & (data$end_ga_compl>=24 & !is.na(data$end_ga_compl)),]
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_fet",poisson))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
+#Forest plot
+#png(file="20230313 Fetal microcephaly RR.png",width=750,height=600,res=100)
+metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
+                refline = 1, slab = rr.outcome$studyname,
+                xlab = "Relative risk", pch = 19, psize=1,
+                ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Fetal microcephaly",
+                digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
+#addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
+#dev.off()
+
+#Store results
+results<-cbind(results,pool.outcome.rr.1ma)
+results$outcome<-"Fetal microcephaly"
+all.results<-results
+
 
 ##################################################################################
 ################################Neuroimaging abnormalities########################
@@ -695,7 +810,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Neuroabnormality zika positive.png",width=750,height=500,res=100)
+#png(file="20230313 Neuroabnormality zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -718,7 +833,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Neuroabnormality zika negative.png",width=750,height=500,res=100)
+#png(file="20230313 Neuroabnormality zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -741,27 +856,29 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
+#Store results
+results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+data.1sma<-data[!is.na(data$neuroabnormality) & (data$end_ga_compl>=24 & !is.na(data$end_ga_compl)),]
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"neuroabnormality",poisson))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
 #Forest plot
-#png(file="20221111 Neuroabnormality RR.png",width=750,height=500,res=100)
+#png(file="20230313 Neuroabnormality RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Neuroimaging abnormalities",
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
-
-#Store results
-results<-cbind(results,pool.outcome.rr)
-
-######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$neuroabnormality),]
-#One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"neuroabnormality",poisson))
-#Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
@@ -784,7 +901,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Non-neurologic abnormalities zika positive.png",width=750,height=750,res=100)
+#png(file="20230313 Non-neurologic abnormalities zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -807,7 +924,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20221111 Non-neurologic abnormalities zika negative.png",width=750,height=500,res=100)
+#png(file="20230313 Non-neurologic abnormalities zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -830,27 +947,29 @@ rr.outcome<-f.rel.poolrubin(data,rr.outcome.all)
 #Pool the relative risks over the studies, resulting in one pooled summary relative risk over all studies
 pool.outcome.rr<-f.rel.2s.ma(rr.outcome)
 
+#Store results
+results<-cbind(results,pool.outcome.rr)
+
+######One-stage meta-analysis relative risk
+data.1sma<-data[!is.na(data$nonneurologic) & (data$end_ga_compl>=24 & !is.na(data$end_ga_compl)),]
+#One stage meta-analysis with log link and random intercept per study, per imputed dataset
+fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"nonneurologic",poisson))
+#Pool with rubins rules
+pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
+
 #Forest plot
-#png(file="20221111 Non-neurologic abnormalities RR.png",width=750,height=500,res=100)
+#png(file="20230313 Non-neurologic abnormalities RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
                 ylim=(c(-1,nrow(rr.outcome)+3)), cex=1, steps=6, main="Non-neurologic abnormalities",
                 digits=2L,xlim=(c(-5,10)), alim=(c(0,5)))
-#addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
-#        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr$rr, ci.lb=pool.outcome.rr$rr.ci.lb, ci.ub=pool.outcome.rr$rr.ci.ub,
+        rows=0, cex=1)#Add pooled
+addpoly(x = pool.outcome.rr.1ma$rr.1ma, ci.lb=pool.outcome.rr.1ma$rr.ci.lb.1ma, ci.ub=pool.outcome.rr.1ma$rr.ci.ub.1ma,
+        rows=-1, cex=1)
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
 #dev.off()
-
-#Store results
-results<-cbind(results,pool.outcome.rr)
-
-######One-stage meta-analysis relative risk
-data.1sma<-data[!is.na(data$nonneurologic),]
-#One stage meta-analysis with log link and random intercept per study, per imputed dataset
-fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"nonneurologic",poisson))
-#Pool with rubins rules
-pool.outcome.rr.1ma<-f.1ma.poolrubin(data,fit1.coef)
 
 #Store results
 results<-cbind(results,pool.outcome.rr.1ma)
@@ -858,5 +977,5 @@ results$outcome<-"Non-neurologic abnormalities"
 all.results<-rbind(all.results,results)
 
 ######################
-#write.xlsx2(all.results, "20221111 Results objective 1.xls", col.names = T, row.names = F)
+#write.xlsx2(all.results, "20230313 Results objective 1.xls", col.names = T, row.names = F)
 

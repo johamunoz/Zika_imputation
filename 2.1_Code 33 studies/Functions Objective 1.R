@@ -59,10 +59,12 @@ f.abs.perstudy<-function(data, outcome_name) {
     if(i==1) {inc.outcome<-inc}
     if(i>1) {inc.outcome<-rbind(inc.outcome,inc)}
   }
-  #Replace 0's by 0.000001
+  #Replace 0's by 0.000001 and 1's by 0.999999
   colnames(inc.outcome)<-c("studyname","incidence","ci.l","ci.u")
   inc.outcome$incidence[inc.outcome$incidence==0]<-0.000001
   inc.outcome$ci.l[inc.outcome$ci.l==0]<-0.000001
+  inc.outcome$incidence[inc.outcome$incidence==1]<-0.999999
+  inc.outcome$ci.u[inc.outcome$ci.u==1]<-0.999999
   
   #Logit transformation
   inc.outcome$logit.incidence<-logit(inc.outcome$incidence)
@@ -216,7 +218,7 @@ f.1ma.r.int<-function(data, outcome_name,family.link) {
   return(fit1.coef)
 }
 #Function to pool the results of the one stage meta-analysis using Rubins rules
-f.1ma.poolrubin <-function(data,fit1.coef) {
+f.1ma.poolrubin <-function(fit1.coef) {
   #Pool with Rubins rules
   pool.rubin<- data.frame(matrix(NA, nrow = 1, ncol = 7))
   colnames(pool.rubin)<-c("log.rr.1ma","within","between","log.var",
