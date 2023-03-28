@@ -71,13 +71,13 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Microcephaly birth zika positive.png",width=750,height=750,res=100)
-#png(file="20230313 Microcephaly birth zika positive SENSITIVITY.png",width=750,height=750,res=100)
+#png(file="20230328 Microcephaly birth zika positive.png",width=800,height=750,res=100)
+#png(file="20230328 Microcephaly birth zika positive SENSITIVITY.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Microcephaly at birth, zika-positive women",
-                digits=2L,xlim=(c(-25,130)), alim=(c(0,100)))
+                digits=2L,xlim=(c(-25,80)), alim=(c(0,60)))
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
@@ -95,13 +95,13 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Microcephaly birth zika negative.png",width=750,height=550,res=100)
-#png(file="20230313 Microcephaly birth zika negative SENSITIVITY.png",width=750,height=550,res=100)
+#png(file="20230328 Microcephaly birth zika negative.png",width=750,height=550,res=100)
+#png(file="20230328 Microcephaly birth zika negative SENSITIVITY.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
                 ylim=(c(-1,sum(!is.na(abs.outcome$incidence))+3)), cex=1, steps=6, main="Microcephaly at birth, zika-negative women",
-                digits=2L,xlim=(c(-25,130)), alim=(c(0,100)))
+                digits=2L,xlim=(c(-25,80)), alim=(c(0,60)))
 addpoly(x = pool.outcome$abs.risk, ci.lb=pool.outcome$ci.lb, ci.ub=pool.outcome$ci.ub,
         rows=0, cex=1)#Add pooled
 #addpoly(x=PI[,1], ci.lb=PI[,2], ci.ub=PI[,3], rows=-1, cex=1) #Add prediction interval
@@ -133,8 +133,8 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_birth",poisson)
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Microcephaly birth RR.png",width=750,height=600,res=100)
-#png(file="20230313 Microcephaly birth RR SENSITIVITY.png",width=750,height=600,res=100)
+#png(file="20230328 Microcephaly birth RR.png",width=750,height=600,res=100)
+#png(file="20230328 Microcephaly birth RR SENSITIVITY.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -168,7 +168,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Miscarriage zika positive.png",width=750,height=750,res=100)
+#png(file="20230328 Miscarriage zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -191,7 +191,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Miscarriage zika negative.png",width=750,height=550,res=100)
+#png(file="20230328 Miscarriage zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -225,7 +225,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"miscarriage",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Miscarriage RR.png",width=750,height=400,res=100)
+#png(file="20230328 Miscarriage RR.png",width=750,height=400,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -259,7 +259,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Fetal loss zika positive.png",width=750,height=650,res=100)
+#png(file="20230328 Fetal loss zika positive.png",width=750,height=650,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -282,7 +282,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Fetal loss zika negative.png",width=750,height=550,res=100)
+#png(file="20230328 Fetal loss zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -316,7 +316,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"loss",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Fetal loss RR.png",width=750,height=600,res=100)
+#png(file="20230328 Fetal loss RR.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -350,7 +350,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 czs study zika positive.png",width=750,height=650,res=100)
+#png(file="20230328 czs study zika positive.png",width=750,height=650,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -373,7 +373,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 czs study zika negative.png",width=750,height=500,res=100)
+#png(file="20230328 czs study zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -407,7 +407,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"ch_czs",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 czs study RR.png",width=750,height=500,res=100)
+#png(file="20230328 czs study RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -425,6 +425,19 @@ results<-cbind(results,pool.outcome.rr.1ma)
 results$outcome<-"CZS study definition"
 all.results<-rbind(all.results,results)
 
+#Export results
+#write.xlsx2(all.results, "20230328 Results main outcomes objective 1.xlsx", col.names = T, row.names = F)
+
+#Prepare table for article
+table.obj1<-all.results
+table.obj1$abs.pos.95<-paste0(sprintf("%.2f",all.results$abs.risk),"% (95% CI ",sprintf("%.2f",all.results$ci.lb),"-",sprintf("%.2f",all.results$ci.ub),")")
+table.obj1$abs.neg.95<-paste0(sprintf("%.2f",all.results$abs.risk.neg),"% (95% CI ",sprintf("%.2f",all.results$ci.lb.neg),"-",sprintf("%.2f",all.results$ci.ub.neg),")")
+table.obj1$rr.2ma.95<-paste0(sprintf("%.2f",all.results$rr)," (95% CI ",sprintf("%.2f",all.results$rr.ci.lb),"-",sprintf("%.2f",all.results$rr.ci.ub),")")
+table.obj1$rr.2ma.95.n<-paste0(sprintf("%.2f",all.results$rr)," (95% CI ",sprintf("%.2f",all.results$rr.ci.lb),"-",sprintf("%.2f",all.results$rr.ci.ub),"); n=",all.results$n.studies)
+table.obj1$rr.1ma.95<-paste0(sprintf("%.2f",all.results$rr.1ma)," (95% CI ",sprintf("%.2f",all.results$rr.ci.lb.1ma),"-",sprintf("%.2f",all.results$rr.ci.ub.1ma),")")
+table.obj1<-subset(table.obj1,select=c(outcome,abs.pos.95,abs.neg.95,rr.2ma.95.n,rr.1ma.95))
+
+#write.xlsx2(table.obj1, "20230328 Table results main outcomes objective 1.xlsx", col.names = T, row.names = F)
 
 ##################################################################################
 ################################Early fetal death#################################
@@ -442,7 +455,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Early fetal death zika positive.png",width=750,height=500,res=100)
+#png(file="20230328 Early fetal death zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -465,7 +478,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Early fetal death zika negative.png",width=750,height=500,res=100)
+#png(file="20230328 Early fetal death zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -499,7 +512,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"efdeath",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Early fetal death RR.png",width=750,height=500,res=100)
+#png(file="20230328 Early fetal death RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -533,7 +546,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Late fetal death zika positive.png",width=750,height=500,res=100)
+#png(file="20230328 Late fetal death zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -556,7 +569,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Late fetal death zika negative.png",width=750,height=500,res=100)
+#png(file="20230328 Late fetal death zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -590,7 +603,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"lfdeath",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Late fetal death RR.png",width=750,height=500,res=100)
+#png(file="20230328 Late fetal death RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -624,7 +637,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Postnatal microcephaly zika positive.png",width=750,height=750,res=100)
+#png(file="20230328 Postnatal microcephaly zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -647,7 +660,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Postnatal microcephaly zika negative.png",width=750,height=500,res=100)
+#png(file="20230328 Postnatal microcephaly zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -681,7 +694,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_postnatal",pois
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Postnatal microcephaly RR.png",width=750,height=500,res=100)
+#png(file="20230328 Postnatal microcephaly RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -715,7 +728,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Fetal microcephaly zika positive.png",width=750,height=750,res=100)
+#png(file="20230328 Fetal microcephaly zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -738,7 +751,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Fetal microcephaly zika negative.png",width=750,height=550,res=100)
+#png(file="20230328 Fetal microcephaly zika negative.png",width=750,height=550,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -775,7 +788,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"microcephaly_bin_fet",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Fetal microcephaly RR.png",width=750,height=600,res=100)
+#png(file="20230328 Fetal microcephaly RR.png",width=750,height=600,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -810,7 +823,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Neuroabnormality zika positive.png",width=750,height=500,res=100)
+#png(file="20230328 Neuroabnormality zika positive.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -833,7 +846,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Neuroabnormality zika negative.png",width=750,height=500,res=100)
+#png(file="20230328 Neuroabnormality zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -867,7 +880,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"neuroabnormality",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Neuroabnormality RR.png",width=750,height=500,res=100)
+#png(file="20230328 Neuroabnormality RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -901,7 +914,7 @@ abs.outcome<-f.abs.poolrubin(data.zika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Non-neurologic abnormalities zika positive.png",width=750,height=750,res=100)
+#png(file="20230328 Non-neurologic abnormalities zika positive.png",width=750,height=750,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -924,7 +937,7 @@ abs.outcome<-f.abs.poolrubin(data.nozika,inc.outcome)
 pool.outcome<-f.abs.2s.ma(abs.outcome)
 
 #Forest plot
-#png(file="20230313 Non-neurologic abnormalities zika negative.png",width=750,height=500,res=100)
+#png(file="20230328 Non-neurologic abnormalities zika negative.png",width=750,height=500,res=100)
 metafor::forest(abs.outcome$incidence, ci.lb=abs.outcome$ci.lb, ci.ub=abs.outcome$ci.ub, 
                 refline = 0, slab = abs.outcome$studyname,
                 xlab = "Absolute risk (%)", pch = 19, psize=1,
@@ -958,7 +971,7 @@ fit1.coef<-as.data.frame(f.1ma.r.int(data.1sma,"nonneurologic",poisson))
 pool.outcome.rr.1ma<-f.1ma.poolrubin(fit1.coef)
 
 #Forest plot
-#png(file="20230313 Non-neurologic abnormalities RR.png",width=750,height=500,res=100)
+#png(file="20230328 Non-neurologic abnormalities RR.png",width=750,height=500,res=100)
 metafor::forest(rr.outcome$rr, ci.lb=rr.outcome$ci.lb, ci.ub=rr.outcome$ci.ub, 
                 refline = 1, slab = rr.outcome$studyname,
                 xlab = "Relative risk", pch = 19, psize=1,
@@ -977,5 +990,5 @@ results$outcome<-"Non-neurologic abnormalities"
 all.results<-rbind(all.results,results)
 
 ######################
-#write.xlsx2(all.results, "20230313 Results objective 1.xls", col.names = T, row.names = F)
+#write.xlsx2(all.results, "20230328 Results objective 1.xls", col.names = T, row.names = F)
 

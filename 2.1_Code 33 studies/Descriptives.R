@@ -136,6 +136,7 @@ data2$drugs_prescr<-as.factor(data2$drugs_prescr)
 
 #Exclude studies that are only part of sensitivity analyses
 #data2<-data2[data2$studycode!="002-BRA" & data2$studycode!="008-USA" & data2$studycode!="011-BRA" & data2$studycode!="013-BRA" & data2$studycode!="018-COL",]
+data2$studycode<-droplevels(data2$studycode)
 
 #Exposures
 label(data2$zikv_preg)<-"Maternal zika - study definition"
@@ -220,6 +221,10 @@ label(data2$microcephaly_bin_birth)<-"Microcephaly"
 #write.xlsx(mytable.cov,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 covariates.xlsx")
 #write.xlsx(mytable.out,"/Users/jdamen/Documents/Julius/ZIKV analyses/4. Resultaten/Table 1 outcomes.xlsx")
 
+#Number of records per study
+summary(data2$studycode)
+median(summary(data2$studycode))
+table(data2$studycode,data2$zikv_preg)
 
 #Tables: cmd+a -> paste in Word or paste in Excel
 #Exposures
