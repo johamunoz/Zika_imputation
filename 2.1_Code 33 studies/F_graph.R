@@ -92,6 +92,7 @@ f_study_imp <- function(data, outcome_name, type) {
 f_pool <- function(est, tr_est, tr_se, type){
   
   alpha <- 0.05
+  mean <- mean(est, na.rm = T) 
   n <- length(tr_est)  #number observations
   mu <- mean(tr_est, na.rm = T) # pool estimate
   w_var <- mean(tr_se^2, na.rm = T) # within variance
@@ -101,7 +102,7 @@ f_pool <- function(est, tr_est, tr_se, type){
   r <- (b_var + (b_var / n))/ w_var # relative increase variance due to missing values
   v <- (n - 1) * (1 + r^-1)^2 # degrees of freedom
   t <- qt(1-alpha/2, v) #t criteria
-  observed <-  mean(est, na.rm = T)
+  observed <- back_trans(mu, type = type) # mean(est, na.rm = T)
   lower <- back_trans(mu - t_se*t, type = type)
   upper <- back_trans(mu + t_se*t, type = type)
   
