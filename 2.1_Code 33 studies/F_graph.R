@@ -33,8 +33,7 @@ f_sumarize_data <- function(data){
       # Logit and se for estimate and observed          
       mutate( logit_obs = logit(observed_cor),
               logit_obs_se= (logit(upper_cor)-logit(lower_cor))/(2*qnorm(1-alpha/2)))
-              #logit_obs_se = observed_se/(observed_cor*(1-observed_cor)))
-              #logit_obs_se = 1/(obs_n*observed_cor*(1-observed_cor))) 
+  
     return(sum_data)
   }
   
@@ -77,7 +76,7 @@ f_pool <- function(est, logit_est, logit_se){
 
 f_data_pool <- function(data) {
   data_pool<-data%>%
-             filter(.imp!=0)%>%  
+             filter(.imp>0)%>%  
              nest(data=-studyname)%>%  
              mutate(pool_sum=map(data,function(x){
                imp_n = nrow(x)
@@ -124,48 +123,61 @@ forest_plot_study<-function(data,outcome_name,plottitle){
                  nest(data=-.imp)%>% 
                  mutate( tdata = map(data,~f_data_total(data=.x)))%>%
                  select(-c(data))%>%
-                 unnest(col= c(tdata))
+                 unnest(col= c(tdata))%>%
+                 mutate(pmiss=na_obs/obs_n*100)  
   
-  # Initial num observations and misssing percentage
+  # Initial num observations
   abs.n <- inc.outcome%>%filter(.imp==0)%>%
-           mutate(N=obs_n,
-                  pmiss=sprintf("%.2f",na_obs/obs_n*100))%>%
-            select("studyname","N","pmiss","included")
+           mutate(N=obs_n)%>%
+            select("studyname","N","included")
+  
+  # For original dataset
+  abs.outcome.ori <- inc.outcome%>%filter(.imp==-1)%>%
+    mutate( source = "Original")%>%
+    select(c("studyname","observed","lower","upper","logit_obs","logit_obs_se","source","pmiss"))
   
   # For raw dataset
-  abs.outcome.raw <- inc.outcome%>%filter(.imp==0)%>%
-    mutate( source = "Raw")%>%
-    select(c("studyname","observed","lower","upper","logit_obs","logit_obs_se","source"))
+  abs.outcome.det <- inc.outcome%>%filter(.imp==0)%>%
+    mutate( source = "Deterministic")%>%
+    select(c("studyname","observed","lower","upper","logit_obs","logit_obs_se","source","pmiss"))
   
   
   # For imputed datases, pool information with Rubins rules
    
    abs.outcome.imp <-f_data_pool(data=inc.outcome)
-   abs.outcome.imp$source <-"Imputed"
-    
+   abs.outcome.imp$source <-"Imputation"
+   abs.outcome.imp$pmiss <-0.00 
   
   # Merge both datasets
   
-  abs.outcome <- dplyr::bind_rows(abs.outcome.imp, abs.outcome.raw)%>%
+  abs.outcome <- dplyr::bind_rows(abs.outcome.imp, abs.outcome.det, abs.outcome.ori)%>%
                  left_join(abs.n, by=c('studyname'))%>%
     mutate(mean = observed*100,
            clb = lower*100,
-           cub = upper*100)%>%
-    mutate(cint = paste0(sprintf("%.2f(%.2f,%.2f)",mean, clb, cub)),
-           allcint = paste0(studyname," \n N=",N,", %miss=",pmiss))
+           cub = upper*100,
+           pmiss = sprintf("%.2f",pmiss))%>%
+    mutate(cint = paste0(sprintf("%.2f(%.2f,%.2f)",mean, clb, cub)))%>%
+    mutate(allcint = paste0(studyname," \n N=",N),
+           cint = paste0(cint,", %mis=",pmiss),
+           scint = paste0(source,cint,", %mis=",pmiss))
            
+  
   
   # Create plot
   
-  abs.outcome$source <- factor(abs.outcome$source)
-  dotcols = c("#a6d8f0","#f9b282")
-  barcols = c("#008fd5","#de6b35")
+  abs.outcome$source <- factor(abs.outcome$source,levels=c("Original","Deterministic","Imputation"),ordered=TRUE)
+  abs.outcome$studyname <- factor(abs.outcome$studyname,ordered=TRUE)
+
+  dotcols = c("#9DF19D","#C79DF1","#a6d8f0")
+  barcols = c("#169C16","#59169C","#008fd5")
   
 
-  dataplot<-abs.outcome[order(abs.outcome$studyname,abs.outcome$source),]
-  laballcint<-unique(dataplot$allcint)
   
-  plot<-ggplot(dataplot, aes(x=cint, y=mean, ymin=clb, ymax=cub,col=source,fill=source)) + 
+  dataplot <- abs.outcome%>%filter(!(is.na(included)&source=="Imputation"))%>%
+              arrange(studyname,source)
+  dataplot$scint<-factor(dataplot$scint,levels=dataplot$scint)
+  
+  plot<-ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
     geom_linerange(size=2,position=position_dodge(width = 0.5)) +
     geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
     scale_fill_manual(values=barcols)+
@@ -173,9 +185,10 @@ forest_plot_study<-function(data,outcome_name,plottitle){
     xlab("Study name")+ ylab("Absolute risk")+
     ggtitle(plottitle)+
     coord_flip() +
-    #scale_x_discrete(breaks=levels(factor(dataplot$cint)),labels = dataplot$cint)+ 
+    scale_x_discrete(breaks=levels(factor(dataplot$scint)),labels = dataplot$cint)+ 
     facet_grid(allcint ~ ., switch = "y",scales="free")+
     theme(strip.placement = "outside")+
+    guides(colour = guide_legend(reverse = T),fill = guide_legend(reverse = T))+
     theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
   
   return(plot)}
