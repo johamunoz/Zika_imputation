@@ -75,21 +75,23 @@ data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
 
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom")
-forest_plot_study(data=data_zika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika+ mom")
-forest_plot_study(data=data_nozika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika- mom")
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, logit", type ="logit")
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, arcsine", type ="arcsine")
 
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_postnatal", plottitle = "Microcephaly post-natal")
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_fet", plottitle = "Microcephaly at fetus state")
+forest_plot_study(data=data_zika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika+ mom", type ="logit")
+forest_plot_study(data=data_nozika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika- mom", type ="logit")
 
-forest_plot_study(data=data_all, outcome_name="ch_czs", plottitle = "Child congenital zika")
-forest_plot_study(data=data_all, outcome_name="who_czs", plottitle = "Child congenital zika according to WHO definition")
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_postnatal", plottitle = "Microcephaly post-natal", type ="logit")
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_fet", plottitle = "Microcephaly at fetus state", type ="logit")
 
-forest_plot_study(data=data_all, outcome_name="neuroabnormality", plottitle = "Neuro abnormality")
-forest_plot_study(data=data_all, outcome_name="nonneurologic", plottitle = "Non neurologic abnormalities")
+forest_plot_study(data=data_all, outcome_name="ch_czs", plottitle = "Child congenital zika", type ="logit")
+forest_plot_study(data=data_all, outcome_name="who_czs", plottitle = "Child congenital zika according to WHO definition", type ="logit")
 
-forest_plot_study(data=data_all, outcome_name="miscarriage", plottitle = "Miscarriage")
-forest_plot_study(data=data_all, outcome_name="loss", plottitle = "Loss")
+forest_plot_study(data=data_all, outcome_name="neuroabnormality", plottitle = "Neuro abnormality", type ="logit")
+forest_plot_study(data=data_all, outcome_name="nonneurologic", plottitle = "Non neurologic abnormalities", type ="logit")
 
-forest_plot_study(data=data_all,outcome_name="efdeath",plottitle = "Ef death")
-forest_plot_study(data=data_all,outcome_name="lfdeath",plottitle = "Lf death")
+forest_plot_study(data=data_all, outcome_name="miscarriage", plottitle = "Miscarriage", type ="logit")
+forest_plot_study(data=data_all, outcome_name="loss", plottitle = "Loss", type ="logit")
+
+forest_plot_study(data=data_all,outcome_name="efdeath",plottitle = "Ef death", type ="logit")
+forest_plot_study(data=data_all,outcome_name="lfdeath",plottitle = "Lf death", type ="logit")

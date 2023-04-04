@@ -9,41 +9,64 @@ library(ggh4x)
 library(metafor)
 
 #######Functions#######
-logit <- function(x){log(x/(1-x))} # better remove NA
-logit_inv <- function(x){exp(x)/(1+exp(x))}
+
+trans <-function(e,n,type){
+  if (type=="logit") {
+    if(any(e == 0) | any(e == n)){
+      e <- e + 0.5
+      n <- n + 1
+    }
+    p <- e/n
+    y <- log(p/(1 - p))
+    v <- 1/e + 1/(n - e)
+  }else{ # type arcsine
+    p <- e/n
+    y <- asin(sqrt(p))
+    v <- 1/(4 * n)
+  }
+  se <- sqrt(v/n)
+  return(data.frame(y = y,se = se))
+} 
 
 
-# Function to calculate the observed absolute risk, its se and CI (observed, observed_se,lower,upper) and the logit transformed absolute risk and its se (logit_obs, logit_obs_se)
-f_sumarize_data <- function(data){
+back_trans <- function(x,type){
+  if (type=="logit") {
+    y <- exp(x)/(1 + exp(x))
+  }else{
+    y <- (sin(x))^2
+    }
+  return(y)
+} 
+
+
+
+# Function to calculate the observed absolute risk, its se and CI (observed, observed_se,lower,upper) and the transformed absolute risk and its se (tr_obs, tr_obs_se)
+f_sumarize_data <- function(data,type){
     alpha <- 0.05  
     sum_data<-data%>%summarise(obs_n = n(),
                                obs_sum = sum(outcome,na.rm=TRUE),
                                na_obs = sum(is.na(outcome),na.rm=TRUE),
                                included =first(Included))
-    ptest = prop.test(sum_data$obs_sum, sum_data$obs_n, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
+    ptest <- prop.test(sum_data$obs_sum, sum_data$obs_n, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
+    trans_observed <- trans(e=sum_data$obs_sum, n=sum_data$obs_n, type = type)
+    
     sum_data%<>% 
       # in the original scale
       mutate( observed = ptest$estimate,
               lower =   ptest$conf.int[[1]],
-              upper = pmin(ptest$conf.int[[2]]))%>%
-      mutate( observed_se = (upper-lower)/(2*qnorm(1-alpha/2)), # approx se on the original scale based on the CI
-              observed_cor=pmax(pmin(ptest$estimate,0.999999),0.000001),# observed corrected when  obs=0 or obs=1 to logit transform  
-              lower_cor=pmax(pmin(lower,0.999999),0.000001),
-              upper_cor=pmax(pmin(upper,0.999999),0.000001))%>%          
-      # Logit and se for estimate and observed          
-      mutate( logit_obs = logit(observed_cor),
-              logit_obs_se= (logit(upper_cor)-logit(lower_cor))/(2*qnorm(1-alpha/2)))
-  
+              upper = pmin(ptest$conf.int[[2]]),
+              tr_obs = trans_observed$y,
+              tr_se = trans_observed$se)
     return(sum_data)
   }
   
 alpha=0.05
 
-f_study_imp <- function(data, outcome_name) {
+f_study_imp <- function(data, outcome_name, type) {
   sum_data<- data%>%
              dplyr::select(outcome=!!outcome_name,studyname,Included,'.imp')%>%
              nest(data= - c(studyname,'.imp'))%>%
-             mutate(obs_sum = map(data,~f_sumarize_data(data=.x)))%>%
+             mutate(obs_sum = map(data,~f_sumarize_data(data=.x,type=type)))%>%
              select(-c(data))%>%
              unnest(col= c(obs_sum))
   return(sum_data)
@@ -52,47 +75,45 @@ f_study_imp <- function(data, outcome_name) {
 
 #Function to pool the absolute risks per study per imputed dataset using rubins rules
 
-f_pool <- function(est, logit_est, logit_se){
+f_pool <- function(est, tr_est, tr_se, type){
   
   alpha <- 0.05
-  logit_est <- logit_est[!is.infinite(logit_est)&!is.na(logit_est)]
-  logit_se <- logit_se[!is.infinite(logit_se)&!is.na(logit_se)]
-  n <- length(logit_est)  #number observations
-  mu <- mean(logit_est, na.rm = T) # pool estimate
-  w_var <- mean(logit_se^2, na.rm = T) # within variance
-  b_var <- var(logit_est, na.rm = T) # between variance
+  n <- length(tr_est)  #number observations
+  mu <- mean(tr_est, na.rm = T) # pool estimate
+  w_var <- mean(tr_se^2, na.rm = T) # within variance
+  b_var <- var(tr_est, na.rm = T) # between variance
   t_var <- w_var + b_var + b_var/n # total variance
   t_se <- sqrt(t_var) # total standard error
   r <- (b_var + (b_var / n))/ w_var # relative increase variance due to missing values
   v <- (n - 1) * (1 + r^-1)^2 # degrees of freedom
   t <- qt(1-alpha/2, v) #t criteria
   observed <-  mean(est, na.rm = T)
-  lower <- logit_inv(mu - t_se*t)
-  upper <- logit_inv(mu + t_se*t)
+  lower <- back_trans(mu - t_se*t, type = type)
+  upper <- back_transv(mu + t_se*t, type = type)
   
-  return(data.frame(cbind(observed = observed, lower = lower, upper = upper, logit_obs = mu, logit_obs_se = t_se)))
+  return(data.frame(cbind(observed = observed, lower = lower, upper = upper, tr_obs = mu, tr_obs_se = t_se)))
 }
 
 
-f_data_pool <- function(data) {
+f_data_pool <- function(data,type) {
   data_pool<-data%>%
              filter(.imp>0)%>%  
              nest(data=-studyname)%>%  
              mutate(pool_sum=map(data,function(x){
                imp_n = nrow(x)
-               pool_obs=f_pool(est=x$observed,logit_est=x$logit_obs,logit_se=x$logit_obs_se)}))%>%
+               pool_obs=f_pool(est=x$observed,tr_est=x$tr_obs,tr_se=x$tr_obs_se,type=type)}))%>%
     select(-c(data))%>%
             unnest(col= c(pool_sum))
   return(data_pool)}
 
 # Function to calculate the global absolute risk
-f_data_total <- function(data) {
+f_data_total <- function(data,type) {
   
   data_pool <- data%>%
                filter(included==1)
   
-  fit.rma <- rma(yi=data_pool$logit_obs,
-               sei=data_pool$logit_obs_se,
+  fit.rma <- rma(yi=data_pool$tr_obs,
+               sei=data_pool$tr_obs_se,
                method="REML",
                test= "knha")
   
@@ -102,26 +123,26 @@ f_data_total <- function(data) {
                          obs_sum = sum(data_pool$obs_sum,na.rm = T),
                          na_obs = sum(data_pool$na_obs,na.rm = T),
                          included = sum(data_pool$included,na.rm=T),
-                         observed = logit_inv(as.numeric(fit.rma$beta)),
-                         lower = logit_inv(as.numeric(fit.rma$ci.lb)),
-                         upper = logit_inv(as.numeric(fit.rma$ci.ub)),
-                         observed_se = (logit_inv(as.numeric(fit.rma$ci.ub))- logit_inv(as.numeric(fit.rma$ci.lb)))/(2*qnorm(1-alpha/2)),
+                         observed = back_trans(as.numeric(fit.rma$beta),type),
+                         lower = back_trans(as.numeric(fit.rma$ci.lb),type),
+                         upper = back_trans(as.numeric(fit.rma$ci.ub),type),
+                         observed_se = (back_trans(as.numeric(fit.rma$ci.ub),type)- back_trans(as.numeric(fit.rma$ci.lb),type))/(2*qnorm(1-alpha/2)),
                          observed_cor = NA,
-                         logit_obs = as.numeric(fit.rma$beta),
-                         logit_obs_se = as.numeric(fit.rma$se))
+                         tr_obs = as.numeric(fit.rma$beta),
+                         tr_obs_se = as.numeric(fit.rma$se))
   
   datan <- data%>%rows_insert(total)
   return(datan)}
   
 
-forest_plot_study<-function(data,outcome_name,plottitle){
+forest_plot_study<-function(data,outcome_name,plottitle,type){
   #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
-  inc.outcome.ind <- f_study_imp(data=data, outcome_name=outcome_name)
+  inc.outcome.ind <- f_study_imp(data=data, outcome_name=outcome_name, type= type)
   
   #Estimate global for each dataset (raw and imputed using only the included datasets)
   inc.outcome <- inc.outcome.ind%>%
                  nest(data=-.imp)%>% 
-                 mutate( tdata = map(data,~f_data_total(data=.x)))%>%
+                 mutate( tdata = map(data,~f_data_total(data=.x,type=type)))%>%
                  select(-c(data))%>%
                  unnest(col= c(tdata))%>%
                  mutate(pmiss=na_obs/obs_n*100)  
@@ -134,12 +155,12 @@ forest_plot_study<-function(data,outcome_name,plottitle){
   # For original dataset
   abs.outcome.ori <- inc.outcome%>%filter(.imp==-1)%>%
     mutate( source = "Original")%>%
-    select(c("studyname","observed","lower","upper","logit_obs","logit_obs_se","source","pmiss"))
+    select(c("studyname","observed","lower","upper","tr_obs","tr_obs_se","source","pmiss"))
   
   # For raw dataset
   abs.outcome.det <- inc.outcome%>%filter(.imp==0)%>%
     mutate( source = "Deterministic")%>%
-    select(c("studyname","observed","lower","upper","logit_obs","logit_obs_se","source","pmiss"))
+    select(c("studyname","observed","lower","upper","tr_obs","tr_obs_se","source","pmiss"))
   
   
   # For imputed datases, pool information with Rubins rules
