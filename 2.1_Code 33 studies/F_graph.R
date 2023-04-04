@@ -40,27 +40,41 @@ back_trans <- function(x,type){
 
 
 
-# Function to calculate the observed absolute risk, its se and CI (observed, observed_se,lower,upper) and the transformed absolute risk and its se (tr_obs, tr_obs_se)
+# Function to calculate the observed absolute risk, its se and CI (observed, observed_se,lower,upper) and the transformed absolute risk and its se (tr_obs, tr_se)
 f_sumarize_data <- function(data,type){
     alpha <- 0.05  
     sum_data<-data%>%summarise(obs_n = n(),
                                obs_sum = sum(outcome,na.rm=TRUE),
                                na_obs = sum(is.na(outcome),na.rm=TRUE),
                                included =first(Included))
-    ptest <- prop.test(sum_data$obs_sum, sum_data$obs_n, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
-    trans_observed <- trans(e=sum_data$obs_sum, n=sum_data$obs_n, type = type)
     
+    if (sum_data$obs_n == sum_data$na_obs){
+          observed <- NA
+          lower <-  NA
+          upper <- NA
+          tr_obs <- NA
+          tr_se <- NA
+    }else{
+        
+        ptest <- prop.test(sum_data$obs_sum, sum_data$obs_n, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
+        trans_observed <- trans(e=sum_data$obs_sum, n=sum_data$obs_n, type = type)
+        observed = ptest$estimate
+        lower =   ptest$conf.int[[1]]
+        upper =   ptest$conf.int[[2]]
+        tr_obs = trans_observed$y
+        tr_se = trans_observed$se
+    }
     sum_data%<>% 
       # in the original scale
-      mutate( observed = ptest$estimate,
-              lower =   ptest$conf.int[[1]],
-              upper = pmin(ptest$conf.int[[2]]),
-              tr_obs = trans_observed$y,
-              tr_se = trans_observed$se)
+      mutate( observed = observed,
+              lower = lower,
+              upper = upper,
+              tr_obs = tr_obs,
+              tr_se = tr_se)
     return(sum_data)
   }
   
-alpha=0.05
+
 
 f_study_imp <- function(data, outcome_name, type) {
   sum_data<- data%>%
@@ -89,9 +103,9 @@ f_pool <- function(est, tr_est, tr_se, type){
   t <- qt(1-alpha/2, v) #t criteria
   observed <-  mean(est, na.rm = T)
   lower <- back_trans(mu - t_se*t, type = type)
-  upper <- back_transv(mu + t_se*t, type = type)
+  upper <- back_trans(mu + t_se*t, type = type)
   
-  return(data.frame(cbind(observed = observed, lower = lower, upper = upper, tr_obs = mu, tr_obs_se = t_se)))
+  return(data.frame(cbind(observed = observed, lower = lower, upper = upper, tr_obs = mu, tr_se = t_se)))
 }
 
 
@@ -101,7 +115,7 @@ f_data_pool <- function(data,type) {
              nest(data=-studyname)%>%  
              mutate(pool_sum=map(data,function(x){
                imp_n = nrow(x)
-               pool_obs=f_pool(est=x$observed,tr_est=x$tr_obs,tr_se=x$tr_obs_se,type=type)}))%>%
+               pool_obs=f_pool(est=x$observed,tr_est=x$tr_obs,tr_se=x$tr_se,type=type)}))%>%
     select(-c(data))%>%
             unnest(col= c(pool_sum))
   return(data_pool)}
@@ -113,7 +127,7 @@ f_data_total <- function(data,type) {
                filter(included==1)
   
   fit.rma <- rma(yi=data_pool$tr_obs,
-               sei=data_pool$tr_obs_se,
+               sei=data_pool$tr_se,
                method="REML",
                test= "knha")
   
@@ -126,10 +140,8 @@ f_data_total <- function(data,type) {
                          observed = back_trans(as.numeric(fit.rma$beta),type),
                          lower = back_trans(as.numeric(fit.rma$ci.lb),type),
                          upper = back_trans(as.numeric(fit.rma$ci.ub),type),
-                         observed_se = (back_trans(as.numeric(fit.rma$ci.ub),type)- back_trans(as.numeric(fit.rma$ci.lb),type))/(2*qnorm(1-alpha/2)),
-                         observed_cor = NA,
                          tr_obs = as.numeric(fit.rma$beta),
-                         tr_obs_se = as.numeric(fit.rma$se))
+                         tr_se = as.numeric(fit.rma$se))
   
   datan <- data%>%rows_insert(total)
   return(datan)}
@@ -155,17 +167,17 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
   # For original dataset
   abs.outcome.ori <- inc.outcome%>%filter(.imp==-1)%>%
     mutate( source = "Original")%>%
-    select(c("studyname","observed","lower","upper","tr_obs","tr_obs_se","source","pmiss"))
+    select(c("studyname","observed","lower","upper","tr_obs","tr_se","source","pmiss"))
   
   # For raw dataset
   abs.outcome.det <- inc.outcome%>%filter(.imp==0)%>%
     mutate( source = "Deterministic")%>%
-    select(c("studyname","observed","lower","upper","tr_obs","tr_obs_se","source","pmiss"))
+    select(c("studyname","observed","lower","upper","tr_obs","tr_se","source","pmiss"))
   
   
   # For imputed datases, pool information with Rubins rules
    
-   abs.outcome.imp <-f_data_pool(data=inc.outcome)
+   abs.outcome.imp <-f_data_pool(data=inc.outcome,type=type)
    abs.outcome.imp$source <-"Imputation"
    abs.outcome.imp$pmiss <-0.00 
   
@@ -177,10 +189,10 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
            clb = lower*100,
            cub = upper*100,
            pmiss = sprintf("%.2f",pmiss))%>%
-    mutate(cint = paste0(sprintf("%.2f(%.2f,%.2f)",mean, clb, cub)))%>%
+    mutate(cint = ifelse(is.na(mean),"   ",paste0(sprintf("%.2f(%.2f,%.2f),",mean, clb, cub))))%>%
     mutate(allcint = paste0(studyname," \n N=",N),
-           cint = paste0(cint,", %mis=",pmiss),
-           scint = paste0(source,cint,", %mis=",pmiss))
+           cint = paste0(cint," %mis=",pmiss),
+           scint = paste0(studyname,source,cint," %mis=",pmiss))
            
   
   
