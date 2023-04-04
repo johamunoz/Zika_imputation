@@ -185,14 +185,15 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
   
   abs.outcome <- dplyr::bind_rows(abs.outcome.imp, abs.outcome.det, abs.outcome.ori)%>%
                  left_join(abs.n, by=c('studyname'))%>%
-    mutate(mean = observed*100,
-           clb = lower*100,
-           cub = upper*100,
-           pmiss = sprintf("%.2f",pmiss))%>%
-    mutate(cint = ifelse(is.na(mean),"   ",paste0(sprintf("%.2f(%.2f,%.2f),",mean, clb, cub))))%>%
-    mutate(allcint = paste0(studyname," \n N=",N),
-           cint = paste0(cint," %mis=",pmiss),
-           scint = paste0(studyname,source,cint," %mis=",pmiss))
+                  mutate(included = ifelse(is.na(included),"*",""),
+                         mean = observed*100,
+                         clb = lower*100,
+                         cub = upper*100,
+                         pmiss = sprintf("%.2f",pmiss))%>%
+                  mutate(cint = ifelse(is.na(mean),"   ",paste0(sprintf("%.2f(%.2f,%.2f),",mean, clb, cub))))%>%
+                  mutate(allcint = paste0(studyname,included," \n N=",N),
+                         cint = paste0(cint," %mis=",pmiss),
+                         scint = paste0(studyname,source,cint," %mis=",pmiss))
            
   
   
@@ -222,7 +223,10 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
     facet_grid(allcint ~ ., switch = "y",scales="free")+
     theme(strip.placement = "outside")+
     guides(colour = guide_legend(reverse = T),fill = guide_legend(reverse = T))+
-    theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))
+    theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))+
+    labs(caption = "*Excluded study in the imputation and in the total risk estimation")+
+    labs(color="Data source",fill="Data source") 
+  
   
   return(plot)}
                
