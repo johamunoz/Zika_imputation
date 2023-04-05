@@ -186,7 +186,7 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
   
   abs.outcome <- dplyr::bind_rows(abs.outcome.imp, abs.outcome.det, abs.outcome.ori)%>%
                  left_join(abs.n, by=c('studyname'))%>%
-                  mutate(included = ifelse(is.na(included),"*",""),
+                  mutate(included = ifelse(included==0,"*",""),
                          mean = observed*100,
                          clb = lower*100,
                          cub = upper*100,
@@ -210,9 +210,9 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
   
   dataplot <- abs.outcome%>%filter(!(is.na(included)&source=="Imputation"))%>%
               arrange(studyname,source)
-  dataplot$scint<-factor(dataplot$scint,levels=dataplot$scint)
+  dataplot$scint <- factor(dataplot$scint,levels=dataplot$scint)
   
-  plot<-ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
+  plot <- ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
     geom_linerange(size=2,position=position_dodge(width = 0.5)) +
     geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
     scale_fill_manual(values=barcols)+

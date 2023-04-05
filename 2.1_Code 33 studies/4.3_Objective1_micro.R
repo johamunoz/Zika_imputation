@@ -11,11 +11,11 @@ library(here)  # define folder paths
 # Graphic packages
 library(ggplot2)
 
-
+# Load the additional functions ----
   source(here('2.1_Code 33 studies','F_graph.R'))
 
 # Get imputation data ----
-  load("/Users/jmunozav/Desktop/merged_imp.RData")
+  load(file= here('3_Output_data','merged_imp.RData')) # imputed data 
   data_imp <- complete(merged_imp,"long")
   data_imp$source <- "Imputation"
   data_imp$.id <- NULL
@@ -74,6 +74,9 @@ library(ggplot2)
 data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
+table(data_all$studyname,data_all$Included, useNA = "always")
+table(data_zika$studyname,data_zika$Included, useNA = "always")
+table(data_nozika$studyname,data_nozika$Included, useNA = "always")
 
 forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, logit", type ="logit")
 forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, arcsine", type ="arcsine")
