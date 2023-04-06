@@ -44,6 +44,7 @@ library(ggplot2)
   load(file= here('3_Output_data','rawfinaldata33.RData')) # fdata=Data_preimputation
   data_raw$source <- "Raw"
   data_raw$.imp <- 0
+
   
   data_raw %<>% 
     select(all_of(col_imp))%>%
@@ -74,11 +75,15 @@ library(ggplot2)
 data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
-table(data_all$studyname,data_all$Included, useNA = "always")
-table(data_zika$studyname,data_zika$Included, useNA = "always")
-table(data_nozika$studyname,data_nozika$Included, useNA = "always")
 
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, logit", type ="logit")
+# For Absolut Risk
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name=NA, plottitle = "Microcephaly at birth, all mom, logit", type ="logit", estimand ="AR")
+# For Relative Risk
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name="zikv_preg", estimand = "RR", plottitle = "Microcephaly at birth, all mom, logit", type ="log", correction = "Hybrid", nacount = FALSE)
+
+
+
+
 forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, arcsine", type ="arcsine")
 
 forest_plot_study(data=data_zika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika+ mom", type ="logit")

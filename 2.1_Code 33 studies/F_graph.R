@@ -19,7 +19,7 @@ trans <-function(e,n,type){
     p <- e/n
     y <- log(p/(1 - p))
     v <- 1/e + 1/(n - e)
-  }else{ # type arcsine
+  }else { # type arcsine
     p <- e/n
     y <- asin(sqrt(p))
     v <- 1/(4 * n)
@@ -30,40 +30,118 @@ trans <-function(e,n,type){
 
 
 back_trans <- function(x,type){
-  if (type=="logit") {
+  if (type == "logit") {
     y <- exp(x)/(1 + exp(x))
-  }else{
+  }else if (type == "arcsine"){
     y <- (sin(x))^2
+  }else{ # log
+      y <- exp(x)
     }
   return(y)
 } 
 
+val_na <- function(x){
+  if( length(x)==0){
+    y <- 0
+   }else if(is.infinite(x)|is.na(x)){
+      y <- 0
+   }else{
+    y<-x
+  }
+     
+}
+
 
 
 # Function to calculate the observed absolute risk, its se and CI (observed, observed_se,lower,upper) and the transformed absolute risk and its se (tr_obs, tr_se)
-f_sumarize_data <- function(data,type){
+f_sumarize_data <- function(data,estimand,type,correction,nacount){
     alpha <- 0.05  
-    sum_data<-data%>%summarise(obs_n = n(),
+    sum_data <- data%>%summarise(obs_n = n(),
                                obs_sum = sum(outcome,na.rm=TRUE),
                                na_obs = sum(is.na(outcome),na.rm=TRUE),
                                included =first(Included))
     
     if (sum_data$obs_n == sum_data$na_obs){
-          observed <- NA
-          lower <-  NA
-          upper <- NA
-          tr_obs <- NA
-          tr_se <- NA
+      observed <- lower <- upper <- tr_obs <- tr_se <- NA
+     
     }else{
+    
+      if (estimand == "RR"){  # Relative Risk "RR"
         
-        ptest <- prop.test(sum_data$obs_sum, sum_data$obs_n, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
-        trans_observed <- trans(e=sum_data$obs_sum, n=sum_data$obs_n, type = type)
-        observed = ptest$estimate
-        lower =   ptest$conf.int[[1]]
-        upper =   ptest$conf.int[[2]]
-        tr_obs = trans_observed$y
-        tr_se = trans_observed$se
+        otable <- as.matrix(table(exp=data$exposure,out=data$outcome))
+        colnam <- colnames(otable)
+        
+        # To count NA values 
+        natable <- table(exp = data$exposure, out = data$outcome, useNA = "always")
+        colnames(natable) <- paste0("out",colnames(natable))
+        rownames(natable) <- paste0("exp",rownames(natable))
+        
+        na_obs <- natable["expNA","outNA"]
+        
+        if( nacount ==TRUE){ # if we assume that all NA in outcome are 0 
+         
+          natable <- natable[rownames(natable)!="expNA",]
+          if(is.null(dim(natable))){
+            newcol <- sum(natable[c("out0","outNA")],na.rm = T)
+            } else{
+              newcol <- as.numeric(rowSums( natable[,c("out0","outNA")],na.rm=TRUE)) 
+            }
+         
+            if(is.element("0",colnam)){
+              otable[,"0"] <- newcol
+            }else{
+              otable <- cbind(newcol,otable)
+              colnam <- c("0",colnam)
+              colnames(otable) <- colnam
+            }
+        }
+        
+        sumtab <- data.table(addmargins(otable))
+        x1 <- val_na(sumtab[exp==1&out==1,N])
+        n1 <- val_na(sumtab[exp==1&out=="Sum",N])
+        x2 <- val_na(sumtab[exp==0&out==1,N])
+        n2 <- val_na(sumtab[exp==0&out=="Sum",N])
+        N <- n1+n1
+        noev <- length(sumtab[exp=="Sum"&out==1,N]) == 0
+        
+        if( n1 == 0 | n2 == 0| noev){
+          observed <- lower <- upper <- tr_obs <- tr_se <- NA
+        }else{
+          c <- 0.5
+          if (correction == "Haldan"){
+            observed <- (x1+c)*(n2+2*c)/((n1+2*c)*(x2+c))
+            tr_se <- sqrt(1/(x1+c)-1/(n1+2*c)+1/(x2+c)-1/(n2+2*c))
+          }else if (correction == "Hybrid"){
+            observed <- (x1+c)*(n2+c)/((n1+2*c)*(x2+c))
+            tr_se <- sqrt(1/(x1+c)-1/(n1+2*c)+1/(x2+c)-1/(n2+c))
+          }else{ # no correction correction ="none"
+            observed <- (x1)*(n2)/((n1)*(x2))
+            tr_se <- sqrt(1/(x1)-1/(n1)+1/(x2)-1/(n2))
+          }
+        }
+        
+        tr_obs <- ifelse(observed==0,NA,log(observed))
+        lower <- exp(tr_obs-qnorm(1-alpha/2)*tr_se)
+        upper <- exp(tr_obs+qnorm(1-alpha/2)*tr_se)
+        tr_se <- ifelse(is.infinite(tr_se),NA,tr_se)
+        obs_sum <- obs_n - na_obs
+        sum_data %<>%
+          mutate( obs_sum = obs_sum, # number of observations with complete outcome and exposure.
+                  na_obs = na_obs, # all observations with at least one information missing
+                  )   
+     
+      }else{ # Absolute risk "AR"
+   
+          ptest <- prop.test(sum_data$obs_sum, sum_data$obs_n, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
+          trans_observed <- trans(e=sum_data$obs_sum, n=sum_data$obs_n, type = type)
+          observed = ptest$estimate
+          lower =   ptest$conf.int[[1]]
+          upper =   ptest$conf.int[[2]]
+          tr_obs = trans_observed$y
+          tr_se = trans_observed$se
+       }
     }
+    
     sum_data%<>% 
       # in the original scale
       mutate( observed = observed,
@@ -76,13 +154,22 @@ f_sumarize_data <- function(data,type){
   
 
 
-f_study_imp <- function(data, outcome_name, type) {
-  sum_data<- data%>%
-             dplyr::select(outcome=!!outcome_name,studyname,Included,'.imp')%>%
-             nest(data= - c(studyname,'.imp'))%>%
-             mutate(obs_sum = map(data,~f_sumarize_data(data=.x,type=type)))%>%
+f_study_imp <- function(data, outcome_name, exposure_name, estimand,type,correction,nacount) {
+  
+  if( is.na(exposure_name)){
+    sum_data<- data%>%
+      dplyr::select(outcome=!!outcome_name,studyname,Included,'.imp')
+  }else{
+    sum_data<- data%>%
+      dplyr::select(outcome=!!outcome_name,exposure=!!exposure_name,studyname,Included,'.imp')
+  }
+  
+  sum_data%<>%nest(data= - c(studyname,'.imp'))%>%
+             mutate(obs_sum = map(data,~f_sumarize_data(data = .x,estimand = estimand,type = type, correction =correction, nacount = nacount)))%>%
              select(-c(data))%>%
-             unnest(col= c(obs_sum))
+             unnest(col= c(obs_sum))%>%
+             mutate_all(~ifelse(is.nan(.)|is.infinite(.), NA, .))
+
   return(sum_data)
 }
 
@@ -127,10 +214,10 @@ f_data_total <- function(data,type) {
   data_pool <- data%>%
                filter(included==1)
   
-  fit.rma <- rma(yi=data_pool$tr_obs,
-               sei=data_pool$tr_se,
-               method="REML",
-               test= "knha")
+  fit.rma<-tryCatch(
+    expr = {rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha")},
+    error = function(e){ 
+      rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha",control=list(stepadj=0.5))})
   
   
   total <- data.frame(  studyname="TOTAL",
@@ -148,9 +235,9 @@ f_data_total <- function(data,type) {
   return(datan)}
   
 
-forest_plot_study<-function(data,outcome_name,plottitle,type){
+forest_plot_study<-function(data,outcome_name,exposure_name = NA, estimand, plottitle, type, correction = "none", nacount = TRUE){
   #Calculate the absolute risk of the outcome in every study separate and in every imputed dataset
-  inc.outcome.ind <- f_study_imp(data=data, outcome_name=outcome_name, type= type)
+  inc.outcome.ind <- f_study_imp(data=data, outcome_name=outcome_name, exposure_name=exposure_name, estimand = estimand, type = type, correction= correction, nacount= nacount)
   
   #Estimate global for each dataset (raw and imputed using only the included datasets)
   inc.outcome <- inc.outcome.ind%>%
@@ -186,10 +273,11 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
   
   abs.outcome <- dplyr::bind_rows(abs.outcome.imp, abs.outcome.det, abs.outcome.ori)%>%
                  left_join(abs.n, by=c('studyname'))%>%
+                 mutate(estimand=estimand)%>%
                   mutate(included = ifelse(included==0,"*",""),
-                         mean = observed*100,
-                         clb = lower*100,
-                         cub = upper*100,
+                         mean = ifelse(estimand=="RR",observed,observed*100),
+                         clb = ifelse(estimand=="RR",lower,lower*100),
+                         cub = ifelse(estimand=="RR",upper,upper*100),
                          pmiss = sprintf("%.2f",pmiss))%>%
                   mutate(cint = ifelse(is.na(mean),"   ",paste0(sprintf("%.2f(%.2f,%.2f),",mean, clb, cub))))%>%
                   mutate(allcint = paste0(studyname,included," \n N=",N),
@@ -227,7 +315,6 @@ forest_plot_study<-function(data,outcome_name,plottitle,type){
     theme(strip.text.y.left = element_text(angle = 0),axis.text.y = element_text(size = 6))+
     labs(caption = "*Excluded study in the imputation and in the total risk estimation")+
     labs(color="Data source",fill="Data source") 
-  
   
   return(plot)}
                
