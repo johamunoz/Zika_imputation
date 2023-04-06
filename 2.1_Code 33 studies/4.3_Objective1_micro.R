@@ -79,7 +79,7 @@ data_nozika <- data_all%>%filter(zikv_preg ==0)
 # For Absolut Risk
 forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name=NA, plottitle = "Microcephaly at birth, all mom, logit", type ="logit", estimand ="AR")
 # For Relative Risk
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name="zikv_preg", estimand = "RR", plottitle = "Microcephaly at birth, all mom, logit", type ="log", correction = "Hybrid", nacount = FALSE)
+forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name="zikv_preg", estimand = "RR", plottitle = "Microcephaly at birth, all mom", type ="log", correction = "Hybrid", nacount = FALSE)
 
 
 
