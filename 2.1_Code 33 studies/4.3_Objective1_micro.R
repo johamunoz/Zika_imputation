@@ -7,6 +7,7 @@ rm(list=ls()) # clean environment
 library(dplyr)
 library(magrittr)
 library(here)  # define folder paths
+library(mice)
 
 # Graphic packages
 library(ggplot2)
@@ -76,30 +77,48 @@ data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
 
-# For Absolut Risk
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name=NA, plottitle = "Microcephaly at birth, all mom, logit", type ="logit", estimand ="AR")
-# For Relative Risk
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", exposure_name="zikv_preg", estimand = "RR", plottitle = "Microcephaly at birth, all mom", type ="log", correction = "Hybrid", nacount = FALSE)
 
 
 
+# Microcephaly at birth (Absolute risk )
+MicroAR <- Rpool_studies(data =data_all, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name="microcephaly_bin_birth", # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand= "AR",
+                         plottitle= "Microcephaly at birth, all mom, logit",
+                         t_type= "logit",
+                         dupper = NA)
 
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, all mom, arcsine", type ="arcsine")
+MicroAR$plot # plot 
+MicroAR$sum_tdata # plot 
 
-forest_plot_study(data=data_zika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika+ mom", type ="logit")
-forest_plot_study(data=data_nozika, outcome_name="microcephaly_bin_birth", plottitle = "Microcephaly at birth, zika- mom", type ="logit")
+# Microcephaly at birth (Relative risk )
 
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_postnatal", plottitle = "Microcephaly post-natal", type ="logit")
-forest_plot_study(data=data_all, outcome_name="microcephaly_bin_fet", plottitle = "Microcephaly at fetus state", type ="logit")
+MicroRR<- Rpool_studies(data = data_all,
+                        outcome_name ="microcephaly_bin_birth",
+                        exposure_name = "zikv_preg",
+                        estimand = "RR",
+                        plottitle= "Microcephaly at birth, all mom, logit",
+                        t_type= "log",
+                        mod_type ="binomial",
+                        correction = "Hybrid",
+                        dupper = 600)
+MicroRR$plot # plot 
+MicroRR$sum_tdata # plot 
 
-forest_plot_study(data=data_all, outcome_name="ch_czs", plottitle = "Child congenital zika", type ="logit")
-forest_plot_study(data=data_all, outcome_name="who_czs", plottitle = "Child congenital zika according to WHO definition", type ="logit")
 
-forest_plot_study(data=data_all, outcome_name="neuroabnormality", plottitle = "Neuro abnormality", type ="logit")
-forest_plot_study(data=data_all, outcome_name="nonneurologic", plottitle = "Non neurologic abnormalities", type ="logit")
 
-forest_plot_study(data=data_all, outcome_name="miscarriage", plottitle = "Miscarriage", type ="logit")
-forest_plot_study(data=data_all, outcome_name="loss", plottitle = "Loss", type ="logit")
+# other available outcome_name: 
 
-forest_plot_study(data=data_all,outcome_name="efdeath",plottitle = "Ef death", type ="logit")
-forest_plot_study(data=data_all,outcome_name="lfdeath",plottitle = "Lf death", type ="logit")
+# "microcephaly_bin_postnatal" (Microcephaly at birth)
+# "microcephaly_bin_fet" ("Microcephaly at fetus state")
+# "ch_czs" ("Child congenital zika")
+# "who_czs" ("Child congenital zika according to WHO definition")
+# "neuroabnormality" ("Neuro abnormality")
+# "nonneurologic" ("Non neurologic abnormalities")
+# "miscarriage" ( "Miscarriage")
+# "loss" ("Loss")
+#  efdeath" ("Early fetus death")
+# "lfdeath" ("Late fetus death")
+
+
