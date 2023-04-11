@@ -105,19 +105,6 @@ MicroRR$plot # plot
 MicroRR$sum_tdata # plot 
 
 
-
-data = data_all
-outcome_name ="who_czs"
-exposure_name = "zikv_preg"
-estimand = "RR"
-plottitle= "Microcephaly at birth, all mom"
-t_type= "log"
-mod_type ="binomial"
-correction = "Hybrid"
-dupper = 600
-
-
-
 # other available outcome_name: 
 
 # "microcephaly_bin_postnatal" (Microcephaly at birth)
