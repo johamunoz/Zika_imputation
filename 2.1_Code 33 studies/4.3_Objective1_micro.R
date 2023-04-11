@@ -78,8 +78,6 @@ data_nozika <- data_all%>%filter(zikv_preg ==0)
 
 
 
-
-
 # Microcephaly at birth (Absolute risk )
 MicroAR <- Rpool_studies(data =data_all, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
                          outcome_name="microcephaly_bin_birth", # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
@@ -98,13 +96,25 @@ MicroRR<- Rpool_studies(data = data_all,
                         outcome_name ="microcephaly_bin_birth",
                         exposure_name = "zikv_preg",
                         estimand = "RR",
-                        plottitle= "Microcephaly at birth, all mom, logit",
+                        plottitle= "Microcephaly at birth, all mom",
                         t_type= "log",
                         mod_type ="binomial",
                         correction = "Hybrid",
                         dupper = 600)
 MicroRR$plot # plot 
 MicroRR$sum_tdata # plot 
+
+
+
+data = data_all
+outcome_name ="microcephaly_bin_birth"
+exposure_name = "zikv_preg"
+estimand = "RR"
+plottitle= "Microcephaly at birth, all mom"
+t_type= "log"
+mod_type ="binomial"
+correction = "Hybrid"
+dupper = 600
 
 
 

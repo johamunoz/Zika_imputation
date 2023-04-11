@@ -67,7 +67,7 @@ back_trans <- function(x, t_type){
 #' @param data data.frame with variables outcome and exposure included
 #' @param estimand type of estimand: Absolute risk "AR", Relative risk "RR" 
 #' @param t_type type of transformation ("logit", "arcsine", "log")
-#' @param correction only for relative risk: when number of events are close to zero or total number of observations ("Haldan","Hybrid","none") as described in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8254431/
+#' @param correction only for relative risk: when number of events are close to zero or total number of observations ("Haldane","Hybrid","Sweeting","none") as described in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8254431/ and in doi:/10.1002/sim.1761
 #'
 #' @return data.frame with summary for the given dataset: estimate(observed, lower, upper) and transformed estimate (pointwise estimate: tr_obs, standard error: tr_se)
 
@@ -76,7 +76,7 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
     sum_data <- data%>%summarise(n_obs = n(),
                                  n_ev = sum(outcome,na.rm=TRUE),
                                  n_na = sum(is.na(outcome),na.rm=TRUE),
-                                 Included =first(Included))
+                                 Included = first(Included))
     if (sum_data$n_obs != sum_data$n_na){  # not all are NA observations
 
       if (estimand == "RR"){  # Relative risk "RR"
@@ -103,21 +103,33 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
             sum_data <- sum_datar
             }
       
-        if( any(is.na(c(e1,e0,n1,n0)))| !(nrow(sum_datar)>0)){
+        if( any(is.na(c(e1,e0,n1,n0)))| !(nrow(sum_datar)>0)| e1 == 0 & e0 == 0){ # Studies with no events in either arm# cochrane section-10-4-4-2
           
           observed <- lower <- upper <- tr_obs <- tr_se <- NA
         }else{
-          c <- 0.5
-          if (correction == "Haldan"){
-            observed <- (e1+c)*(n0+2*c)/((n1+2*c)*(e0+c))
-            tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+2*c))
-          }else if (correction == "Hybrid"){
-            observed <- (e1+c)*(n0+c)/((n1+2*c)*(e0+c))
-            tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+c))
-          }else{ # no correction correction ="none"
+          
+          if(e1 == 0 | e0 == 0){ #only apply correction when it is required
+              c <- 0.5
+              if (correction == "Haldane"){
+                observed <- (e1+c)*(n0+2*c)/((n1+2*c)*(e0+c))
+                tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+2*c))
+              }else if (correction == "Hybrid"){
+                observed <- (e1+c)*(n0+c)/((n1+2*c)*(e0+c))
+                tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+c))
+              }else if (correction == "Sweeting"){
+                R<- n0/n1
+                c0<-1/(R+1)
+                c1<-R/(R+1)
+                observed <- (e1+c1)*(n0+2*c0)/((n1+2*c1)*(e0+c0))
+                tr_se <- sqrt(1/(e1+c1)-1/(n1+2*c1)+1/(e0+c0)-1/(n0+2*c0))
+              }else{ # no correction , correction ="none"
+                observed <- (e1)*(n0)/((n1)*(e0))
+                tr_se <- sqrt(1/(e1)-1/(n1)+1/(e0)-1/(n0))
+              }
+          }else{ # no correction is applied
             observed <- (e1)*(n0)/((n1)*(e0))
             tr_se <- sqrt(1/(e1)-1/(n1)+1/(e0)-1/(n0))
-          }
+            }
         }
         sum_data%<>%
           mutate( observed = observed, 
@@ -229,6 +241,14 @@ RR_1step <- function(data, mod_type){
      if(!is.na(fit)){
      tr_obs <- summary(fit)$coefficients[2,1]
      tr_se <- sqrt(sandwich(fit, bread = bread(fit, full = TRUE),mean = meat(fit, level = 2))[2,2]) }} # robust variance
+
+    if(mod_type == "firthpoisson"| is.na(fit)){
+      fit <- tryCatch( expr={lme4::glm(outcome ~ exposure ,data=data,family = poisson, method= brglmFit)},
+                       error = function(e){NA})
+      tr_obs <- summary(fit)$coefficients[2,1]
+      tr_se <- summary(fit)$coefficients[2,2] } 
+    
+
   
   if(is.na(fit)){
       tr_obs <- NA
@@ -323,13 +343,13 @@ R_2step <- function(data, t_type){
 #' @param estimand type of estimand: Absolute risk "AR", Relative risk "RR"
 #' @param plottitle title of the plot
 #' @param t_type type of transformation ("logit", "arcsine", "log")
-#' @param correction only for relative risk: when number of events are close to zero or total number of observations ("Haldan","Hybrid","none") as described in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8254431/
+#' @param correction only for relative risk: when number of events are close to zero or total number of observations ("Haldane","Hybrid","Sweeting","none") as described in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8254431/ and in doi:/10.1002/sim.1761
 #' @param mod_type only for relative risk, type of model to estimate the model: "binomial","poisson", as given here https://academic.oup.com/aje/article/189/6/508/5812650 when binomial model does not converge we use poisson estimates. 
 #' @param dupper maximum upper confidence interval value to display in the plot, default NA.
 #'
 #' @return list with plot "plot" and summary table "sum_tdata"
 
-Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plottitle, t_type, correction = "Haldan", mod_type ="binomial", dupper = NA){
+Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plottitle, t_type, correction = "Haldane", mod_type ="binomial", dupper = NA){
   
   # Select only variables we need.
   if( is.na(exposure_name)){ # AR
