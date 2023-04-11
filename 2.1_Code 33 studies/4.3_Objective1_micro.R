@@ -99,7 +99,7 @@ MicroRR<- Rpool_studies(data = data_all,
                         plottitle= "Microcephaly at birth, all mom",
                         t_type= "log",
                         mod_type ="binomial",
-                        correction = "Hybrid",
+                        correction = "Sweeting",
                         dupper = 600)
 MicroRR$plot # plot 
 MicroRR$sum_tdata # plot 
