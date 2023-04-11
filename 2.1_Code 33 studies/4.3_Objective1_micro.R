@@ -107,7 +107,7 @@ MicroRR$sum_tdata # plot
 
 
 data = data_all
-outcome_name ="microcephaly_bin_birth"
+outcome_name ="who_czs"
 exposure_name = "zikv_preg"
 estimand = "RR"
 plottitle= "Microcephaly at birth, all mom"

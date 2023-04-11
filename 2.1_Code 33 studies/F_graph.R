@@ -242,11 +242,12 @@ RR_1step <- function(data, mod_type){
      tr_obs <- summary(fit)$coefficients[2,1]
      tr_se <- sqrt(sandwich(fit, bread = bread(fit, full = TRUE),mean = meat(fit, level = 2))[2,2]) }} # robust variance
 
-    if(mod_type == "firthpoisson"| is.na(fit)){
+    if(mod_type == "firthpoisson"){
       fit <- tryCatch( expr={lme4::glm(outcome ~ exposure ,data=data,family = poisson, method= brglmFit)},
                        error = function(e){NA})
+      if(!is.na(fit)){
       tr_obs <- summary(fit)$coefficients[2,1]
-      tr_se <- summary(fit)$coefficients[2,2] } 
+      tr_se <- summary(fit)$coefficients[2,2] }} 
     
 
   
@@ -321,15 +322,30 @@ R_2step <- function(data, t_type){
   
   fit.rma<-tryCatch(
     expr = { metafor::rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha")},
-    error = function(e){ 
-      metafor::rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha",control=list(stepadj=0.5))})
+    error = function(e){NA})
+  
+  if(all(is.na(fit.rma))){
+  fit.rma<-tryCatch(
+    expr = {metafor::rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha",control=list(stepadj=0.5))},
+    error = function(e){NA})
+  }
+  
+  if(all(is.na(fit.rma))){
+    observed<-lower<-upper<-tr_obs<-tr_se<-NA
+  }else{
+    observed = back_trans(as.numeric(fit.rma$beta),t_type)
+    lower = back_trans(as.numeric(fit.rma$ci.lb),t_type)
+    upper = back_trans(as.numeric(fit.rma$ci.ub),t_type)
+    tr_obs = as.numeric(fit.rma$beta)
+    tr_se = as.numeric(fit.rma$se)
+  }
   
 
-  data_2step%>%mutate( observed = back_trans(as.numeric(fit.rma$beta),t_type),
-                        lower = back_trans(as.numeric(fit.rma$ci.lb),t_type),
-                        upper = back_trans(as.numeric(fit.rma$ci.ub),t_type),
-                        tr_obs = as.numeric(fit.rma$beta),
-                        tr_se = as.numeric(fit.rma$se))
+  data_2step%>%mutate( observed = observed,
+                        lower = lower,
+                        upper = upper,
+                        tr_obs = tr_obs,
+                        tr_se = tr_se)
 }
   
   
