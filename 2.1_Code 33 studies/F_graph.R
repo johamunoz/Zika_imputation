@@ -35,7 +35,7 @@ trans <- function(e, n, t_type){
     y <- asin(sqrt(p))
     v <- 1/(4 * n)
   }
-  se <- sqrt(v) # not sure if it would be instead sqrt(v/n)
+  se <- sqrt(v) # sure https://files.eric.ed.gov/fulltext/EJ1111448.pdf
   return(data.frame(y = y, se = se))
 } 
 
@@ -80,7 +80,7 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
     if (sum_data$n_obs != sum_data$n_na){  # not all are NA observations
 
       if (estimand == "RR"){  # Relative risk "RR"
-      table(data$exposure,data$outcome,useNA = "always")  
+   
       sum_datar <- data%>%
                   group_by(exposure)%>%
                   summarize(e = sum(outcome,na.rm=T),
@@ -101,36 +101,39 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
             e0 <- ifelse(is.null(sum_datar$e_0),NA,sum_datar$e_0)
             n0 <- ifelse(is.null(sum_datar$n_0),NA,sum_datar$n_0)
             sum_data <- sum_datar
-            }
-      
-        if( any(is.na(c(e1,e0,n1,n0)))| !(nrow(sum_datar)>0)| e1 == 0 & e0 == 0){ # Studies with no events in either arm# cochrane section-10-4-4-2
-          
-          observed <- lower <- upper <- tr_obs <- tr_se <- NA
-        }else{
-          
-          if(e1 == 0 | e0 == 0){ #only apply correction when it is required
-              c <- 0.5
-              if (correction == "Haldane"){
-                observed <- (e1+c)*(n0+2*c)/((n1+2*c)*(e0+c))
-                tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+2*c))
-              }else if (correction == "Hybrid"){
-                observed <- (e1+c)*(n0+c)/((n1+2*c)*(e0+c))
-                tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+c))
-              }else if (correction == "Sweeting"){
-                R<- n0/n1
-                c0<-1/(R+1)
-                c1<-R/(R+1)
-                observed <- (e1+c1)*(n0+2*c0)/((n1+2*c1)*(e0+c0))
-                tr_se <- sqrt(1/(e1+c1)-1/(n1+2*c1)+1/(e0+c0)-1/(n0+2*c0))
-              }else{ # no correction , correction ="none"
+     
+            if( any(is.na(c(e1,e0,n1,n0)))| e1 == 0 & e0 == 0){ # Studies with no events in either arm# cochrane section-10-4-4-2
+               observed <- lower <- upper <- tr_obs <- tr_se <- NA
+             
+              }else{
+              
+              if(e1 == 0 | e0 == 0){ #only apply correction when it is required
+                  c <- 0.5
+                  if (correction == "Haldane"){
+                    observed <- (e1+c)*(n0+2*c)/((n1+2*c)*(e0+c))
+                    tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+2*c))
+                  }else if (correction == "Hybrid"){
+                    observed <- (e1+c)*(n0+c)/((n1+2*c)*(e0+c))
+                    tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+c))
+                  }else if (correction == "Sweeting"){
+                    R<- n0/n1
+                    c0<-1/(R+1)
+                    c1<-R/(R+1)
+                    observed <- (e1+c1)*(n0+2*c0)/((n1+2*c1)*(e0+c0))
+                    tr_se <- sqrt(1/(e1+c1)-1/(n1+2*c1)+1/(e0+c0)-1/(n0+2*c0))
+                  }else{ # no correction , correction ="none"
+                    observed <- (e1)*(n0)/((n1)*(e0))
+                    tr_se <- sqrt(1/(e1)-1/(n1)+1/(e0)-1/(n0))
+                  }
+              }else{ # no correction is applied
                 observed <- (e1)*(n0)/((n1)*(e0))
                 tr_se <- sqrt(1/(e1)-1/(n1)+1/(e0)-1/(n0))
-              }
-          }else{ # no correction is applied
-            observed <- (e1)*(n0)/((n1)*(e0))
-            tr_se <- sqrt(1/(e1)-1/(n1)+1/(e0)-1/(n0))
+                }
+             }
+            }else{ #data.table does not exist
+              observed <- lower <- upper <- tr_obs <- tr_se <- NA
             }
-        }
+      
         sum_data%<>%
           mutate( observed = observed, 
                   tr_obs = ifelse(observed==0,NA,log(observed)),
@@ -373,6 +376,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
    }else{ #RR
     data%<>%dplyr::select(outcome=!!outcome_name, exposure=!!exposure_name, studyname, Included,'.imp')}
   
+  data<-data_sum[[3]][[367]]
   
   #Summarize the risk in every study separate and in every imputed dataset
     data_sum <- data%>%nest(data= - c(studyname,'.imp'))%>%
