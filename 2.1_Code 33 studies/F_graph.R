@@ -35,7 +35,7 @@ trans <- function(e, n, t_type){
     y <- asin(sqrt(p))
     v <- 1/(4 * n)
   }
-  se <- sqrt(v/n)
+  se <- sqrt(v) # not sure if it would be instead sqrt(v/n)
   return(data.frame(y = y, se = se))
 } 
 
