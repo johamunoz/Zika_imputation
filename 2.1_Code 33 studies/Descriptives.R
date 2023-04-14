@@ -37,6 +37,8 @@ data2<-data2[data2$studycode!="001-BRA" & data2$studycode!="019-BRA" & data2$stu
 rm(data.noimp)
 data2$maritalstat[data2$maritalstat==4]<-NA
 data2$ses[data2$ses==3]<-NA
+data2$zikv_preg_nomiss<-data2$zikv_preg
+data2[is.na(data2$zikv_preg_nomiss),]$zikv_preg_nomiss<-"Missing"
 
 #Create outcome variables
 data2$bdeath<-1-data2$birth
@@ -135,7 +137,7 @@ data2$arb_preg_nz<-as.factor(data2$arb_preg_nz)
 data2$drugs_prescr<-as.factor(data2$drugs_prescr)
 
 #Exclude studies that are only part of sensitivity analyses
-#data2<-data2[data2$studycode!="002-BRA" & data2$studycode!="008-USA" & data2$studycode!="011-BRA" & data2$studycode!="013-BRA" & data2$studycode!="018-COL",]
+data2<-data2[data2$studycode!="002-BRA" & data2$studycode!="008-USA" & data2$studycode!="011-BRA" & data2$studycode!="013-BRA" & data2$studycode!="018-COL",]
 data2$studycode<-droplevels(data2$studycode)
 
 #Exposures
@@ -267,7 +269,11 @@ table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin 
          gen_anomalies + end_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
          comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
          vomiting + abd_pain + bleed + fatigue + sorethroat | studycode,data=data2,excel=1)
-
+#By ZIKA status study definition
+table1(~ age + educ + maritalstat + ethnicity + bmi + ses + tobacco + drugs_bin + alcohol + drug_tera + vaccination + 
+         gen_anomalies + end_ga + zikv_ga + zikv_pcr_vl_1 + denv_preg_ever + chikv_preg_ever + comorbid_bin + 
+         comorbid_preg + storch_patho + arb_symp + fever + rash + arthralgia + headache + muscle_pain + arthritis + 
+         vomiting + abd_pain + bleed + fatigue + sorethroat | zikv_preg_nomiss,data=data2,excel=1)
 
 
 #Original dataset for comparison
