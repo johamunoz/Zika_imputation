@@ -1,16 +1,14 @@
-###Aim: Graph for comparing estimations between raw and imputed datasets.
+# Aim: Graph for comparing estimations between raw and imputed datasets.
 
 rm(list=ls()) # clean environment
 
-# Load packages ---
+# Load packages ----
 # Data manipulation package
 library(dplyr)
 library(magrittr)
 library(here)  # define folder paths
 library(mice)
 
-# Graphic packages
-library(ggplot2)
 
 # Load the additional functions ----
   source(here('2.1_Code 33 studies','F_graph.R'))
@@ -27,7 +25,7 @@ library(ggplot2)
                   ~as.numeric(as.character(.x))))
 
 # Get original data ----
-  load(file= here('3_Output_data','originaldata.RData')) # data 
+  load(file = here('3_Output_data','originaldata.RData')) # data 
   data_ori$source <- "Ori"
   data_ori$.imp <- -1
   
@@ -61,7 +59,7 @@ library(ggplot2)
               unnest(col=c(meta))
  
     
-# Merge both datasets ----
+# Merge source datasets ----
   data_all <- dplyr::bind_rows(data_ori,data_raw,data_imp)
 
 # Create additional variables 
@@ -84,8 +82,7 @@ data_zika <- data_all%>%filter(zikv_preg == 1)
 data_nozika <- data_all%>%filter(zikv_preg == 0)
 
 
-
-
+# Get the estimates (plots and tables) ----
 print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth")
 print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",dupperRR=700)
 print_obj1(outcome_name="loss",gentitle = "Loss")
