@@ -76,7 +76,8 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
     sum_data <- data%>%summarise(n_obs = n(),
                                  n_ev = sum(outcome,na.rm=TRUE),
                                  n_na = sum(is.na(outcome),na.rm=TRUE),
-                                 Included = first(Included))
+                                 Included = first(Included),
+                                 N=first(N))
     if (sum_data$n_obs != sum_data$n_na){  # not all are NA observations
 
       if (estimand == "RR"){  # Relative risk "RR"
@@ -86,7 +87,8 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
                   summarize(e = sum(outcome,na.rm=T),
                             ena=  sum(is.na(outcome)),
                             n = n(),
-                            Included = first(Included))%>%
+                            Included = first(Included),
+                            N= first(N))%>%
                   mutate(n_obs=sum(n),
                          n_ev =sum(e,na.rm=T),
                          n_na = sum(n[is.na(exposure)|is.na(e)]))%>%
@@ -116,12 +118,15 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
                     observed <- (e1+c)*(n0+c)/((n1+2*c)*(e0+c))
                     tr_se <- sqrt(1/(e1+c)-1/(n1+2*c)+1/(e0+c)-1/(n0+c))
                   }else if (correction == "Sweeting"){
-                    R<- n0/n1
-                    c0<-1/(R+1)
-                    c1<-R/(R+1)
+                    R <- n0/n1
+                    c0 <- 1/(R+1)
+                    c1 <- R/(R+1)
                     observed <- (e1+c1)*(n0+2*c0)/((n1+2*c1)*(e0+c0))
                     tr_se <- sqrt(1/(e1+c1)-1/(n1+2*c1)+1/(e0+c0)-1/(n0+2*c0))
-                  }else{ # no correction , correction ="none"
+                  }
+                
+                  
+                  else{ # no correction , correction ="none"
                     observed <- (e1)*(n0)/((n1)*(e0))
                     tr_se <- sqrt(1/(e1)-1/(n1)+1/(e0)-1/(n0))
                   }
@@ -134,29 +139,30 @@ f_sumarize_data <- function(data,estimand,t_type,correction){
               observed <- lower <- upper <- tr_obs <- tr_se <- NA
             }
       
+      observed = observed    
+      tr_obs = ifelse(observed==0,NA,log(observed))
+      tr_se = ifelse(is.infinite(tr_se),NA,tr_se)
+      lower = exp(tr_obs-qnorm(1-alpha/2)*tr_se)
+      upper = exp(tr_obs+qnorm(1-alpha/2)*tr_se)
+      c(observed,lower,upper)
         sum_data%<>%
           mutate( observed = observed, 
                   tr_obs = ifelse(observed==0,NA,log(observed)),
-                  lower = exp(tr_obs-qnorm(1-alpha/2)*tr_se),
-                  upper = exp(tr_obs+qnorm(1-alpha/2)*tr_se),
-                  tr_se = ifelse(is.infinite(tr_se),NA,tr_se))
+                  tr_se = ifelse(is.infinite(tr_se),NA,tr_se))%>%
+          mutate( lower = exp(tr_obs-qnorm(1-alpha/2)*tr_se),
+                  upper = exp(tr_obs+qnorm(1-alpha/2)*tr_se))
      
       }else{ # Absolute risk "AR"
    
           ptest <- prop.test(sum_data$n_ev, sum_data$n_obs, conf.level = alpha, correct = TRUE) # exact CI with Yates correction
           trans_observed <- trans(e=sum_data$n_ev, n=sum_data$n_obs, t_type = t_type)
-          observed = ptest$estimate
-          lower =   ptest$conf.int[[1]]
-          upper =   ptest$conf.int[[2]]
-          tr_obs = trans_observed$y
-          tr_se = trans_observed$se
           
           sum_data%<>%
             mutate( observed = ptest$estimate, 
                     tr_obs = trans_observed$y,
+                    tr_se = trans_observed$se,
                     lower = ptest$conf.int[[1]],
-                    upper = ptest$conf.int[[2]],
-                    tr_se = trans_observed$se)
+                    upper = ptest$conf.int[[2]])
           
        }
     }
@@ -209,7 +215,14 @@ f_data_pool <- function(data,t_type) {
              mutate(pool_sum=map(data,function(x){
                imp_n = nrow(x)
                pool_obs=f_pool(tr_est=x$tr_obs,tr_se=x$tr_se,t_type=t_type)
-               data.frame(n_obs=first(x$n_obs),Included=mean(x$Included,na.rm=T),pool_obs)}))%>%
+               data.frame(n_obs=mean(x$n_obs,na.rm=T),
+                          n_ev=mean(x$n_ev,na.rm=T),
+                          Included=mean(x$Included,na.rm=T),
+                          nobs_m=mean(x$nobs_m,na.rm=T),
+                          nev_m=mean(x$nev_m,na.rm=T),
+                          Included_m=mean(x$Included_m,na.rm=T),
+                          N= first(x$N),
+                          pool_obs)}))%>%
     select(-c(data))%>%
             unnest(col= c(pool_sum))
   return(data_pool)}
@@ -229,31 +242,37 @@ RR_1step <- function(data, mod_type){
                    n_na = sum(Included[is.na(outcome)|is.na(exposure)]),
                    Included = length(unique(studyname)))
   
+  data_mod <- data%>% # Included in the model 
+    filter(Included==1)%>%
+    filter(!is.na(outcome)&!is.na(exposure))
+  
+  summary%<>%
+    mutate(nobs_m = nrow(data_mod),
+           nev_m = sum(data_mod$outcome,na.rm=T),
+           Included_m =  length(unique(data_mod$studyname)))
+
   fit <- NA
   if(mod_type == "binomial"){
-    data$exposure<-misty::center(data$exposure,type="CWC",cluster=data$studyname)
+    
+    data$exposure<-tryCatch(exp={misty::center(data$exposure,type="CWC",cluster=data$studyname)},
+                            error=function(e){data$exposure})
+    
     fit <- tryCatch( expr={lme4::glmer(outcome ~ exposure + (1|studyname),data=data,family = binomial("log"))},
                      error = function(e){NA})
+    
     if(!is.na(fit)){
-    tr_obs <- summary(fit)$coefficients[2,1]
-    tr_se <- summary(fit)$coefficients[2,2]} }
-
-   if(mod_type == "poisson"| is.na(fit)){
+    tr_obs <- tryCatch(exp={summary(fit)$coefficients[2,1]},error = function(e){NA})
+    tr_se <- tryCatch(exp={summary(fit)$coefficients[2,2]},error = function(e){NA})}
+  }
+   
+  if(mod_type == "poisson"| is.na(fit)){
      fit <- tryCatch( expr={lme4::glmer(outcome ~ exposure + (1|studyname),data=data,family = poisson("log"))},
                       error = function(e){NA})
      if(!is.na(fit)){
-     tr_obs <- summary(fit)$coefficients[2,1]
-     tr_se <- sqrt(sandwich(fit, bread = bread(fit, full = TRUE),mean = meat(fit, level = 2))[2,2]) }} # robust variance
-
-    if(mod_type == "firthpoisson"){
-      fit <- tryCatch( expr={lme4::glm(outcome ~ exposure ,data=data,family = poisson, method= brglmFit)},
-                       error = function(e){NA})
-      if(!is.na(fit)){
-      tr_obs <- summary(fit)$coefficients[2,1]
-      tr_se <- summary(fit)$coefficients[2,2] }} 
+       tr_obs <- tryCatch(exp={summary(fit)$coefficients[2,1]},error = function(e){NA})
+       tr_se <- tryCatch(exp={sqrt(sandwich(fit, bread = bread(fit, full = TRUE),mean = meat(fit, level = 2))[2,2])},# robust variance
+                         error = function(e){NA}) }}
     
-
-  
   if(is.na(fit)){
       tr_obs <- NA
       tr_se <- NA
@@ -282,10 +301,24 @@ AR_1step <- function(data,t_type){
                                n_na = sum(n_na,na.rm=TRUE),
                                Included = sum(Included,na.rm=TRUE))
   
+  data_mod <- data%>% # Included in the model 
+    filter(Included==1)%>%
+    filter(!is.na(n_obs)&!is.na(n_ev))
+  
+  summary%<>%
+    mutate(nobs_m = sum(data_mod$n_obs,na.rm=T),
+           nev_m = sum(data_mod$n_ev,na.rm=T),
+           Included_m = sum(data_mod$Included,na.rm=T))
 
+  
+  
   fit <- tryCatch( expr={lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "log"))},
-                   error = function(e){lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "log"),control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))})
-
+                   error = function(e){
+                     tryCatch( expr={lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "log"),control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))},
+                               error = function(e){NA})
+                               })
+                  
+  
   if(!is.na(fit)){
     tr_obs <- as.numeric(summary(fit)$coefficients[1])
     tr_se <- as.numeric(summary(fit)$coefficients[2])
@@ -300,7 +333,6 @@ AR_1step <- function(data,t_type){
             upper = back_trans(tr_obs + qnorm(1-alpha/2)*tr_se,t_type),
             tr_obs = tr_obs,
             tr_se = tr_se)
- 
 }
     
 
@@ -315,23 +347,46 @@ AR_1step <- function(data,t_type){
 R_2step <- function(data, t_type){
   alpha<-0.05
   data_pool <- data%>%
-               filter(Included==1)#%>%
-               #filter(!is.na(tr_obs)&!is.na(tr_se))
+               filter(Included==1)
   
-  data_2step <- data.frame( n_obs = sum(data_pool$n_obs,na.rm = T),
-                            n_ev = sum(data_pool$n_ev,na.rm = T),
-                            n_na = sum(data_pool$n_na,na.rm = T),
-                            Included = sum(data_pool$Included,na.rm=T))
+  data_mod <- data%>% # Included in the model 
+    filter(Included==1)%>%
+    filter(!is.na(tr_obs)&!is.na(tr_se))
   
-  fit.rma<-tryCatch(
-    expr = { metafor::rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha")},
-    error = function(e){NA})
+   data_2step <- data.frame( n_obs = sum(data_pool$n_obs,na.rm = T),
+                             n_ev = sum(data_pool$n_ev,na.rm = T),
+                             n_na = sum(data_pool$n_na,na.rm = T),
+                             Included = sum(data_pool$Included,na.rm=T),
+                             nobs_m = sum(data_mod$n_obs,na.rm=T),
+                             nev_m = sum(data_mod$n_ev,na.rm=T),
+                             Included_m = sum(data_mod$Included,na.rm=T))
   
-  if(all(is.na(fit.rma))){
-  fit.rma<-tryCatch(
-    expr = {metafor::rma(yi=data_pool$tr_obs, sei=data_pool$tr_se, method="REML",test= "knha",control=list(stepadj=0.5))},
-    error = function(e){NA})
-  }
+  #if(nrow(data_mod)>10){ # knha only applied in datasets with >10 studies DOI: 10.1002/jrsm.1316
+    fit.rma<-tryCatch(
+      expr = { metafor::rma(yi=data_mod$tr_obs, sei=data_mod$tr_se, method="REML",test= "knha")},
+      error = function(e){NA})
+    
+  
+    
+    if(all(is.na(fit.rma))){
+      fit.rma<-tryCatch(
+        expr = {metafor::rma(yi=data_mod$tr_obs, sei=data_mod$tr_se, method="REML",test= "knha",control=list(stepadj=0.5))},
+        error = function(e){NA})
+    }
+    
+  # }else{
+  #   fit.rma<-tryCatch(
+  #     expr = { metafor::rma(yi=data_mod$tr_obs, sei=data_mod$tr_se, method="REML")},
+  #     error = function(e){NA})
+  #   
+  #   
+  #   if(all(is.na(fit.rma))){
+  #     fit.rma<-tryCatch(
+  #       expr = {metafor::rma(yi=data_mod$tr_obs, sei=data_mod$tr_se, method="REML",control=list(stepadj=0.5))},
+  #       error = function(e){NA})
+  #   }
+  # }
+
   
   if(all(is.na(fit.rma))){
     observed<-lower<-upper<-tr_obs<-tr_se<-NA
@@ -341,6 +396,7 @@ R_2step <- function(data, t_type){
     upper = back_trans(as.numeric(fit.rma$ci.ub),t_type)
     tr_obs = as.numeric(fit.rma$beta)
     tr_se = as.numeric(fit.rma$se)
+  
   }
   
 
@@ -366,17 +422,19 @@ R_2step <- function(data, t_type){
 #' @param mod_type only for relative risk, type of model to estimate the model: "binomial","poisson", as given here https://academic.oup.com/aje/article/189/6/508/5812650 when binomial model does not converge we use poisson estimates. 
 #' @param dupper maximum upper confidence interval value to display in the plot, default NA.
 #'
-#' @return list with plot "plot" and summary table "sum_tdata"
+#' @return list with "plot_all", plot that shows the risk estimates at study and data information level.
+#'                   "plot_imp", plot that shows the risk estimates at study level only for the imputed dataset.
+#'                   "sum_tdata"  summary table at study and information level
+#'                   "data_stuimp" summary table at study and imputation level (.imp=-1 "original data", .imp=0 "data after deterministic imputation", .imp>0 "imputed datasets")
 
 Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plottitle, t_type, correction = "Haldane", mod_type ="binomial", dupper = NA){
   
   # Select only variables we need.
   if( is.na(exposure_name)){ # AR
-    data%<>%dplyr::select(outcome=!!outcome_name, studyname, Included,'.imp')
+    data%<>%dplyr::select(outcome=!!outcome_name, studyname, Included, N,'.imp')
    }else{ #RR
-    data%<>%dplyr::select(outcome=!!outcome_name, exposure=!!exposure_name, studyname, Included,'.imp')}
+    data%<>%dplyr::select(outcome=!!outcome_name, exposure=!!exposure_name, studyname, Included,N,'.imp')}
   
-  data<-data_sum[[3]][[367]]
   
   #Summarize the risk in every study separate and in every imputed dataset
     data_sum <- data%>%nest(data= - c(studyname,'.imp'))%>%
@@ -392,7 +450,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                   mutate(total2 = map(data,~R_2step(data =.x, t_type = t_type)))%>%
                   select(-c(data))%>%
                   unnest(col= c(total2))%>%
-                  mutate(studyname="TOTAL_2step")
+                  mutate(studyname="TOTAL-2step")
     
     
 
@@ -405,7 +463,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                     mutate(pool = map( data, ~RR_1step(data=.,mod_type)))%>%
                     select(-c(data))%>%
                     unnest(col= c(pool))%>%
-                    mutate(studyname="TOTAL_1step")
+                    mutate(studyname="TOTAL-1step")
    
     }else{ # estimand ="AR"
       
@@ -415,21 +473,24 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                    mutate(pool = map( data, ~AR_1step(data=.,t_type)))%>%
                    select(-c(data))%>%
                    unnest(col= c(pool))%>%
-                   mutate(studyname="TOTAL_1step")
+                   mutate(studyname="TOTAL-1step")
     
     }
         
     
     # Rbind the summary dataset with the values of global estimates of the 1_step and 2_step methods --    
     tdata_sum<- dplyr::bind_rows(data_sum, data_1step,data_2step)%>%
-                    mutate(pmiss = n_na/n_obs*100) 
+                    mutate(pmiss = n_na/n_obs*100,
+                           outcome=outcome_name,
+                           exposure=exposure_name,
+                           estimand=estimand) 
         
         
     # For original dataset
     tdata_ori <- tdata_sum%>%filter(.imp == -1)%>%
       mutate( source = "Original")
       
-    
+
     # For dataset after applying deterministic imputation
     tdata_det <- tdata_sum%>%filter(.imp == 0)%>%
       mutate( source = "Deterministic")
@@ -439,7 +500,8 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     
     tdata_imp <-f_data_pool(data = tdata_sum, t_type = t_type)
     tdata_imp$source <- "Imputation"
-    tdata_imp$pmiss <- 0.00     
+    tdata_imp$pmiss <- 0.00   
+    tdata_imp$estimand<- estimand
         
         
 
@@ -449,7 +511,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
   sum_tdata <- dplyr::bind_rows( tdata_ori, tdata_det, tdata_imp)%>%
                  mutate(estimand=estimand)%>%
                  mutate_all(~ifelse(is.nan(.), NA, .))%>%
-                 mutate(mean = ifelse(estimand=="RR",observed,observed*100),
+                 mutate( mean = ifelse(estimand=="RR",observed,observed*100),
                          clb = ifelse(estimand=="RR",lower,lower*100),
                          cub = ifelse(estimand=="RR",upper,upper*100),
                          pmiss = sprintf("%.2f",pmiss))%>%
@@ -458,8 +520,8 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
   plot_data<- sum_tdata %>%
                mutate(Sincluded = ifelse(Included==0,"*",""),
                       cint = ifelse(is.na(mean),"   ",paste0(sprintf("%.2f(%.2f,%.2f),",mean, clb, cub))))%>%
-                  mutate(allcint = paste0(studyname,Sincluded," \n N=",n_obs),
-                         cint = paste0(cint," %mis=",pmiss),
+                  mutate(allcint = paste0(studyname,Sincluded,ifelse(is.na(N),"",paste0(" \n N=",N))),
+                         pcint = paste0(cint," %mis=",pmiss),
                          scint = paste0(studyname,source,cint," %mis=",pmiss))
            
   
@@ -473,36 +535,139 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
   
 
   
-  dataplot <- plot_data%>%#filter(!(is.na(included)&source=="Imputation"))%>%
+  dataplot <- plot_data%>%
               arrange(studyname,source)
   dataplot$scint <- factor(dataplot$scint,levels=dataplot$scint)
   xlabv <- ifelse(estimand == "RR","Relative risk","Absolute risk")
   int<-ifelse(estimand == "RR",1,0)
   
   if(!is.na(dupper)){ # if a upper limit to display is given
-    dataplot%<>%mutate(cub = ifelse(cub > dupper, dupper, cub))
+    dataplot%<>%mutate(cub = ifelse(cub > dupper, dupper, cub),
+                       mean =ifelse(mean > dupper, dupper, mean))
   }
   
-  summary(dataplot)
   
-  plot <- ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
+  
+  # Plot all source of information 
+  
+  plot_all <- ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
     geom_linerange(size=2,position=position_dodge(width = 0.5)) +
     geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
     scale_fill_manual(values=barcols)+
     scale_color_manual(values=dotcols)+
-    xlab("Studyname")+ ylab(xlabv)+
+    xlab("Study name")+ ylab(xlabv)+
     ggtitle(plottitle)+
     coord_flip() +
-    geom_hline(yintercept=int,linetype="dashed", color = "black", size=0.1)+
-    scale_x_discrete(breaks=levels(factor(dataplot$scint)),labels = dataplot$cint)+ 
+    geom_hline(yintercept=int,linetype="dashed", color = "black", size=0.2)+
+    scale_x_discrete(breaks=levels(factor(dataplot$scint)),labels = dataplot$pcint)+ 
+    facet_grid(allcint ~ ., switch = "y",scales="free")+
+    theme(strip.placement = "outside")+
+    guides(colour = guide_legend(reverse = T),fill = guide_legend(reverse = T))+
+    theme(strip.text.y.left = element_text(angle = 0,size=5),axis.text.y = element_text(size = 5))+
+    labs(caption = "*Excluded study in the imputation and in the total risk estimation")+
+    labs(color="Data source",fill="Data source")+
+    theme(legend.position="bottom",plot.title = element_text(hjust = 0.5))
+  
+  
+  
+# Plot only imputed datasets
+    dataplot%<>%
+               filter(source=="Imputation")%>%
+               filter(!is.na(mean))%>%
+               mutate(pcint=cint)
+    dotcols = c("#a6d8f0")
+    barcols = c("#008fd5")  
+  
+  
+  plot_imp <- ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
+    geom_linerange(size=2,position=position_dodge(width = 0.5)) +
+    geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
+    scale_fill_manual(values=barcols)+
+    scale_color_manual(values=dotcols)+
+    xlab("Study name")+ ylab(xlabv)+
+    ggtitle(plottitle)+
+    coord_flip() +
+    geom_hline(yintercept=int,linetype="dashed", color = "black", size=0.2)+
+    scale_x_discrete(breaks=levels(factor(dataplot$scint)),labels = dataplot$pcint)+ 
     facet_grid(allcint ~ ., switch = "y",scales="free")+
     theme(strip.placement = "outside")+
     guides(colour = guide_legend(reverse = T),fill = guide_legend(reverse = T))+
     theme(strip.text.y.left = element_text(angle = 0,size=6),axis.text.y = element_text(size = 6))+
-    labs(caption = "*Excluded study in the imputation and in the total risk estimation")+
     labs(color="Data source",fill="Data source")+
-    theme(legend.position="bottom")
+    theme(legend.position="none",plot.title = element_text(hjust = 0.5))
     
 
-  return(list(plot=plot,sum_tdata=sum_tdata))}
+  return(list(plot_all = plot_all,
+              plot_imp = plot_imp,
+              sum_tdata = sum_tdata,
+              data_stuimp = tdata_sum))}
+
+
+
+
+#' Print all the output of objective 1
+#'
+#' @param outcome_name  Name of the outcome variable
+#' @param title general title to display in graphs
+#' @param title upper limit to display in RR graph
+#'
+#' @return all output is saved it on the folder here("6_Tables_graphs","Objective1")
+
+print_obj1 <- function(outcome_name,gentitle,dupperRR=NA){
+  
+  # Absolute risk ----
+  ARall <- Rpool_studies(data =data_all, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name=outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand= "AR",
+                         plottitle= paste0(gentitle),
+                         t_type= "logit",
+                         dupper = NA)
+  
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARall.pdf")), plot=ARall$plot_all, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARimp.pdf")), plot=ARall$plot_imp, width=12, height=9, units="in")
+  
+  
+  ARpos <- Rpool_studies(data =data_zika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name=outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand= "AR",
+                         plottitle= paste0(gentitle," in ZIKV+ pregnant woman"),
+                         t_type= "logit",
+                         dupper = NA)
+  
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARall.pdf")), plot=ARpos$plot_all, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARimp.pdf")), plot=ARpos$plot_imp, width=12, height=9, units="in")
+  
+  ARneg <- Rpool_studies(data =data_nozika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name=outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand= "AR",
+                         plottitle= paste0(gentitle," in ZIKV- pregnant woman"),
+                         t_type= "logit",
+                         dupper = NA)
+  
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARall.pdf")), plot=ARneg$plot_all, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARimp.pdf")), plot=ARneg$plot_imp, width=12, height=9, units="in")
+  
+  # Relative risk ----
+  RRall<- Rpool_studies(data = data_all,
+                        outcome_name =outcome_name,
+                        exposure_name = "zikv_preg",
+                        estimand = "RR",
+                        plottitle= paste0(gentitle),
+                        t_type= "log",
+                        mod_type ="binomial",
+                        correction = "Haldane",
+                        dupper = dupperRR)
+  
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRall.pdf")), plot=RRall$plot_all, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRimp.pdf")), plot=RRall$plot_imp, width=12, height=9, units="in")
+  
+  
+  ALLlist<-list(ARall=ARall,ARpos= ARpos,ARneg= ARneg,RRall=RRall)
+
+  save(ALLlist,file=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_list.RData")))
+}
+
                

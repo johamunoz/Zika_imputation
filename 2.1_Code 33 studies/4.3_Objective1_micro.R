@@ -54,15 +54,21 @@ library(ggplot2)
     mutate(across(where(is.character)&-c(childid,microcephaly,zikv_test_ev,source),
                   ~as.numeric(.x)))
 
-
+    data_N <- data_raw%>%
+              nest(data=-studyimp)%>%
+              mutate(meta=map(data,~.x%>%dplyr::summarize(N=n())))%>%
+              select(c(studyimp,meta))%>%
+              unnest(col=c(meta))
+ 
+    
 # Merge both datasets ----
   data_all <- dplyr::bind_rows(data_ori,data_raw,data_imp)
 
 # Create additional variables 
   data_all%<>%
-    mutate(bdeath = 1-birth,
-           miscarriage = ifelse(bdeath==1&end_ga<20,1,NA),
-           loss = ifelse(bdeath==1&end_ga>=20,1,NA),
+    mutate(bdeath = 1-birth)%>%
+    mutate(miscarriage = ifelse(is.na(bdeath)|is.na(end_ga),NA,ifelse(bdeath==1&end_ga<20,1,0)),
+           loss = ifelse(is.na(bdeath)|is.na(end_ga),NA,ifelse(bdeath==1&end_ga>=20,1,NA)),
            efdeath = ifelse(bdeath==1&end_ga>=20&end_ga<28,1,ifelse(is.na(bdeath)|is.na(end_ga),NA,0)), #early fetal death (20-27 weeks gestation)
            lfdeath = ifelse(bdeath==1&end_ga>=28,1,ifelse(is.na(bdeath)|is.na(end_ga),NA,0)), #late fetal death
            microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA))) #microcephaly at birth
@@ -70,39 +76,22 @@ library(ggplot2)
 # Get studynames
   study_info <- (readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID"))
   data_all <- merge(data_all,study_info%>%select(c("studyimp","studyname","Included")),by="studyimp",all.x=TRUE)
+  data_all <- merge(data_all,data_N,by="studyimp",all.x=TRUE)            
 
 
 # Separate dataset according to zikv_preg
-data_zika <- data_all%>%filter(zikv_preg ==1)
-data_nozika <- data_all%>%filter(zikv_preg ==0)
+data_zika <- data_all%>%filter(zikv_preg == 1)
+data_nozika <- data_all%>%filter(zikv_preg == 0)
 
 
 
-# Microcephaly at birth (Absolute risk )
-MicroAR <- Rpool_studies(data =data_all, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
-                         outcome_name="microcephaly_bin_birth", # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
-                         exposure_name = NA,
-                         estimand= "AR",
-                         plottitle= "Microcephaly at birth, all mom, logit",
-                         t_type= "logit",
-                         dupper = NA)
 
-MicroAR$plot # plot 
-MicroAR$sum_tdata # plot 
+print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth")
+print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",dupperRR=700)
+print_obj1(outcome_name="loss",gentitle = "Loss")
+print_obj1(outcome_name="ch_czs",gentitle = "Child congenital zika")
+print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)")
 
-# Microcephaly at birth (Relative risk )
-
-MicroRR<- Rpool_studies(data = data_all,
-                        outcome_name ="microcephaly_bin_birth",
-                        exposure_name = "zikv_preg",
-                        estimand = "RR",
-                        plottitle= "Microcephaly at birth, all mom",
-                        t_type= "log",
-                        mod_type ="binomial",
-                        correction = "Sweeting",
-                        dupper = 600)
-MicroRR$plot # plot 
-MicroRR$sum_tdata # plot 
 
 
 
