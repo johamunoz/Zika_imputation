@@ -307,9 +307,9 @@ AR_1step <- function(data,t_type){
 
   
   
-  fit <- tryCatch( expr={lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "log"))},
+  fit <- tryCatch( expr={lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "logit"))},
                    error = function(e){
-                     tryCatch( expr = {lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "log"),control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))},
+                     tryCatch( expr = {lme4::glmer(cbind(n_ev, n_obs - n_ev) ~ 1 + (1 | studyname), data = data,family = binomial(link = "logit"),control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))},
                                error = function(e){NA})
                                })
                   
