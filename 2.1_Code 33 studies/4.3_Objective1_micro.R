@@ -18,19 +18,25 @@ library(mice)
   data_imp <- complete(merged_imp,"long")
   data_imp$source <- "Imputation"
   data_imp$.id <- NULL
-
+ 
 # Convert factors of 2 levels to numeric if need it
   data_imp %<>% 
     mutate(across(where(is.factor)&-c(childid,microcephaly,zikv_test_ev,source),
                   ~as.numeric(as.character(.x))))
+  
+  data_imp%<>%
+    mutate(miscarriage = ifelse(is.na(birth)|is.na(end_ga),NA,ifelse(birth==0&end_ga<20,1,0)),
+           loss = ifelse(is.na(birth)|is.na(end_ga),NA,ifelse(birth==0&end_ga>=20,1,NA)),
+           microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA)))
+  data_imp<-setDT(data_imp)
 
 # Get original data ----
   load(file = here('3_Output_data','originaldata.RData')) # data 
   data_ori$source <- "Ori"
   data_ori$.imp <- -1
-  
+
   # Select only imputed columns and transform to numeric if it is required
-  col_imp <- colnames(data_imp)
+  col_imp <- c(colnames(data_imp))
   col_ori <- col_imp[!col_imp %in% c('arb_preg','arb_ever','comorbid_preg','zikv_test_ev','who_czs','neuroabnormality','microcephaly_bin_postnatal','nonneurologic')]
   data_ori %<>% 
     select(all_of(col_ori))%>%
@@ -39,11 +45,14 @@ library(mice)
     mutate(across(where(is.character)&-c(childid,microcephaly,source),
                   ~as.numeric(.x)))
 
+ 
+  
+  
 # Get raw data ----
   load(file= here('3_Output_data','rawfinaldata33.RData')) # fdata=Data_preimputation
   data_raw$source <- "Raw"
   data_raw$.imp <- 0
-
+  col_raw <- c(col_imp)
   
   data_raw %<>% 
     select(all_of(col_imp))%>%
@@ -58,18 +67,14 @@ library(mice)
               select(c(studyimp,meta))%>%
               unnest(col=c(meta))
  
-    
+ 
 # Merge source datasets ----
   data_all <- dplyr::bind_rows(data_ori,data_raw,data_imp)
 
 # Create additional variables 
   data_all%<>%
-    mutate(bdeath = 1-birth)%>%
-    mutate(miscarriage = ifelse(is.na(bdeath)|is.na(end_ga),NA,ifelse(bdeath==1&end_ga<20,1,0)),
-           loss = ifelse(is.na(bdeath)|is.na(end_ga),NA,ifelse(bdeath==1&end_ga>=20,1,NA)),
-           efdeath = ifelse(bdeath==1&end_ga>=20&end_ga<28,1,ifelse(is.na(bdeath)|is.na(end_ga),NA,0)), #early fetal death (20-27 weeks gestation)
-           lfdeath = ifelse(bdeath==1&end_ga>=28,1,ifelse(is.na(bdeath)|is.na(end_ga),NA,0)), #late fetal death
-           microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA))) #microcephaly at birth
+    mutate(efdeath = ifelse(birth==0&end_ga>=20&end_ga<28,1,ifelse(is.na(birth)|is.na(end_ga),NA,0)), #early fetal death (20-27 weeks gestation)
+           lfdeath = ifelse(birth==0&end_ga>=28,1,ifelse(is.na(birth)|is.na(end_ga),NA,0))) #late fetal death
   
 # Get studynames
   study_info <- (readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID"))
@@ -91,7 +96,6 @@ print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)")
 
 
 
-
 # other available outcome_name: 
 
 # "microcephaly_bin_postnatal" (Microcephaly at birth)
@@ -106,3 +110,15 @@ print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)")
 # "lfdeath" ("Late fetus death")
 
 
+# Check differences microcephaly among sources---
+
+table(data_imp[studyimp==14]$microcephaly_bin_birth,data_imp[studyimp==14]$.imp,useNA = "always")
+table(data_ori[studyimp==14]$microcephaly_bin_birth,useNA = "always")
+table(data_raw[studyimp==14]$microcephaly_bin_birth,useNA = "always")
+table(data_ori[studyimp==14]$microcephaly_bin_birth,
+      data_ori[studyimp==14]$microcephaly,
+      useNA = "always")
+
+table(data_raw[studyimp==14]$microcephaly_bin_birth,
+      data_raw[studyimp==14]$microcephaly,
+      useNA = "always")
