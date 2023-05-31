@@ -51,11 +51,11 @@ path<-file.path(here("3_Output_data"))
 #path<-file.path(here('Documents','GitHub','Zika_imputation',"3_Output_data"))
 list_files <- list.files(path,pattern="^mice*",full.names=TRUE)
 imp <- lapply(list_files, loadRData)
-merged_imp <- mergeMice(imp)
+merged_imp2 <- mergeMice(imp)
 
-merged_imp$loggedEvents
-plot(merged_imp)
-densityplot(merged_imp)
+merged_imp2$loggedEvents
+plot(merged_imp2)
+densityplot(merged_imp2)
 
 #load("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/merged_imp.RData")
 #data.imp<-complete(merged_imp,action="long")

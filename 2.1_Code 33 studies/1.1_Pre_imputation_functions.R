@@ -99,7 +99,7 @@ ziktest_ml <- function(data){
   colG = paste("zikv_prnt_", 1:10, sep = "")
   colH = paste("zikv_elisa_ga_", 1:10, sep = "")
   
-  
+
   data_test_m = melt(data_test, measure = list(colA, colB,colC,colD,colE,colF,colG,colH), 
                      value.name = c("pcr_ga", "pcr_res","pcr_tri","pcr_date","igm_res","prnt_titer","prnt","elisa_ga"),
                      variable.name="visit")

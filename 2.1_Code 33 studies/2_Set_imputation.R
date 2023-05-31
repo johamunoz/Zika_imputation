@@ -31,6 +31,7 @@ bin_var1<-imp_info[Type_var=="Binary"&Type_imp==1]$who_name
 bin_var2<-imp_info[Type_var=="Binary"&Type_imp==2]$who_name
 cat_var1<-imp_info[Type_var=="Categorical"&Type_imp==1]$who_name
 cat_var2<-imp_info[Type_var=="Categorical"&Type_imp==2]$who_name
+npred <- imp_info[npred==1]$who_name
 
 
 # After checking the histogram we decide to impute this variables as pmm
@@ -49,69 +50,36 @@ post <- ini$post
 meth[con_var1] <- "norm" # normal distribution at study level
 meth[con_var2] <- "2l.norm" # normal distribution at study level
 meth[bin_var1] <- "logreg" # normal distribution at study level
-meth[bin_var2] <- "2l.bin" # normal distribution at study level
+meth[bin_var2] <- "2l.glm.bin" # normal distribution at study level
 meth[cat_var1] <- "pmm"#  binomial distribution at study level
 meth[cat_var2] <- "2l.pmm" # predictive mean matching at study level
 
-# meth["zikv_preg.end_ga"] <- "~ifelse(zikv_preg == '1', end_ga-38, 0)"
-# meth["zikv_preg.zikv_ga"] <- "~ifelse(zikv_preg == '1', zikv_ga-20, 0)"
-# meth["zikv_preg.denv_preg_ever"] <- "~ifelse(zikv_preg == '1'& denv_preg_ever =='1','1','0')"
-# meth["zikv_preg.chikv_preg_ever"] <- "~ifelse(zikv_preg == '1'& chikv_preg_ever =='1','1','0')"
-# meth["zikv_preg.comorbid_bin"] <- "~ifelse(zikv_preg == '1'& comorbid_bin =='1','1','0')" 
-# meth["zikv_preg.comorbid_preg"] <- "~ifelse(zikv_preg == '1'& denv_preg_ever =='1','1','0')"            
-# meth["zikv_preg.storch_patho"] <- "~ifelse(zikv_preg == '1'& storch_patho =='1','1','0')"     
-# meth["zikv_preg.arb_symp"] <- "~ifelse(zikv_preg == '1'& arb_symp =='1','1','0')"         
-# meth["zikv_preg.fever"] <- "~ifelse(zikv_preg == '1'& fever =='1','1','0')"       
-# meth["zikv_preg.rash"] <- "~ifelse(zikv_preg == '1'& rash =='1','1','0')"
-# meth["zikv_preg.arthralgia"] <- "~ifelse(zikv_preg == '1'& arthralgia =='1','1','0')"       
-# meth["zikv_preg.headache"] <- "~ifelse(zikv_preg == '1'& headache =='1','1','0')"    
-# meth["zikv_preg.arthritis"] <- "~ifelse(zikv_preg == '1'& arthritis =='1','1','0')"
+meth["miscarriage"]<-"~ifelse(birth == '0'& end_ga<20, 1, 0)"
+meth["microcephaly_bin_birth"]<-"~ifelse(microcephaly%in%c(0,3),0,1)"
+meth["ch_microcephaly_bin"]<-"~ifelse(ch_microcephaly%in%c(0,3),0,1)"
 
 #2.2. Post-process the values to constrain normal distributed variables in the range of observable values ----
 post["age"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(14, 55))"
-#post["zikv_assay_ga_1"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 post["zikv_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 post["ch_weight"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(100, 6000))"
 post["end_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
 post["ch_head_circ_birth"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(15, 55))"
-#post["parity"] <- "imp[[j]][, i] <- pmin(imp[[j]][, i], data[(!r[, j]) & where[, j], 'gravidity'])" # will never impute values for parity that are larger than gravidity
-# post["zikv_preg.end_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
-# post["zikv_preg.zikv_ga"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 46))"
-#post["bmi"] <- "imp[[j]][, i] <- squeeze(imp[[j]][, i], c(0, 50))"
+post["microcephaly_bin_postnatal"] <- paste(sep = ";", 'idx <- row.names(imp[["birth"]][imp[["birth"]][,i]==0,])','imp[[j]][idx, i] <- 2')
 
-#3.3. Set prediction matrix -----
+
+
+#2.3. Set prediction matrix -----
 pred <- quickpred(data, minpuc = 0.1) # assignation based on pairwise correlation
 pred["childid",] <- 0
 pred[,"childid"] <- 0
+pred[,"repabort"] <- 0
+pred["repabort",] <- 0
 pred[,"studyimp"] <- -2 # define the cluster for imputation models at study level.
-
-# varinter=c("end_ga","zikv_ga","denv_preg_ever","chikv_preg_ever","comorbid_bin","comorbid_preg","storch_patho","arb_symp","fever","rash","arthralgia","headache","arthritis")
-# colpred<-colnames(pred)
-# predata<-as.data.table(pred)
-# 
-# # @ Harlan: this part is where we set the restriction of including only interaction if both main factors of interaction are highly associated with the incomplete variable
-# for(i in varinter) {
-#   cn<-paste0("zikv_preg.",i)
-#   exp<-paste0("ifelse(zikv_preg==1&",i,"==1,1,0)")
-#   expr <- parse(text = paste0(cn, ":=",exp))
-#   predata[,eval(expr)]
-# }
-
-# pred <- as.matrix(predata)
-# rownames(pred) <- colpred
-# pred[c("zikv_preg","end_ga"), c("zikv_preg.end_ga")] <- 0
-# pred[c("zikv_preg","zikv_ga"), c("zikv_preg.zikv_ga")] <- 0
-# pred[c("zikv_preg","denv_preg_ever"), c("zikv_preg.denv_preg_ever")] <- 0
-# pred[c("zikv_preg","chikv_preg_ever"), c("zikv_preg.chikv_preg_ever")] <- 0
-# pred[c("zikv_preg","comorbid_bin"), c("zikv_preg.comorbid_bin")] <- 0
-# pred[c("zikv_preg","comorbid_preg"), c("zikv_preg.comorbid_preg")] <- 0
-# pred[c("zikv_preg","storch_patho"), c("zikv_preg.storch_patho")] <- 0
-# pred[c("zikv_preg","arb_symp"), c("zikv_preg.arb_symp")] <- 0
-# pred[c("zikv_preg","fever"), c("zikv_preg.fever")] <- 0
-# pred[c("zikv_preg","rash"), c("zikv_preg.rash")] <- 0
-# pred[c("zikv_preg","arthralgia"), c("zikv_preg.arthralgia")] <- 0
-# pred[c("zikv_preg","headache"), c("zikv_preg.headache")] <- 0
-# pred[c("zikv_preg","arthritis"), c("zikv_preg.arthritis")] <- 0
+pred[c("end_ga","birth"),"miscarriage"]<-0
+pred[c("microcephaly"),"microcephaly_bin_birth"]<-0
+pred[c("ch_microcephaly"),"ch_microcephaly_bin"]<-0
+pred[c("zikv_preg"),"zikv_test_ev"]<-0
+pred[c("zikv_test_ev"),"zikv_preg"]<-0
 
 
 #write.csv(pred,file=here('Documents','GitHub','Zika_imputation','3_Output_data','predmatrix33.csv'))
