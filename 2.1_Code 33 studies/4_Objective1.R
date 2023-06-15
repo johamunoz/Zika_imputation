@@ -4,6 +4,7 @@ rm(list=ls()) # clean environment
 
 # Load packages ---
 # Data manipulation package
+library(data.table)
 library(dplyr)
 library(magrittr)
 library(here)  # define folder paths
@@ -11,101 +12,93 @@ library(mice)
 # Graphic packages
 library(ggplot2)
 
-source(here('2.1_Code 33 studies','F_graph.R'))
+# Field specific package
+library(growthstandards)
+
+source(here('2.1_Code 33 studies','4.1_Functions_Objective1.R'))
+
+# Get original data ----
+load(file=here('3_Output_data','ori_data33.RData'))
+data_ori$source<-"Original"
+data_ori$.imp <- -1
+
+# Get raw data ----
+load(file= here('3_Output_data','det_data33.RData')) # fdata=Data_preimputation
+data_det$source <- "Deterministic"
+data_det$.imp <- 0
+data_abort <- data_det[,c("childid","repabort")]
 
 # Get imputation data ----
-load("/Users/jmunozav/Desktop/merged_imp.RData")
-data_imp <- complete(merged_imp,"long")
+load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.RData")
+data_imp <- as.data.table(complete(merged_imp,"long"))
 data_imp$source <- "Imputation"
 data_imp$.id <- NULL
 
 # Convert factors of 2 levels to numeric if need it
-data_imp %<>% 
-  mutate(across(where(is.factor)&-c(childid,microcephaly,zikv_test_ev,source),
-                ~as.numeric(as.character(.x))))
-
-# Get raw data ----
-load(file= here('3_Output_data','rawfinaldata33.RData')) # fdata=Data_preimputation
-data_raw$source <- "Raw"
-data_raw$.imp <- 0
-
-# Select only imputed columns and transform to numeric if it is required
-col_imp<-colnames(data_imp)
-col_imp<-col_imp[col_imp!="who_czs"]
-data_raw %<>% 
-          select(all_of(col_imp))%>%
-          mutate(across(where(is.factor)&-c(childid,microcephaly,zikv_test_ev,source),
-                ~as.numeric(as.character(.x))))%>%
-          mutate(across(where(is.character)&-c(childid,microcephaly,zikv_test_ev,source),
-                ~as.numeric(.x)))
-data_raw%<>%mutate(microcephaly=as.factor(microcephaly))
+nam_imp<-colnames(data_imp)
+nam_nfact<-c(".imp","childid","studyimp","end_ga","ch_weight","ch_head_circ_birth","age","gravidity","parity","ch_microcephaly"," parity","zikv_test_ev","zikv_ga","source")
+nam_num<-nam_imp[!nam_imp%in%nam_nfact]
+data_imp[, (nam_num) := lapply(.SD, function(x){as.numeric(levels(x))[x]}), .SDcols = nam_num]
 
 
-data_N <- data_raw%>%
-  nest(data=-studyimp)%>%
-  mutate(meta=map(data,~.x%>%dplyr::summarize(N=n())))%>%
-  select(c(studyimp,meta))%>%
-  unnest(col=c(meta))
+# Select only the imputed variables on the original dataset and transform to numeric if it is required
+nam_new<-c("arb_preg","birth","end_ga","arb_ever","storch_patho","comorbid_preg","drugs_prescr","zikv_test_ev","neuroabnormality","flavi_alpha_virus", "microcephaly_bin_postnatal","microcephaly_bin_fet","nonneurologic","any_abnormality_czs","zikv_test_ev")
+data_ori<-as.data.frame(data_ori[,nam_imp[!nam_imp%in%nam_new], with = FALSE])
+namcol <- colnames(data_ori)
+nam_num <- namcol[!namcol%in%c("childid","ch_microcephaly","source")]
+setDT(data_ori)[, (nam_num) := lapply(.SD, as.numeric), .SDcols = nam_num]
+data_ori[,ch_microcephaly:=as.factor(ch_microcephaly)]
 
-
-# Get original data ----
-load(file = here('3_Output_data','originaldata.RData')) # data 
-data_ori$source <- "Ori"
-data_ori$.imp <- -1
-
-# Select only imputed columns and transform to numeric if it is required
-col_imp <- c(colnames(data_imp))
-col_ori <- col_imp[!col_imp %in% c('arb_preg','arb_ever','comorbid_preg','zikv_test_ev','who_czs','neuroabnormality','microcephaly_bin_postnatal','nonneurologic')]
-data_ori %<>% 
-  select(all_of(col_ori))%>%
-  mutate(across(where(is.factor)&-c(childid,microcephaly,source),
-                ~as.numeric(as.character(.x))))%>%
-  mutate(across(where(is.character)&-c(childid,microcephaly,source),
-                ~as.numeric(.x)))
-
+# Select only the imputed variables on the deterministic dataset and transform to numeric if it is required
+data_det<-as.data.frame(data_det[,nam_imp, with = FALSE])
+namcol <- colnames(data_det)
+nam_num <- namcol[!namcol%in%c("childid","ch_microcephaly","zikv_test_ev","source")]
+setDT(data_det)[, (nam_num) := lapply(.SD, as.numeric), .SDcols = nam_num]
 
 
 # Merge both datasets ----
-data_all <- dplyr::bind_rows(data_ori,data_raw,data_imp)
+
+study_info <- (readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID"))
+data_N<-data_ori[, .(N = .N), by = studyimp]
+data_all <- dplyr::bind_rows(data_ori,data_det,data_imp)
+data_all <- merge(data_all,data_abort,by="childid")
+data_all <- merge(data_all,data_N,by="studyimp")
+data_all <- merge(data_all,study_info[,c("studyimp","studyname","Included")],by="studyimp")
+ 
+
 
 # Create additional variables 
-data_all%<>%
-  mutate(bdeath = 1-birth,
-         loss = ifelse(bdeath==1&end_ga>=20,1,0),
-         efdeath = ifelse(bdeath==1&end_ga>=20&end_ga<28,1,0), #early fetal death (20-27 weeks gestation)
-         lfdeath = ifelse(bdeath==1&end_ga>=28,1,0), #late fetal death
-         who_czs = as.numeric((zikv_test_ev %in% c("Robust","Moderate")| microcephaly_bin_fet==1) & (microcephaly==2 | any_abnormality_czs==1))) #WHO definition for CZS: Presence of confirmed maternal or fetal ZIKV infection AND (presence of severe microcephaly at birth OR presence of other malformations (including limb contractures, high muscle tone, eye abnormalities, and hearing loss, nose etc.))
-         
-
-# Get studynames
-study_info <- (readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID"))
-data_all <- merge(data_all,study_info%>%select(c("studyimp","studyname","Included")),by="studyimp",all.x=TRUE)
-data_all <- merge(data_all,data_N,by="studyimp",all.x=TRUE)    
+data_all[,bdeath := 1-birth]
+data_all[,loss := ifelse(bdeath==1&end_ga>=20,1,0)]
+data_all[,efdeath := ifelse(bdeath==1&end_ga>=20&end_ga<28,1,0)] #early fetal death (20-27 weeks gestation)
+data_all[,lfdeath := ifelse(bdeath==1&end_ga>=28,1,0)] #late fetal death
+data_all[,cend_ga:=ifelse(end_ga>42,42,end_ga)] # modified end_ga used to calculate microcephaly and microchephaly_bin_birth from head circunference
+data_all[,ch_sex := as.factor(ifelse(ch_sex== 0, "Male","Female"))]   
+data_all[!is.na(ch_sex)&!is.na(end_ga), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]
+data_all[, microcephaly  := as.factor(ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA)))))] # given by formula
+data_all[, microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA))]
+data_all[, who_czs := as.numeric((zikv_test_ev %in% c("Robust","Moderate")| microcephaly_bin_fet==1) & (microcephaly==2 | any_abnormality_czs==1))]
 
 
 # Separate dataset according to zikv_preg
-data_zika <- data_all%>%filter(zikv_preg ==1)
+
+data_zika <- as.data.table(data_all%>%filter(zikv_preg ==1))
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
 
-
-# Microcephaly only population between 24 and 42 gestational age
-mdata_all <- data_all%>%filter(end_ga>=24&end_ga<=48)
-mdata_zika <- data_zika%>%filter(end_ga>=24&end_ga<=48)
-mdata_nozika <- data_nozika%>%filter(end_ga>=24&end_ga<=48)
-
-
-summary(data_all)
+# Microcephaly only population between 24 and 42 gestational age without cases that were reported as abortion
+mdata_all <- data_all%>%filter(end_ga>=24&end_ga<=48&repabort!=1)
+mdata_zika <- data_zika%>%filter(end_ga>=24&end_ga<=48&repabort!=1)
+mdata_nozika <- data_nozika%>%filter(end_ga>=24&end_ga<=48&repabort!=1)
 
 
-forest_plot_study(data=data_all,outcome_name="microcephaly_bin_birth",plottitle = "Microcephaly at birth,all")
-forest_plot_study(data=data_zika,outcome_name="microcephaly_bin_birth",plottitle = "Microcephaly at birth,zika+ mom")
-forest_plot_study(data=data_nozika,outcome_name="microcephaly_bin_birth",plottitle = "Microcephaly at birth,zika- mom")
-
-forest_plot_study(data=data_all,outcome_name="zikv_preg",plottitle = "Zika diagnosis in mothers")
-
-
-
+# Get the estimates (plots and tables) ----
+print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth calculated with head circunference",data_all=mdata_all,data_zika=mdata_zika,data_nozika =mdata_nozika)
+print_obj1(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mdata_all,data_zika=mdata_zika,data_nozika =mdata_nozika)
+print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+print_obj1(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+print_obj1(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 
 
 

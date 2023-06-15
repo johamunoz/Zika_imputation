@@ -235,6 +235,7 @@ RR_1step <- function(data, mod_type){
   summary  <- data%>%summarize(n_obs=n(),
                    n_ev = sum(outcome,na.rm=TRUE),
                    n_na = sum(Included[is.na(outcome)|is.na(exposure)]),
+                   N = first(N),
                    Included = length(unique(studyname)))
   
   data_mod <- data%>% # Included in the model 
@@ -294,6 +295,7 @@ AR_1step <- function(data,t_type){
   summary  <- data%>%summarize(n_obs = sum(n_obs,na.rm=TRUE),
                                n_ev = sum(n_ev,na.rm=TRUE),
                                n_na = sum(n_na,na.rm=TRUE),
+                               N=sum(N,na.rm=TRUE),
                                Included = sum(Included,na.rm=TRUE))
   
   data_mod <- data%>% # Included in the model 
@@ -351,6 +353,7 @@ R_2step <- function(data, t_type){
    data_2step <- data.frame( n_obs = sum(data_pool$n_obs,na.rm = T),
                              n_ev = sum(data_pool$n_ev,na.rm = T),
                              n_na = sum(data_pool$n_na,na.rm = T),
+                             N =    sum(data_pool$N,na.rm=T),
                              Included = sum(data_pool$Included,na.rm=T),
                              nobs_m = sum(data_mod$n_obs,na.rm=T),
                              nev_m = sum(data_mod$n_ev,na.rm=T),
@@ -408,9 +411,9 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
   
   # Select only variables we need.
   if( is.na(exposure_name)){ # AR
-    data%<>%dplyr::select(outcome=!!outcome_name, studyname, Included, N,'.imp')
+    data%<>%dplyr::select(outcome=!!outcome_name, studyname,childid, Included, N,'.imp')
    }else{ #RR
-    data%<>%dplyr::select(outcome=!!outcome_name, exposure=!!exposure_name, studyname, Included,N,'.imp')}
+    data%<>%dplyr::select(outcome=!!outcome_name, exposure=!!exposure_name, studyname,childid, Included,N,'.imp')}
   
   
   #Summarize the risk in every study separate and in every imputed dataset
@@ -419,6 +422,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                    select(-c(data))%>%
                    unnest(col= c(obs_sum))%>%
                    mutate_all(~ifelse(is.nan(.)|is.infinite(.), NA, .))
+                   #%>% mutate(n_nar=ifelse(.imp>0,0,n_nar))
     
   
   #Estimate global estimator for each dataset via 2-step estimator
@@ -457,12 +461,12 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     
     # Rbind the summary dataset with the values of global estimates of the 1_step and 2_step methods --    
     tdata_sum <- dplyr::bind_rows(data_sum, data_1step,data_2step)%>%
-                    mutate(pmiss = n_na/n_obs*100,
+                    mutate(pmiss = n_na/(n_obs)*100,
                            outcome = outcome_name,
                            exposure = exposure_name,
                            estimand = estimand) 
         
-        
+    #NTstep = tdata_sum%>%filter(studyname=="TOTAL-2step"&.imp==1)%>%select(N)%>%first()  
     # For original dataset
     tdata_ori <- tdata_sum%>%filter(.imp == -1)%>%
       mutate( source = "Original")
@@ -474,8 +478,9 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     
     
     # For imputed datases, pool information with Rubins rules
+    tdata_imp0 <- tdata_sum%>%filter(.imp > 0)
     
-    tdata_imp <- f_data_pool(data = tdata_sum, t_type = t_type)
+    tdata_imp <- f_data_pool(data = tdata_imp0, t_type = t_type)
     tdata_imp$source <- "Imputation"
     tdata_imp$pmiss <- 0.00   
     tdata_imp$estimand <- estimand
@@ -492,15 +497,18 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                          clb = ifelse(estimand=="RR",lower,lower*100),
                          cub = ifelse(estimand=="RR",upper,upper*100),
                          pmiss = sprintf("%.2f",pmiss))%>%
+                         #N=ifelse(studyname%in%c("TOTAL-2step","TOTAL-1step"),NTstep,N))%>%
                  select(-.imp)
   
   plot_data <- sum_tdata %>%
                mutate(Sincluded = ifelse(Included==0,"*",""),
                       cint0 = ifelse(is.na(mean),"   ",paste0(sprintf("%.2f(%.2f,%.2f)",mean, clb, cub))),
-                      cint = paste0(cint0,","))%>%
-                  mutate(allcint = paste0(studyname,Sincluded,ifelse(is.na(N),"",paste0(" \n N=",N))),
+                      cint =  ifelse(is.na(mean),"",paste0(cint0,",")))%>%
+                  mutate(allcint = paste0(studyname,Sincluded,ifelse(is.na(n_obs),"",paste0(" \n N=",n_obs))),
                          pcint = paste0(cint," %mis=",pmiss),
-                         scint = paste0(studyname,source,cint," %mis=",pmiss))
+                         Nmiss = paste0("N=",sprintf("%.1f",n_obs),",%mis=",pmiss),
+                         scint = paste0(studyname,source,cint," %mis=",pmiss),
+                         studyname=ifelse(Included==0,paste0(studyname,"*"),studyname))
            
   
   # Create plot
@@ -524,11 +532,13 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                        mean =ifelse(mean > dupper, dupper, mean))
   }
   
+  dataplot%<>%mutate(m=1:nrow(dataplot))
   
   
   # Plot all source of information 
   
-  plot_all <- ggplot(dataplot, aes(x=scint, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
+  plot_all <- ggplot(dataplot, aes(x=m, y=mean, ymin=clb, ymax=cub, col=source, fill=source)) + 
+    theme_classic()+
     geom_linerange(size=2,position=position_dodge(width = 0.5)) +
     geom_point(size=1, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
     scale_fill_manual(values=barcols)+
@@ -537,14 +547,18 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     ggtitle(plottitle)+
     coord_flip() +
     geom_hline(yintercept=int,linetype="dashed", color = "black", size=0.2)+
-    scale_x_discrete(breaks=levels(factor(dataplot$scint)),labels = dataplot$pcint)+ 
-    facet_grid(allcint ~ ., switch = "y",scales="free")+
+    scale_x_continuous(breaks=dataplot$m,labels = dataplot$Nmiss,
+                       sec.axis = dup_axis(breaks = dataplot$m,
+                                          labels = dataplot$cint0,
+                                          name=""))+ 
+    facet_grid(studyname ~ ., switch = "y",scales="free")+
     theme(strip.placement = "outside")+
     guides(colour = guide_legend(reverse = T),fill = guide_legend(reverse = T))+
     theme(strip.text.y.left = element_text(angle = 0,size=5),axis.text.y = element_text(size = 5))+
     labs(caption = "*Excluded study in the imputation and in the total risk estimation")+
     labs(color="Data source",fill="Data source")+
     theme(legend.position="bottom",plot.title = element_text(hjust = 0.5))
+ 
   
   
   
@@ -554,7 +568,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                filter(!is.na(mean))%>%
                mutate(pcint=cint,
                       type= ifelse(studyname%in%c("TOTAL-1step","TOTAL-2step"),"0","1"),
-                      N = ifelse(is.na(N),"",paste0("N=",N)),
+                      N = ifelse(is.na(n_obs),"",paste0("N=",sprintf("%.1f",n_obs))),
                       y=interaction(N,studyname, sep = "&"))
 
     dataplot$y <- factor(dataplot$y, levels=rev(levels(dataplot$y)))
@@ -610,8 +624,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                          t_type = "logit",
                          dupper = NA)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARall.jpg")), plot=ARall$plot_all, width=12, height=9, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARimp.jpg")), plot=ARall$plot_imp, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARall.jpg")), plot=ARall$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARimp.jpg")), plot=ARall$plot_imp, width=7, height=4, units="in")
   
   
   ARpos <- Rpool_studies(data = data_zika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
@@ -622,8 +636,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                          t_type = "logit",
                          dupper = NA)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARall.jpg")), plot=ARpos$plot_all, width=12, height=9, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARimp.jpg")), plot=ARpos$plot_imp, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARall.jpg")), plot=ARpos$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARimp.jpg")), plot=ARpos$plot_imp, width=7, height=4, units="in")
   
   ARneg <- Rpool_studies(data = data_nozika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
                          outcome_name = outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
@@ -633,8 +647,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                          t_type = "logit",
                          dupper = NA)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARall.jpg")), plot=ARneg$plot_all, width=12, height=9, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARimp.jpg")), plot=ARneg$plot_imp, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARall.jpg")), plot=ARneg$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARimp.jpg")), plot=ARneg$plot_imp, width=7, height=4, units="in")
   
   # Relative risk ----
   RRall<- Rpool_studies(data = data_all,
@@ -647,8 +661,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                         correction = "Haldane",
                         dupper = dupperRR)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRall.jpg")), plot=RRall$plot_all, width=12, height=9, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRimp.jpg")), plot=RRall$plot_imp, width=12, height=9, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRall.jpg")), plot=RRall$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRimp.jpg")), plot=RRall$plot_imp, width=7, height=4, units="in")
   
   
   ALLlist<-list(ARall=ARall,ARpos= ARpos,ARneg= ARneg,RRall=RRall)

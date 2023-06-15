@@ -50,6 +50,11 @@ data[data=="NA"]<-NA
 # 0.2 Check variables class
 # Number of observations= # one childID per observation
 nrow(data) == length(unique(data$childid))
+# 13991
+
+# 0.3 Data as provided by the harmonization group without any modification
+data_ori <- data
+save(data_ori, file =here('3_Output_data','ori_data33.RData')) 
 
 
 # Check columns classes
@@ -104,7 +109,6 @@ data[,end_ga :=ifelse(is.na(end_ga),maxbirth_ga,end_ga)]
 
 
 
-
 #1.2. Use etiology to set fet_death (et 0=live 1=miss 2=loss 3=imp fet_death) 
 data[loss_etiology==3&loss==0,c("miscarriage","loss","loss_etiology","birth","fet_death"):= list(0,0,0,1,0)] # 156 study 6
 data[loss_etiology==0&(is.na(fet_death)|fet_death==0),c("miscarriage","loss","loss_etiology","birth","fet_death"):= list(0,0,0,1,0)] #birth
@@ -148,25 +152,14 @@ data[,microcephaly_bin_fet:=ifelse(!is.na(fet_micro),fet_micro,
 table(data$microcephaly_bin_fet, is.na(data$fet_micro_diag_ga),useNA = "always")
 table(data$microcephaly_bin_fet, data$fet_micro,useNA = "always")
 table(data$microcephaly,useNA = "always")
-# 2.1. Microcephaly just the moment fetus baby is out!! (microcephaly,microcephaly_bin_birth, microcephayly_ga)
 
-data[!is.na(ch_sex), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]  
-
-## Microcephaly given by head circunference ----
-data[, microcephaly  := ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA))))] # given by formula
-data[, microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA))]
-data[, microcephaly := ifelse(is.na(microcephaly)&microcephaly_bin_birth==0,0,microcephaly)] # assign no microcephaly based on the info given in the binary variable
-
-
-## Microcephaly given by study ----
+## 2.1. Microcephaly at birth given by study ----
 data[, ch_microcephaly_bin:= ifelse(is.na(ch_microcephaly_bin)&ch_microcephaly%in%c(0,3),0,ifelse(is.na(ch_microcephaly_bin)&ch_microcephaly%in%c(1,2),1,ch_microcephaly_bin))]
-
 
 data[, microcephaly_ga:=ifelse(!is.na(fet_micro_diag_ga),fet_micro_diag_ga,
                                ifelse(fet_micro_diag_tri==0,13,
                                       ifelse(fet_micro_diag_tri==1,27,
                                              ifelse(fet_micro_diag_tri==2,40,NA))))] 
-
 
 # 2.2. Postnatal microcephaly ----
 
@@ -303,8 +296,8 @@ data[, bmi:= pre_pregweight/((height/100)^2)]
 data[, bmi:= ifelse(bmi<0|bmi>50,NA,bmi)]
 
 # Format factors and number variables
-data[,microcephaly_bin_birth:=as.numeric(microcephaly_bin_birth)]
-data[,microcephaly :=as.factor(microcephaly )]
+#data[,microcephaly_bin_birth:=as.numeric(microcephaly_bin_birth)]
+#data[,microcephaly :=as.factor(microcephaly )]
 data[,pretermlabor :=as.numeric(pretermlabor )]
 data[,alcohol :=as.numeric(alcohol)]
 data[,ch_czs :=as.numeric(ch_czs)]
@@ -318,8 +311,10 @@ data[,fever:=as.factor(fever)]
 data[,cc_hiv:=as.factor(cc_hiv)]
 data[,arthralgia:=as.factor(arthralgia)]
 data[,arb_symp:=as.factor(arb_symp)]
-
-
+data[,multiplegest:=as.numeric(multiplegest)]
+data[,ch_sex:=as.numeric(ch_sex)]
+data[,miscarriage:=as.numeric(miscarriage)]
+data[,repabort:=as.numeric(repabort)]
 
 #8  Missing data Plot
 
@@ -376,8 +371,8 @@ finc <- study_info[Included==1]$file #included studies
 
 # Raw total data pre imputation
 
-data_raw <- data
-save(data_raw, file =here('3_Output_data','rawfinaldata33.RData')) 
+data_det <- data
+save(data_det, file =here('3_Output_data','det_data33.RData')) 
 #save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','rawfinaldata33.RData'))
 
 
@@ -385,5 +380,5 @@ save(data_raw, file =here('3_Output_data','rawfinaldata33.RData'))
 fdata <- data[file%in%finc,..var_imp]
 save(fdata, file =here('3_Output_data','finaldata33.RData')) 
 #save(fdata, file =here('Documents','GitHub','Zika_imputation','3_Output_data','finaldata33.RData'))
-summary(fdata)
+
 

@@ -47,15 +47,26 @@ mergeMice <- function (imp) {
   return(merged_imp)
 }
 
-path<-file.path(here("3_Output_data"))
-#path<-file.path(here('Documents','GitHub','Zika_imputation',"3_Output_data"))
-list_files <- list.files(path,pattern="^mice*",full.names=TRUE)
-imp <- lapply(list_files, loadRData)
-merged_imp2 <- mergeMice(imp)
 
-merged_imp2$loggedEvents
-plot(merged_imp2)
-densityplot(merged_imp2)
+path<-file.path("/home/julius_te/jmunoz/Results_z1")
+#path<-file.path(here("3_Output_data"))
+#path<-file.path(here('Documents','GitHub','Zika_imputation',"3_Output_data"))
+#list_files <- list.files(path,pattern="^mice*",full.names=TRUE)
+
+list_files <- list.files(path,pattern="^Imp*",full.names=TRUE)
+imp <- lapply(list_files, loadRData)
+merged_imp <- mergeMice(imp)
+save(merged_imp,file="/home/julius_te/jmunoz/Results_z1/merged_imp.Rdata")
+
+
+
+load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.Rdata")
+library(mice)
+merged_imp$loggedEvents
+plot(merged_imp)
+densityplot(merged_imp)
+
+
 
 #load("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/merged_imp.RData")
 #data.imp<-complete(merged_imp,action="long")
