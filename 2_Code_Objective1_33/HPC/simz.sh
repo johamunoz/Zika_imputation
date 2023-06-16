@@ -3,12 +3,12 @@
 #SBATCH --ntasks=1                               # Number of cores
 #SBATCH --nodes=1                                # Number of nodes for the cores
 #SBATCH --job-name="simz.sh"                     # Name of the script
-#SBATCH --time=0-06:00                           # Runtime in D-HH:MM format i
+#SBATCH --time=0-08:00                           # Runtime in D-HH:MM format i
 #SBATCH --partition=cpu                          # Partition to submit to (cpu or gpu)
 #SBATCH --mem=2                                  # Memory pool for all CPUs i
 #SBATCH --mail-type=ALL                          # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=j.munozavila@umcutrecht.nl   # Email to which notifications will be sent
-#SBATCH --array=11-40                            # Array job=start-end, or =x,y,z, where the job number is assigned to $SLURM_ARRAY_TASK_ID
+#SBATCH --array=1-10                            # Array job=start-end, or =x,y,z, where the job number is assigned to $SLURM_ARRAY_TASK_ID
 
 # File to which standard out will be written
 #SBATCH --output=/home/julius_te/jmunoz/Results_z1/%j.out
