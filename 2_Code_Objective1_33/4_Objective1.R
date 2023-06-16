@@ -82,20 +82,30 @@ data_all[, who_czs := as.numeric((zikv_test_ev %in% c("Robust","Moderate")| micr
 
 # Separate dataset according to zikv_preg
 
-data_zika <- as.data.table(data_all%>%filter(zikv_preg ==1))
+data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
 
 # Microcephaly only population between 24 and 42 gestational age without cases that were reported as abortion
-mdata_all <- data_all%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
-mdata_zika <- data_zika%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
-mdata_nozika <- data_nozika%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
+
+mic_data_all <- data_all%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
+mic_data_zika <- mic_data_all%>%filter(zikv_preg ==1)
+mic_data_nozika <- mic_data_all%>%filter(zikv_preg ==0)
+
+
+# Miscarriage
+mis_data_all <- merge(data_all,study_info[,c("studyimp","Included_mis")],by="studyimp")
+mis_data_all[,Included:=Included_mis]
+mis_data_zika <- mis_data_all%>%filter(zikv_preg ==1)
+mis_data_nozika <- mis_data_all%>%filter(zikv_preg ==0)
+
+
 
 
 # Get the estimates (plots and tables) ----
-print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth calculated with head circunference",data_all=mdata_all,data_zika=mdata_zika,data_nozika =mdata_nozika)
-print_obj1(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mdata_all,data_zika=mdata_zika,data_nozika =mdata_nozika)
-print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth calculated with head circunference",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
+print_obj1(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
+print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data_all,data_zika=mis_data_zika,data_nozika =mis_data_nozika)
 print_obj1(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 print_obj1(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)

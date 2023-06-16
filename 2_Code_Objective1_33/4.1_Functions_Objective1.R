@@ -182,11 +182,15 @@ f_pool <- function(tr_est, tr_se, t_type){
   mu <- mean(tr_est, na.rm = T) # pool estimate
   w_var <- mean(tr_se^2, na.rm = T) # within variance
   b_var <- var(tr_est, na.rm = T) # between variance
-  t_var <- w_var + b_var + b_var/n # total variance
+  t_var <- sum(w_var,b_var,b_var/n,na.rm=T) # total variance
   t_se <- sqrt(t_var) # total standard error
-  r <- (b_var + (b_var / n))/ w_var # relative increase variance due to missing values
+  r <-  sum(b_var,(b_var / n),na.rm=T)/ w_var # relative increase variance due to missing values
   v <- (n - 1) * (1 + r^-1)^2 # degrees of freedom
   t <- qt(1-alpha/2, v) #t criteria
+  if (is.infinite(v)|is.na(v)){ # t can not be calculated e.g 1 only observation it is aprox to normal 
+    t <- qnorm(1-alpha/2)
+  }
+ 
   observed <- back_trans(mu, t_type = t_type) # mean(est, na.rm = T)
   lower <- back_trans(mu - t_se*t, t_type = t_type)
   upper <- back_trans(mu + t_se*t, t_type = t_type)
@@ -422,7 +426,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
                    select(-c(data))%>%
                    unnest(col= c(obs_sum))%>%
                    mutate_all(~ifelse(is.nan(.)|is.infinite(.), NA, .))
-                   #%>% mutate(n_nar=ifelse(.imp>0,0,n_nar))
+
     
   
   #Estimate global estimator for each dataset via 2-step estimator
@@ -478,9 +482,9 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     
     
     # For imputed datases, pool information with Rubins rules
-    tdata_imp0 <- tdata_sum%>%filter(.imp > 0)
+  
     
-    tdata_imp <- f_data_pool(data = tdata_imp0, t_type = t_type)
+    tdata_imp <- f_data_pool(data = tdata_sum, t_type = t_type)
     tdata_imp$source <- "Imputation"
     tdata_imp$pmiss <- 0.00   
     tdata_imp$estimand <- estimand
@@ -555,7 +559,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     theme(strip.placement = "outside")+
     guides(colour = guide_legend(reverse = T),fill = guide_legend(reverse = T))+
     theme(strip.text.y.left = element_text(angle = 0,size=5),axis.text.y = element_text(size = 5))+
-    labs(caption = "*Excluded study in the imputation and in the total risk estimation")+
+    labs(caption = "*Excluded study")+
     labs(color="Data source",fill="Data source")+
     theme(legend.position="bottom",plot.title = element_text(hjust = 0.5))
  
@@ -624,8 +628,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                          t_type = "logit",
                          dupper = NA)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARall.jpg")), plot=ARall$plot_all, width=8, height=8, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_ARimp.jpg")), plot=ARall$plot_imp, width=7, height=4, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_ARall.jpg")), plot=ARall$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_ARimp.jpg")), plot=ARall$plot_imp, width=7, height=4, units="in")
   
   
   ARpos <- Rpool_studies(data = data_zika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
@@ -636,8 +640,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                          t_type = "logit",
                          dupper = NA)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARall.jpg")), plot=ARpos$plot_all, width=8, height=8, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARimp.jpg")), plot=ARpos$plot_imp, width=7, height=4, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARall.jpg")), plot=ARpos$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARimp.jpg")), plot=ARpos$plot_imp, width=7, height=4, units="in")
   
   ARneg <- Rpool_studies(data = data_nozika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
                          outcome_name = outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
@@ -647,8 +651,8 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                          t_type = "logit",
                          dupper = NA)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARall.jpg")), plot=ARneg$plot_all, width=8, height=8, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARimp.jpg")), plot=ARneg$plot_imp, width=7, height=4, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARall.jpg")), plot=ARneg$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARimp.jpg")), plot=ARneg$plot_imp, width=7, height=4, units="in")
   
   # Relative risk ----
   RRall<- Rpool_studies(data = data_all,

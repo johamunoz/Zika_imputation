@@ -103,9 +103,11 @@ By presenting these different stages of imputation, we provide a comprehensive v
 ## Microcephaly at birth based on the study information.
 
 ### Absolute risk ZIKV+ (%)
+
 ![Absolute risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_pos_ARimp.jpg){width="70%"}
 
 ### Absolute risk ZIKV- (%)
+
 ![Absolute risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_neg_ARimp.jpg){width="70%"}
 
 \newpage
@@ -118,7 +120,7 @@ By presenting these different stages of imputation, we provide a comprehensive v
 
 ## Microcephaly at birth based on the head circumference
 
-### Absolute risk ZIKV+ (%) 
+### Absolute risk ZIKV+ (%)
 
 ![Absolute risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_pos_ARimp.jpg){width="70%"}
 
@@ -166,8 +168,7 @@ By presenting these different stages of imputation, we provide a comprehensive v
 
 ### Relative risk
 
-![Relative risk loss ZIKV+](Objective1/loss_RRimp.jpg){width="70%"}
-\newpage
+![Relative risk loss ZIKV+](Objective1/loss_RRimp.jpg){width="70%"} \newpage
 
 ## CZS study definition
 
