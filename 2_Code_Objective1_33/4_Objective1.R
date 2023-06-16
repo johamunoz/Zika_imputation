@@ -15,7 +15,7 @@ library(ggplot2)
 # Field specific package
 library(growthstandards)
 
-source(here('2.1_Code 33 studies','4.1_Functions_Objective1.R'))
+source(here('2_Code_Objective1_33','4.1_Functions_Objective1.R'))
 
 # Get original data ----
 load(file=here('3_Output_data','ori_data33.RData'))
@@ -87,9 +87,9 @@ data_nozika <- data_all%>%filter(zikv_preg ==0)
 
 
 # Microcephaly only population between 24 and 42 gestational age without cases that were reported as abortion
-mdata_all <- data_all%>%filter(end_ga>=24&end_ga<=48&repabort!=1)
-mdata_zika <- data_zika%>%filter(end_ga>=24&end_ga<=48&repabort!=1)
-mdata_nozika <- data_nozika%>%filter(end_ga>=24&end_ga<=48&repabort!=1)
+mdata_all <- data_all%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
+mdata_zika <- data_zika%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
+mdata_nozika <- data_nozika%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
 
 
 # Get the estimates (plots and tables) ----

@@ -15,6 +15,7 @@ library(micemd)
 library(miceadds)
 
 # Load dataset and dependencies ----
+
 #load("/home/julius_te/jmunoz/Run_zika/finaldata.RData")
 load(here('3_Output_data','finaldata33.RData'))
 #add_info <- as.data.table(readxl::read_xlsx("/home/julius_te/jmunoz/Run_zika/MasterCodebook_October.xlsx",sheet="237 key")) #CSV file with the
@@ -83,12 +84,6 @@ pred["end_ga","zikv_ga"]<-1
 pred["miscarriage","birth"] <- 1
 pred["miscarriage","end_ga"] <- 1
 pred[c("end_ga","birth"),"miscarriage"] <- 0
-#pred["any_abnormality_czs","ch_microcephaly_bin"] <- 0
-#pred["neuroabnormality","ch_microcephaly_bin"] <- 0
-
-#pred["ch_head_circ_birth","ch_microcephaly"]<-0
-#pred["ch_head_circ_birth","microcephaly"]<-0
-#pred["ch_head_circ_birth","ch_microcephaly_bin"]<-0
 
 
 #write.csv(pred,file=here('Documents','GitHub','Zika_imputation','3_Output_data','predmatrix33.csv'))
@@ -105,38 +100,6 @@ fun_run<-function(imp,data,pred,meth,post,maxit){
 
 ###END CODE##
 
-# First 5 JOHANNA
-mice1<-fun_run(imp=1,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice1,file=here('3_Output_data','mice1.Rdata'))
-# 
-mice2<-fun_run(imp=2,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice2,file=here('3_Output_data','mice2.Rdata'))
-# 
-mice3<-fun_run(imp=3,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice3,file=here('3_Output_data','mice3.Rdata'))
-# 
-mice4<-fun_run(imp=4,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice4,file=here('3_Output_data','mice4.Rdata'))
-
-mice5<-fun_run(imp=5,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice5,file=here('3_Output_data','mice5.Rdata'))
-
-#this ones below are ANNEKE
-
-mice6<-fun_run(imp=6,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice6,file=here('3_Output_data','mice6.Rdata'))
-
-mice7<-fun_run(imp=7,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice7,file=here('3_Output_data','mice7.Rdata'))
-
-mice8<-fun_run(imp=8,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice8,file=here('3_Output_data','mice8.Rdata'))
-
-mice9<-fun_run(imp=9,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice9,file=here('3_Output_data','mice9.Rdata'))
-
-mice10<-fun_run(imp=10,data=data,pred=pred,meth=meth,post=post,maxit=10)
-save(mice10,file=here('3_Output_data','mice10.Rdata'))
 
 
 

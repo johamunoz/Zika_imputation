@@ -1,0 +1,178 @@
+---
+title: "Graphs 10 imputations"
+format: pdf
+editor: visual
+---
+
+# Description
+
+To calculate the Absolute and Relative risk for the majority of estimands, the completed datasets were divided based on whether the mother was diagnosed as ZIKV+ or ZIKV- during pregnancy. As the ZIKV values vary across the imputed datasets, the number of observations in each study also varies for each imputation.
+
+Consequently, in the plots, we present the average number of observations (N) on the right axis, along with the proportion of missingness. On the left axis, we display the confidence interval for each study. The estimands were calculated using three different datasets:
+
+-   Original: This dataset was provided by the Harmonization group and served as the baseline for the analysis.
+
+-   Deterministic: After cleaning and correcting inconsistent values, incomplete values were imputed deterministically using observed data whenever possible.
+
+-   Imputation: In this stage, incomplete values were imputed using the mice package, and the information from 10 completed studies was pooled according to Rubin's rules.
+
+By presenting these different stages of imputation, we provide a comprehensive view of the estimation process and its sensitivity to imputation methods.
+
+\newpage
+
+# Full information graphs
+
+## Microcephaly at birth based on the study information.
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_pos_ARall.jpg){width="95%"}
+
+\newpage
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_neg_ARall.jpg){width="95%"} \newpage
+
+### Relative risk
+
+![Relative risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_RRall.jpg){width="95%"} \newpage
+
+## Microcephaly at birth based on the head circumference
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_pos_ARall.jpg){width="95%"} \newpage
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_neg_ARall.jpg){width="95%"} \newpage
+
+### Relative risk
+
+![Relative risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_RRall.jpg){width="95%"}
+
+\newpage
+
+## Miscarriage
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk miscarriage ZIKV+](Objective1/miscarriage_ARall.jpg){width="95%"} \newpage
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk miscarriage ZIKV+](Objective1/miscarriage_neg_ARall.jpg){width="95%"} \newpage
+
+### Relative risk
+
+![Relative risk miscarriage ZIKV+](Objective1/miscarriage_RRall.jpg){width="95%"} \newpage
+
+## Fetal Loss
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk loss ZIKV+](Objective1/loss_ARall.jpg){width="95%"} \newpage
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk loss ZIKV+](Objective1/loss_neg_ARall.jpg){width="95%"} \newpage
+
+### Relative risk
+
+![Relative risk loss ZIKV+](Objective1/loss_RRall.jpg){width="95%"}
+
+\newpage
+
+## CZS study definition
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk czs based on study ZIKV+](Objective1/ch_czs_pos_ARall.jpg){width="95%"} \newpage
+
+## CZS WHO definition
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk czs based on WHO definition ZIKV+](Objective1/who_czs_pos_ARall.jpg){width="95%"}
+
+\newpage
+
+# Final result only graphs
+
+## Microcephaly at birth based on the study information.
+
+### Absolute risk ZIKV+ (%)
+![Absolute risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_pos_ARimp.jpg){width="70%"}
+
+### Absolute risk ZIKV- (%)
+![Absolute risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_neg_ARimp.jpg){width="70%"}
+
+\newpage
+
+### Relative risk
+
+![Relative risk microcephaly based on study information ZIKV+](Objective1/ch_microcephaly_bin_RRimp.jpg){width="70%"}
+
+\newpage
+
+## Microcephaly at birth based on the head circumference
+
+### Absolute risk ZIKV+ (%) 
+
+![Absolute risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_pos_ARimp.jpg){width="70%"}
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_neg_ARimp.jpg){width="70%"}
+
+\newpage
+
+### Relative risk
+
+![Relative risk microcephaly based on head circumference ZIKV+](Objective1/microcephaly_bin_birth_RRimp.jpg){width="70%"}
+
+\newpage
+
+## Miscarriage
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk miscarriage ZIKV+](Objective1/miscarriage_ARimp.jpg){width="70%"}
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk miscarriage ZIKV+](Objective1/miscarriage_neg_ARimp.jpg){width="70%"}
+
+\newpage
+
+### Relative risk
+
+![Relative risk miscarriage ZIKV+](Objective1/miscarriage_RRimp.jpg){width="70%"}
+
+\newpage
+
+## Fetal Loss
+
+### Absolute risk ZIKV+ (%)
+
+![Absolute risk loss ZIKV+](Objective1/loss_ARimp.jpg){width="70%"}
+
+### Absolute risk ZIKV- (%)
+
+![Absolute risk loss ZIKV+](Objective1/loss_neg_ARimp.jpg){width="70%"}
+
+\newpage
+
+### Relative risk
+
+![Relative risk loss ZIKV+](Objective1/loss_RRimp.jpg){width="70%"}
+\newpage
+
+## CZS study definition
+
+![Absolute risk czs based on study ZIKV+](Objective1/ch_czs_pos_ARimp.jpg){width="70%"}
+
+## CZS WHO definition
+
+![Absolute risk czs based on WHO definition ZIKV+](Objective1/who_czs_pos_ARimp.jpg){width="70%"}

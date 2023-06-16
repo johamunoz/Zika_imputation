@@ -24,7 +24,7 @@ data_origin[,studyname:=NULL] # as studyname was not assigned to all studies
 add_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the
 study_info <- as.data.table(readxl::read_xlsx(here('1_Input_data','MasterCodebook_October.xlsx'),sheet="StudyID")) #CSV file with the
 data <- merge(data_origin, study_info, by="file")
-source(here('2.1_Code 33 studies','1.1_Pre_imputation_functions.R'))
+source(here('2_Code_Objective1_33','1.1_Pre_imputation_functions.R'))
 
 #data_origin <- as.data.table(import(here('Documents','GitHub','Zika_imputation','1_Input_data','zikv_033_datasets.dta')))
 #add_info <- as.data.table(readxl::read_xlsx(here('Documents','GitHub','Zika_imputation','1_Input_data','MasterCodebook_October.xlsx'),sheet="237 key")) #CSV file with the

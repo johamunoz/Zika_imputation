@@ -661,13 +661,13 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
                         correction = "Haldane",
                         dupper = dupperRR)
   
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRall.jpg")), plot=RRall$plot_all, width=8, height=8, units="in")
-  ggsave(filename=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_RRimp.jpg")), plot=RRall$plot_imp, width=7, height=4, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_RRall.jpg")), plot=RRall$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_RRimp.jpg")), plot=RRall$plot_imp, width=7, height=4, units="in")
   
   
   ALLlist<-list(ARall=ARall,ARpos= ARpos,ARneg= ARneg,RRall=RRall)
 
-  save(ALLlist,file=here("6_Tables_graphs","Objective1",paste0(outcome_name,"_list.RData")))
+  save(ALLlist,file=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_list.RData")))
 }
 
                
