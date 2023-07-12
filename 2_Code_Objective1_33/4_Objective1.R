@@ -74,7 +74,7 @@ data_all[,efdeath := ifelse(bdeath==1&end_ga>=20&end_ga<28,1,0)] #early fetal de
 data_all[,lfdeath := ifelse(bdeath==1&end_ga>=28,1,0)] #late fetal death
 data_all[,cend_ga:=ifelse(end_ga>42,42,end_ga)] # modified end_ga used to calculate microcephaly and microchephaly_bin_birth from head circunference
 data_all[,ch_sex := as.factor(ifelse(ch_sex== 0, "Male","Female"))]   
-data_all[!is.na(ch_sex)&!is.na(end_ga), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = end_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]
+data_all[!is.na(ch_sex)&!is.na(cend_ga), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = cend_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]
 data_all[, microcephaly  := as.factor(ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA)))))] # given by formula
 data_all[, microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA))]
 data_all[, who_czs := as.numeric((zikv_test_ev %in% c("Robust","Moderate")| microcephaly_bin_fet==1) & (microcephaly==2 | any_abnormality_czs==1))]
@@ -109,6 +109,8 @@ print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data
 print_obj1(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 print_obj1(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+
+
 
 
 

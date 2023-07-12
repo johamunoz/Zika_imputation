@@ -63,9 +63,10 @@ save(merged_imp,file="/home/julius_te/jmunoz/Results_z1/merged_imp.Rdata")
 load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.Rdata")
 library(mice)
 merged_imp$loggedEvents
-plot(merged_imp)
-densityplot(merged_imp)
+plot(merged_imp,layout = c(2,7))
+densityplot(merged_imp, layout=c(4,2))
 
+34/7
 
 
 #load("/Users/jdamen/Library/CloudStorage/OneDrive-UMCUtrecht/Research/WHO ZIKA/2. Data/merged_imp.RData")
