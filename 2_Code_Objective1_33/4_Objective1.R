@@ -7,6 +7,7 @@ rm(list=ls()) # clean environment
 library(data.table)
 library(dplyr)
 library(magrittr)
+#setwd("/Users/jdamen/Documents/GitHub/Zika_imputation") #Only for Anneke
 library(here)  # define folder paths
 library(mice)
 # Graphic packages
@@ -30,6 +31,7 @@ data_abort <- data_det[,c("childid","repabort")]
 
 # Get imputation data ----
 load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.RData")
+#load(file= here('3_Output_data','merged_imp.RData')) #Only for Anneke
 data_imp <- as.data.table(complete(merged_imp,"long"))
 data_imp$source <- "Imputation"
 data_imp$.id <- NULL
