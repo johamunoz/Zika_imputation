@@ -7,7 +7,7 @@ rm(list=ls()) # clean environment
 library(data.table)
 library(dplyr)
 library(magrittr)
-#setwd("/Users/jdamen/Documents/GitHub/Zika_imputation") #Only for Anneke
+setwd("/Users/jdamen/Documents/GitHub/Zika_imputation") #Only for Anneke
 library(here)  # define folder paths
 library(mice)
 # Graphic packages
@@ -31,7 +31,7 @@ data_abort <- data_det[,c("childid","repabort")]
 
 # Get imputation data ----
 load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.RData")
-#load(file= here('3_Output_data','merged_imp.RData')) #Only for Anneke
+load(file= here('3_Output_data','merged_imp.RData')) #Only for Anneke
 data_imp <- as.data.table(complete(merged_imp,"long"))
 data_imp$source <- "Imputation"
 data_imp$.id <- NULL
@@ -74,19 +74,25 @@ data_all[,bdeath := 1-birth]
 data_all[,loss := ifelse(bdeath==1&end_ga>=20,1,0)]
 data_all[,efdeath := ifelse(bdeath==1&end_ga>=20&end_ga<28,1,0)] #early fetal death (20-27 weeks gestation)
 data_all[,lfdeath := ifelse(bdeath==1&end_ga>=28,1,0)] #late fetal death
-data_all[,cend_ga:=ifelse(end_ga>42,42,end_ga)] # modified end_ga used to calculate microcephaly and microchephaly_bin_birth from head circunference
+data_all[,cend_ga:=ifelse(end_ga>42,42,end_ga)] # modified end_ga used to calculate microcephaly and microchephaly_bin_birth from head circumference
 data_all[,ch_sex := as.factor(ifelse(ch_sex== 0, "Male","Female"))]   
 data_all[!is.na(ch_sex)&!is.na(cend_ga), hcircm2zscore:=as.numeric(igb_hcircm2zscore(gagebrth = cend_ga*7, hcircm=ch_head_circ_birth,sex=ifelse(ch_sex== 0, "Male","Female")))]
 data_all[, microcephaly  := as.factor(ifelse(hcircm2zscore<=-3,2,ifelse(hcircm2zscore<=-2,1,ifelse(hcircm2zscore<=2,0,ifelse(!is.na(hcircm2zscore),3,NA)))))] # given by formula
 data_all[, microcephaly_bin_birth:= ifelse(microcephaly%in%c(0,3),0,ifelse(microcephaly%in%c(1,2),1,NA))]
+data_all[, microcephaly_bin_birth3:= ifelse(microcephaly%in%c(0,1,3),0,ifelse(microcephaly%in%c(2),1,NA))] #Added by Anneke
 data_all[, who_czs := as.numeric((zikv_test_ev %in% c("Robust","Moderate")| microcephaly_bin_fet==1) & (microcephaly==2 | any_abnormality_czs==1))]
+data_all[, zikv_test_ev_bin:= ifelse(zikv_test_ev %in% c("Robust","Moderate"),1,ifelse(zikv_test_ev %in% c("Negative","Limited"),0,NA))] #Added by Anneke
 
+#Optional: exclude studies with possible selection bias (TO DO)
 
 # Separate dataset according to zikv_preg
 
 data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
+# Separate dataset according to zikv_test_ev
+data_zika_ev <- data_all%>%filter(zikv_test_ev =="Robust" | zikv_test_ev =="Moderate")
+data_nozika_ev <- data_all%>%filter(zikv_test_ev =="Negative" | zikv_test_ev =="Limited")
 
 # Microcephaly only population between 24 and 42 gestational age without cases that were reported as abortion
 
@@ -94,25 +100,37 @@ mic_data_all <- data_all%>%filter(cend_ga>=24&cend_ga<=42&repabort!=1)
 mic_data_zika <- mic_data_all%>%filter(zikv_preg ==1)
 mic_data_nozika <- mic_data_all%>%filter(zikv_preg ==0)
 
+#According to zikv_test_ev
+mic_data_zika_ev <- mic_data_all%>%filter(zikv_test_ev =="Robust" | zikv_test_ev =="Moderate")
+mic_data_nozika_ev <- mic_data_all%>%filter(zikv_test_ev =="Negative" | zikv_test_ev =="Limited")
 
-# Miscarriage
-mis_data_all <- merge(data_all,study_info[,c("studyimp","Included_mis")],by="studyimp")
-mis_data_all[,Included:=Included_mis]
-mis_data_zika <- mis_data_all%>%filter(zikv_preg ==1)
-mis_data_nozika <- mis_data_all%>%filter(zikv_preg ==0)
+
+# Miscarriage -> outcome excluded
+#mis_data_all <- merge(data_all,study_info[,c("studyimp","Included_mis")],by="studyimp")
+#mis_data_all[,Included:=Included_mis]
+#mis_data_zika <- mis_data_all%>%filter(zikv_preg ==1)
+#mis_data_nozika <- mis_data_all%>%filter(zikv_preg ==0)
 
 
 
 
 # Get the estimates (plots and tables) ----
-print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth calculated with head circunference",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
-print_obj1(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
-print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data_all,data_zika=mis_data_zika,data_nozika =mis_data_nozika)
+print_obj1(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth (2SD)",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
+print_obj1(outcome_name="microcephaly_bin_birth3",gentitle = "Microcephaly at birth (3SD)",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
+#print_obj1(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
+#print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data_all,data_zika=mis_data_zika,data_nozika =mis_data_nozika)
 print_obj1(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 print_obj1(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 
-
+#Alternative zika definition
+print_obj1_ev(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth (2SD)",data_all=mic_data_all,data_zika=mic_data_zika_ev,data_nozika =mic_data_nozika_ev)
+print_obj1_ev(outcome_name="microcephaly_bin_birth3",gentitle = "Microcephaly at birth (3SD)",data_all=mic_data_all,data_zika=mic_data_zika_ev,data_nozika =mic_data_nozika_ev)
+#print_obj1_ev(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mic_data_all,data_zika=mic_data_zika_ev,data_nozika =mic_data_nozika_ev)
+#print_obj1_ev(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data_all,data_zika=mis_data_zika,data_nozika =mis_data_nozika)
+print_obj1_ev(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
+print_obj1_ev(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
+print_obj1_ev(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
 
 
 

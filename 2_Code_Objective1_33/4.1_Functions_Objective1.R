@@ -673,4 +673,59 @@ print_obj1 <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data
   save(ALLlist,file=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_list.RData")))
 }
 
-               
+print_obj1_ev <- function(outcome_name,gentitle,dupperRR=NA,data_all,data_zika,data_nozika){
+  
+  # Absolute risk ----
+  ARall <- Rpool_studies(data = data_all, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name = outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand = "AR",
+                         plottitle = paste0(gentitle),
+                         t_type = "logit",
+                         dupper = NA)
+  
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_ARall_ev.jpg")), plot=ARall$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_ARimp_ev.jpg")), plot=ARall$plot_imp, width=7, height=4, units="in")
+  
+  
+  ARpos <- Rpool_studies(data = data_zika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name = outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand = "AR",
+                         plottitle = paste0(gentitle," in ZIKV+ pregnant woman"),
+                         t_type = "logit",
+                         dupper = NA)
+  
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARall_ev.jpg")), plot=ARpos$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_pos_ARimp_ev.jpg")), plot=ARpos$plot_imp, width=7, height=4, units="in")
+  
+  ARneg <- Rpool_studies(data = data_nozika, # for estimates only on zika+ mother use here: data_zika or zika- mother: data_nozika
+                         outcome_name = outcome_name, # it can be used also for: "microcephaly_bin_postnatal","microcephaly_bin_fet","ch_czs","who_czs","neuroabnormality","nonneurologic","miscarriage","loss","efdeath","lfdeath"
+                         exposure_name = NA,
+                         estimand = "AR",
+                         plottitle = paste0(gentitle," in ZIKV- pregnant woman"),
+                         t_type = "logit",
+                         dupper = NA)
+  
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARall_ev.jpg")), plot=ARneg$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_neg_ARimp_ev.jpg")), plot=ARneg$plot_imp, width=7, height=4, units="in")
+  
+  # Relative risk ----
+  RRall<- Rpool_studies(data = data_all,
+                        outcome_name = outcome_name,
+                        exposure_name = "zikv_test_ev_bin",
+                        estimand = "RR",
+                        plottitle = paste0(gentitle),
+                        t_type = "log",
+                        mod_type ="binomial",
+                        correction = "Haldane",
+                        dupper = dupperRR)
+  
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_RRall_ev.jpg")), plot=RRall$plot_all, width=8, height=8, units="in")
+  ggsave(filename=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_RRimp_ev.jpg")), plot=RRall$plot_imp, width=7, height=4, units="in")
+  
+  
+  ALLlist<-list(ARall=ARall,ARpos= ARpos,ARneg= ARneg,RRall=RRall)
+  
+  save(ALLlist,file=here("5_Tables_graphs","Objective1",paste0(outcome_name,"_list.RData")))
+}               
