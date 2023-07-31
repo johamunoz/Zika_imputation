@@ -571,7 +571,7 @@ Rpool_studies <- function(data, outcome_name, exposure_name = NA, estimand, plot
     filter(!is.na(mean))%>%
     mutate(pcint=cint,
            type= ifelse(studyname%in%c("TOTAL-1step","TOTAL-2step"),"0","1"),
-           N = ifelse(is.na(n_obs),"",paste0("N=",sprintf("%.1f",n_obs))),
+           N = ifelse(is.na(n_obs),"",paste0("N=",sprintf("%.0f",n_obs))),
            y=interaction(N,studyname, sep = "&"))
   
   dataplot$y <- factor(dataplot$y, levels=rev(levels(dataplot$y)))

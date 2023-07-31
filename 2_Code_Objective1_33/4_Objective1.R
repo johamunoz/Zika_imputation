@@ -30,7 +30,7 @@ data_det$.imp <- 0
 data_abort <- data_det[,c("childid","repabort")]
 
 # Get imputation data ----
-load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.RData")
+#load("/Users/jmunozav/Desktop/Zika_Jun22/merged_imp.RData")
 load(file= here('3_Output_data','merged_imp.RData')) #Only for Anneke
 data_imp <- as.data.table(complete(merged_imp,"long"))
 data_imp$source <- "Imputation"
@@ -83,10 +83,19 @@ data_all[, microcephaly_bin_birth3:= ifelse(microcephaly%in%c(0,1,3),0,ifelse(mi
 data_all[, who_czs := as.numeric((zikv_test_ev %in% c("Robust","Moderate")| microcephaly_bin_fet==1) & (microcephaly==2 | any_abnormality_czs==1))]
 data_all[, zikv_test_ev_bin:= ifelse(zikv_test_ev %in% c("Robust","Moderate"),1,ifelse(zikv_test_ev %in% c("Negative","Limited"),0,NA))] #Added by Anneke
 
+data_all_backup<-data_all
 #Optional: exclude studies with possible selection bias (TO DO)
+#data_all<-data_all[data_all$studyname=="003-GUF" | data_all$studyname=="004-ESP" | 
+#                     data_all$studyname=="005-ESP" | data_all$studyname=="006-COL" |
+#                     data_all$studyname=="007-COL" | data_all$studyname=="009-GRD" |
+#                     data_all$studyname=="010-BRA" | data_all$studyname=="012-TTO" |
+#                     data_all$studyname=="014-BRA" | data_all$studyname=="015-BRA" |
+#                     data_all$studyname=="016-HND" | data_all$studyname=="017-USA" |
+#                     data_all$studyname=="020-BRA" | data_all$studyname=="021-PRI" |
+#                     data_all$studyname=="024-GTM" | data_all$studyname=="025-BRA" |
+#                     data_all$studyname=="026-KEN" | data_all$studyname=="027-BRA",]
 
 # Separate dataset according to zikv_preg
-
 data_zika <- data_all%>%filter(zikv_preg ==1)
 data_nozika <- data_all%>%filter(zikv_preg ==0)
 
@@ -120,8 +129,8 @@ print_obj1(outcome_name="microcephaly_bin_birth3",gentitle = "Microcephaly at bi
 #print_obj1(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mic_data_all,data_zika=mic_data_zika,data_nozika =mic_data_nozika)
 #print_obj1(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data_all,data_zika=mis_data_zika,data_nozika =mis_data_nozika)
 print_obj1(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
-print_obj1(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
-print_obj1(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+print_obj1(outcome_name="ch_czs",gentitle = "Congenital Zika syndrome (study definition)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
+print_obj1(outcome_name="who_czs",gentitle = "Congenital Zika Syndrome (WHO definition)",data_all=data_all,data_zika=data_zika,data_nozika =data_nozika)
 
 #Alternative zika definition
 print_obj1_ev(outcome_name="microcephaly_bin_birth",gentitle = "Microcephaly at birth (2SD)",data_all=mic_data_all,data_zika=mic_data_zika_ev,data_nozika =mic_data_nozika_ev)
@@ -129,8 +138,8 @@ print_obj1_ev(outcome_name="microcephaly_bin_birth3",gentitle = "Microcephaly at
 #print_obj1_ev(outcome_name="ch_microcephaly_bin",gentitle = "Microcephaly at birth from study information",data_all=mic_data_all,data_zika=mic_data_zika_ev,data_nozika =mic_data_nozika_ev)
 #print_obj1_ev(outcome_name="miscarriage",gentitle = "Miscarriage",data_all=mis_data_all,data_zika=mis_data_zika,data_nozika =mis_data_nozika)
 print_obj1_ev(outcome_name="loss",gentitle = "Loss",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
-print_obj1_ev(outcome_name="ch_czs",gentitle = "Child congenital zika",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
-print_obj1_ev(outcome_name="who_czs",gentitle = "Child congenital zika (WHO)",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
+print_obj1_ev(outcome_name="ch_czs",gentitle = "Congenital Zika syndrome (study definition)",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
+print_obj1_ev(outcome_name="who_czs",gentitle = "Congenital Zika Syndrome (WHO definition)",data_all=data_all,data_zika=data_zika_ev,data_nozika =data_nozika_ev)
 
 
 
