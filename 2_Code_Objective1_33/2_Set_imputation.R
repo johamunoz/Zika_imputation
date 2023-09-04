@@ -90,6 +90,18 @@ pred[c("end_ga","birth"),"miscarriage"] <- 0
 write.csv(pred,file=here('3_Output_data','predmatrix33.csv'))
 
 
+#' Function to be sent to the HPC
+#'
+#' @param imp Number of imputation 1:50 used to specify the number of imputation and seed. 
+#' @param data dataset to be imputed
+#' @param pred prediction matrix specifying the set of predictors to be used for each target column
+#' @param meth a vector specifying the individual imputation methdo for each target column
+#' @param post a vector specifying post processing of som of the target colums
+#' @param maxit a scalar giving the number of iterations. Here we used 10
+#'
+#' @return An imputed dataset. 
+#' m was assigned to 1 as in the HPC we calculated 1 imputation per run, in total we obtained separately 50 imputed datasets.
+#' 
 fun_run<-function(imp,data,pred,meth,post,maxit){
   seed=imp*363+253  
   start_time<-proc.time()
